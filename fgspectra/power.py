@@ -6,16 +6,17 @@ from scipy import constants
 
 class PowerSpectrum:
     def __init__(self, ps_name=''):
-        self.ps = sed_name or something
+        self.ps = sed_name
         return
 
-    def __call__(self, ell, args):
+    def __call__(self, ell, *args):
         return self.ps(ell, args)
 
 
 
-def things(ell, args, kwargs):
-    return ell
+def things(nu, *args, **kwargs):
+    """Instantiate the right object and calls it, for convenience."""
+    return nu
 
 
 # Power law in ell
