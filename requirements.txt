@@ -1,0 +1,5 @@
+numpy>=1.13
+scipy>=1.0
+pytest-cov>=2.6
+coveralls>=1.5
+pytest>=3.6
