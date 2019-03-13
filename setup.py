@@ -9,5 +9,6 @@ setup(name='fgspectra',
       description='Foreground SED and power spectrum library',
       author='Simons Observatory fgspectra crew',
       author_email='',
-      packages=['fgspectra']
+      packages=['fgspectra'],
+      python_requires='>3'
       )
