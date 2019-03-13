@@ -47,13 +47,13 @@ class tSZ1(FrequencySpectrum):
 
     def __init__(self):
         """Intialize object with parameters."""
-        self.sed = "tSZ1"
+        self.sed_name = "tSZ1"
 
     def sed(self, nu, **kwargs):
         """Compute the SED with the given frequency and parameters."""
         TCMB = 2.725  # TODO: move TCMB to somewhere else
         x = constants.h * nu / (constants.k * TCMB)
-        return x * np.coth(x/2.0) - 4.0
+        return x * np.cosh(x/2.0) / np.sinh(x/2.0) - 4.0
 
 
 def calc_tSZ1(nu, *args, **kwargs):
