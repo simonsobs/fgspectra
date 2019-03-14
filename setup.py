@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """fgspectra: GitHub <https://github.com/simonsobs/fgspectra>."""
 
-from setuptools import setup, find_packages
+from setuptools import setup
 
 setup(name='fgspectra',
       version='0.1',

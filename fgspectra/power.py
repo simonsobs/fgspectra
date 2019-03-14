@@ -14,6 +14,8 @@ and BeFoRe (David Alonso and Ben Thorne).
 """
 import numpy as np
 from scipy import constants
+import pkg_resources
+import os
 
 
 class PowerSpectrum:
@@ -29,17 +31,64 @@ class PowerSpectrum:
         return self.powspec(ell, **kwargs)
 
 
-class tSZ1(PowerSpectrum):
+class PowerSpectrumFromFile(PowerSpectrum):
+    """Generic PowerSpectrum loaded from file."""
+
+    def __init__(self, filename, name):
+        """Intialize object with parameters.
+
+        The file format should be two columns, ell and the spectrum.
+        """
+        data_path = pkg_resources.resource_filename('fgspectra', 'data/')
+        file_path = os.path.join(data_path, filename)
+        self.data_ell, self.data_spec = np.genfromtxt(file_path, unpack=True)
+        self.name = name
+        return
+
+    def powspec(self, ell):
+        """Compute the power spectrum with the given ell and parameters."""
+        return np.interp(ell, self.data_ell, self.data_spec)
+
+
+# TODO: maybe the following three should just be helper functions
+class tSZ_150_bat(PowerSpectrumFromFile):
     """PowerSpectrum for Thermal Sunyaev-Zel'dovich (Dunkley et al. 2013)."""
 
     def __init__(self):
         """Intialize object with parameters."""
+        super().__init__("cl_tsz_150_bat.dat", name="tSZ_150_bat")
         return
 
-    def powspec(ell):
-        """Compute the power spectrum with the given ell and parameters."""
-        return ell
 
+class ksz_bat(PowerSpectrumFromFile):
+    """PowerSpectrum for Kinetic Sunyaev-Zel'dovich (Dunkley et al. 2013)."""
+
+    def __init__(self):
+        """Intialize object with parameters."""
+        super().__init__("cl_ksz_bat.dat", name="ksz_bat")
+        return
+
+
+class sz_x_cib_template(PowerSpectrumFromFile):
+    """PowerSpectrum for Thermal Sunyaev-Zel'dovich (Dunkley et al. 2013)."""
+
+    def __init__(self):
+        """Intialize object with parameters."""
+        super().__init__("sz_x_cib_template.dat", name="sz_x_cib_template")
+        return
+
+
+# ----------------------------- IN PROGRESS --------------------
+class PowerLaw(PowerSpectrum):
+    """Power law in ell."""
+
+    def __init__(self, beta, ell_0):
+        self.beta = beta
+        self.ell_0 = ell_0
+        return
+
+    def powspec(ell, **kwargs):
+        return (ell/ell_0)**beta
 
 # Power law in ell
 
