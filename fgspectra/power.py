@@ -2,7 +2,7 @@
 r"""
 Frequency-dependent foreground components.
 
-This module implements the frequency-dependent component of common foreground
+This module implements the ell-dependent component of common foreground
 contaminants. This consist only of factorizable components -- i.e. the
 components in this module describe :math:`f(\nu)` for which the component X has
 spectrum
