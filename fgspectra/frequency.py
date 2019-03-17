@@ -22,44 +22,25 @@ class FrequencySpectrum:
     def __init__(self, sed_name=''):
         """Initialize the component."""
         self.sed_name = sed_name
+        self.params = {}
         return
+    
+    def get_missing(self, input_dict):
+        """Copy self.params and ensure no values are None."""
+        params = self.params.copy()
+        for p in params:
+            if (params[p] is None) and (p in input_dict):
+                params[p] = input_dict[p]
+                
+        missing_params = [p for p in params if params[p] is None]
+        if len(missing_params) > 0:
+            raise Exception(f'Missing parameters: {missing_params}.')
+            
+        return params
 
     def __call__(self, nu, **kwargs):
-        """Make component objects callable."""
+        """Calls the object's `sed(nu, **kwargs)` method."""
         return self.sed(nu, **kwargs)
-
-
-class tSZ1(FrequencySpectrum):
-    r"""
-    FrequencySpectrum for Thermal Sunyaev-Zel'dovich (Dunkley et al. 2013).
-
-    This class implements the
-
-    .. math:: f(\nu) = x \coth(x/2) - 4
-
-    where :math:`x = h \nu / k_B T_CMB`
-
-    Methods
-    -------
-    __call__(self, nu)
-        return the frequency dependent component of the tSZ.
-
-    """
-
-    def __init__(self):
-        """Intialize object with parameters."""
-        self.sed_name = "tSZ1"
-
-    def sed(self, nu, **kwargs):
-        """Compute the SED with the given frequency and parameters."""
-        TCMB = 2.725  # TODO: move TCMB to somewhere else
-        x = constants.h * nu / (constants.k * TCMB)
-        return x * np.cosh(x/2.0) / np.sinh(x/2.0) - 4.0
-
-
-def calc_tSZ1(nu, *args, **kwargs):
-    """Instantiate the right object and calls it, for convenience."""
-    return nu
 
 
 class PowerLaw(FrequencySpectrum):
@@ -90,12 +71,13 @@ class PowerLaw(FrequencySpectrum):
         """Compute the SED with the given frequency and parameters."""
         return (nu / nu0)**beta 
 
+
 class Synchrotron(PowerLaw):
     r""" Alias of :class:`PowerLaw`
     """
     pass
 
-    
+
 class ModifiedBlackBody(FrequencySpectrum):
     r"""
     FrequencySpectrum for a modified black body.
@@ -120,13 +102,54 @@ class ModifiedBlackBody(FrequencySpectrum):
         return the frequency dependent component of Synchrotron. 
     """
 
-    def __init__(self, nu0=None, Td=None):
+    def __init__(self, nu0=None, Td=None, beta=None):
         """Intialize object with parameters."""
         self.sed_name = "synchrotron"
+        self.params = { 
+            'nu0' : nu0, 
+            'Td' : Td, 
+            'beta' : beta
+        }
         
-    def sed(self, nu, beta):
+    def sed(self, nu, **kwargs):
         """Compute the SED with the given frequency and parameters."""
-        return (nu / self.nu0)**beta 
+        # kwargs is always a copy of a dictionary
+        params = self.copy_defaults(kwargs)
+        x = constants.h * (nu * 1e9) / (constants.k * params['Td'])
+        return (nu / params['nu0'])**(params['beta']+1) / (np.exp(X) - 1) 
+
+
+class ThermalSZFreq(FrequencySpectrum):
+    r"""
+    FrequencySpectrum for Thermal Sunyaev-Zel'dovich (Dunkley et al. 2013).
+
+    This class implements the
+
+    .. math:: f(\nu) = x \coth(x/2) - 4
+
+    where :math:`x = h \nu / k_B T_CMB`
+
+    Methods
+    -------
+    __call__(self, nu)
+        return the frequency dependent component of the tSZ.
+    """
+
+    def __init__(self, TCMB=2.725):
+        """Intialize object with parameters."""
+        self.sed_name = "tSZ_ACT_f"
+        self.params = {'TCMB' : TCMB}
+
+    def sed(self, nu, **kwargs):
+        """Compute the SED with the given frequency and parameters.
+        
+        nu : float
+            Frequency in GHz.
+        TCMB (optional) : float
+        """
+        params = self.get_missing(kwargs)
+        x = constants.h * (nu*1e9) / (constants.k * params['TCMB'])
+        return x * np.cosh(x/2.0) / np.sinh(x/2.0) - 4.0    
 
 # CMB
 # blackbody, derivative BB
