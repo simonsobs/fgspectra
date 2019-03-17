@@ -14,6 +14,7 @@ and BeFoRe (David Alonso and Ben Thorne).
 import numpy as np
 from scipy import constants
 
+# TODO: we need to figure out the unit situation. 
 
 class FrequencySpectrum:
     """Base class for frequency dependent components."""
@@ -59,6 +60,73 @@ class tSZ1(FrequencySpectrum):
 def calc_tSZ1(nu, *args, **kwargs):
     """Instantiate the right object and calls it, for convenience."""
     return nu
+
+
+class PowerLaw(FrequencySpectrum):
+    r"""
+    FrequencySpectrum for a power law.
+    .. math:: f(\nu) = (nu / nu_0)^{\beta}
+    
+    Parameters
+    ----------
+    nu: float or array
+        Frequency in Hz.
+    beta: float
+        Spectral index. 
+    nu0: float
+        Reference frequency in Hz.  
+    
+    Methods
+    -------
+    __call__(self, nu, beta)
+        return the frequency scaling given by a power law. 
+    """
+
+    def __init__(self, nu0=None):
+        """Intialize object with parameters."""
+        self.sed_name = "power law"
+        
+    def sed(self, nu, beta):
+        """Compute the SED with the given frequency and parameters."""
+        return (nu / nu0)**beta 
+
+class Synchrotron(PowerLaw):
+    r""" Alias of :class:`PowerLaw`
+    """
+    pass
+
+    
+class ModifiedBlackBody(FrequencySpectrum):
+    r"""
+    FrequencySpectrum for a modified black body.
+    .. math:: f(\nu) = (nu / nu_0)^{\beta + 1} / (e^X - 1) 
+
+    where :math:`X = h \nu / k_B T_d`
+    
+    Parameters
+    ----------
+    nu: float or array
+        Frequency in Hz.
+    beta: float
+        Spectral index. 
+    Td: float
+        Dust temperature. 
+    nu0: float
+        Reference frequency in Hz.  
+    
+    Methods
+    -------
+    __call__(self, nu, beta, Td)
+        return the frequency dependent component of Synchrotron. 
+    """
+
+    def __init__(self, nu0=None, Td=None):
+        """Intialize object with parameters."""
+        self.sed_name = "synchrotron"
+        
+    def sed(self, nu, beta):
+        """Compute the SED with the given frequency and parameters."""
+        return (nu / self.nu0)**beta 
 
 # CMB
 # blackbody, derivative BB
