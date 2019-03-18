@@ -14,21 +14,81 @@ and BeFoRe (David Alonso and Ben Thorne).
 import numpy as np
 from scipy import constants
 
+# TODO: we need to figure out the unit situation.
 
 class FrequencySpectrum:
     """Base class for frequency dependent components."""
 
     def __init__(self, sed_name=''):
         """Initialize the component."""
-        self.sed_name = sed_name
-        return
+        pass
 
     def __call__(self, nu, **kwargs):
-        """Make component objects callable."""
+        """Calls the object's `sed(nu, **kwargs)` method."""
         return self.sed(nu, **kwargs)
 
 
-class tSZ1(FrequencySpectrum):
+class PowerLaw(FrequencySpectrum):
+    r"""
+    FrequencySpectrum for a power law.
+    .. math:: f(\nu) = (nu / nu_0)^{\beta}
+
+    Parameters
+    ----------
+    nu: float or array
+        Frequency in Hz.
+    beta: float
+        Spectral index.
+    nu0: float
+        Reference frequency in Hz.
+
+    Methods
+    -------
+    __call__(self, nu, beta)
+        return the frequency scaling given by a power law.
+    """
+    def sed(nu, beta, nu_0):
+        """Compute the SED with the given frequency and parameters."""
+        par = self.get_missing(kwargs)
+        return (nu / nu_0)**beta
+
+
+class Synchrotron(PowerLaw):
+    r""" Alias of :class:`PowerLaw`
+    """
+    pass
+
+
+class ModifiedBlackBody(FrequencySpectrum):
+    r"""
+    FrequencySpectrum for a modified black body.
+    .. math:: f(\nu) = (nu / nu_0)^{\beta + 1} / (e^X - 1)
+
+    where :math:`X = h \nu / k_B T_d`
+
+    Parameters
+    ----------
+    nu: float or array
+        Frequency in Hz.
+    beta: float
+        Spectral index.
+    T_d: float
+        Dust temperature.
+    nu0: float
+        Reference frequency in Hz.
+
+    Methods
+    -------
+    __call__(self, nu, beta, T_d)
+        return the frequency dependent component of Synchrotron.
+    """
+    def sed(nu, nu_0, T_d, beta):
+        """Compute the SED with the given frequency and parameters."""
+        x = constants.h * (nu * 1e9) / (constants.k * T_d)
+        return (nu / nu_0)**(beta+1) / (np.exp(X) - 1)
+
+
+class ThermalSZFreq(FrequencySpectrum):
     r"""
     FrequencySpectrum for Thermal Sunyaev-Zel'dovich (Dunkley et al. 2013).
 
@@ -42,23 +102,51 @@ class tSZ1(FrequencySpectrum):
     -------
     __call__(self, nu)
         return the frequency dependent component of the tSZ.
-
     """
+    def sed(self, nu, T_CMB=2.725):
+        """Compute the SED with the given frequency and parameters.
 
-    def __init__(self):
-        """Intialize object with parameters."""
-        self.sed_name = "tSZ1"
-
-    def sed(self, nu, **kwargs):
-        """Compute the SED with the given frequency and parameters."""
-        TCMB = 2.725  # TODO: move TCMB to somewhere else
-        x = constants.h * nu / (constants.k * TCMB)
+        nu : float
+            Frequency in GHz.
+        T_CMB (optional) : float
+        """
+        x = constants.h * (nu*1e9) / (constants.k * T_CMB)
         return x * np.cosh(x/2.0) / np.sinh(x/2.0) - 4.0
 
 
-def calc_tSZ1(nu, *args, **kwargs):
-    """Instantiate the right object and calls it, for convenience."""
-    return nu
+class CIBFreq(FrequencySpectrum):
+    r"""
+    FrequencySpectrum for :math:`g(\nu` for CIB models, where
+
+    .. math:: g(\mu) = (\partial B_{\nu}/\partial T)^{-1} |_{T_CMB}
+
+    Parameters
+    ----------
+    nu: float or array
+        Frequency in Hz.
+    beta: float
+        Spectral index.
+
+    Methods
+    -------
+    __call__(self, nu, beta)
+        return the frequency scaling given by a power law.
+    """
+    def g(self, nu, T_CMB):
+        """Convert from flux to thermodynamic units."""
+        x = constants.h * (nu*1e9) / (constants.k * T_CMB)
+        return constants.c**2 * constants.k * T_CMB**2 * (np.cosh(x) - 1) / (
+            constants.h**2 * (nu*1e9)**4)
+
+    def planckB(self, nu, T_d):
+        """Planck function at dust temperature."""
+        x = constants.h * (nu*1e9) / (constants.k * T_d)
+        return 2 * constants.h * (nu*1e9)**3 / constants.c**2 / (np.exp(x) - 1)
+
+    def sed(self, nu, beta, T_d, T_CMB):
+        """Modified blackbody mu(nu, beta)"""
+        return nu**beta * self.planckB(nu, T_d) * self.g(nu, T_CMB)
+
 
 # CMB
 # blackbody, derivative BB
