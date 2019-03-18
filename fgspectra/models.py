@@ -50,7 +50,7 @@ class CompositeModel:
         return params
 
     def get_mix(self, freqs, l_max, **kwargs):
-        """Compute the mixing matrix up to some ell.
+        """Compute the mixing matrix up to some ell, with effective frequencies.
 
         Parameters
         ----------
@@ -72,7 +72,11 @@ class CompositeModel:
         mix = np.zeros((N_freq, N_freq, l_max+1))
         for i in range(N_freq):
             for j in range(N_freq):
-                mix[i,j,:] = self.model(freqs[i], freqs[j], ells, **kwargs)
+                params = kwargs.copy()
+                params['i'] = i
+                params['j'] = j
+                params['effective_frequencies'] = True
+                mix[i,j,:] = self.model(freqs[i], freqs[j], ells, **params)
 
         return mix
 
@@ -312,7 +316,15 @@ class tSZxCIB(CompositeModel):
                       T_d=par['T_d'], T_CMB=par['T_CMB'])
         mu_0 = self.mu(par['nu_0'], beta=par['beta_c'],
                       T_d=par['T_d'], T_CMB=par['T_CMB'])
-        fp = self.fnu(nu_i) * mu_j + self.fnu(nu_j) * mu_i # THIS IS WRONG, NEED TSZ FREQ
+        
+        # hack to make effective frequency
+        if kwargs['effective_frequencies']:
+            i, j = kwargs['i'], kwargs['j']
+            sz_nu_i = kwargs[f'f{i}_sz']
+            sz_nu_j = kwargs[f'f{j}_sz']
+            fp = self.fnu(sz_nu_i) * mu_j + self.fnu(sz_nu_j) * mu_i
+        else:
+            fp = self.fnu(nu_i) * mu_j + self.fnu(nu_j) * mu_i
         fp_0 = self.fnu(par['nu_0']) * mu_0 * 2
 
         return -par['xi'] * np.sqrt(par['a_tSZ'] * par['a_c']) * (2 *
