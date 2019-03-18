@@ -21,10 +21,9 @@ import os
 class PowerSpectrum:
     """Base class for frequency dependent components."""
 
-    def __init__(self, name=''):
+    def __init__(self):
         """Initialize the component."""
-        self.spec_name = name
-        return
+        pass
 
     def __call__(self, ell, **kwargs):
         """Make component objects callable."""
@@ -34,7 +33,7 @@ class PowerSpectrum:
 class PowerSpectrumFromFile(PowerSpectrum):
     """Generic PowerSpectrum loaded from file."""
 
-    def __init__(self, filename, name):
+    def __init__(self, filename):
         """Intialize object with parameters.
 
         The file format should be two columns, ell and the spectrum.
@@ -42,7 +41,6 @@ class PowerSpectrumFromFile(PowerSpectrum):
         data_path = pkg_resources.resource_filename('fgspectra', 'data/')
         file_path = os.path.join(data_path, filename)
         self.data_ell, self.data_spec = np.genfromtxt(file_path, unpack=True)
-        self.name = name
         return
 
     def powspec(self, ell):
@@ -50,45 +48,58 @@ class PowerSpectrumFromFile(PowerSpectrum):
         return np.interp(ell, self.data_ell, self.data_spec)
 
 
-# TODO: maybe the following three should just be helper functions
 class tSZ_150_bat(PowerSpectrumFromFile):
     """PowerSpectrum for Thermal Sunyaev-Zel'dovich (Dunkley et al. 2013)."""
 
     def __init__(self):
         """Intialize object with parameters."""
-        super().__init__("cl_tsz_150_bat.dat", name="tSZ_150_bat")
+        super().__init__("cl_tsz_150_bat.dat")
         return
 
 
-class ksz_bat(PowerSpectrumFromFile):
-    """PowerSpectrum for Kinetic Sunyaev-Zel'dovich (Dunkley et al. 2013)."""
+class kSZ_bat(PowerSpectrumFromFile):
+    """PowerSpectrum for Kinematic Sunyaev-Zel'dovich (Dunkley et al. 2013)."""
 
     def __init__(self):
         """Intialize object with parameters."""
-        super().__init__("cl_ksz_bat.dat", name="ksz_bat")
+        super().__init__("cl_ksz_bat.dat")
         return
 
 
 class sz_x_cib_template(PowerSpectrumFromFile):
-    """PowerSpectrum for Thermal Sunyaev-Zel'dovich (Dunkley et al. 2013)."""
+    """PowerSpectrum for SZxCIB (Dunkley et al. 2013)."""
 
     def __init__(self):
         """Intialize object with parameters."""
-        super().__init__("sz_x_cib_template.dat", name="sz_x_cib_template")
+        super().__init__("sz_x_cib_template.dat")
         return
 
 
-# ----------------------------- IN PROGRESS --------------------
 class PowerLaw(PowerSpectrum):
-    """Power law in ell."""
+    r"""
+    PowerSpectrum for a power law.
+    .. math:: f(\nu) = (nu / nu_0)^{\beta}
 
-    def __init__(self, beta, ell_0):
-        self.beta = beta
-        self.ell_0 = ell_0
-        return
+    Parameters
+    ----------
+    ell: float or array
+        Frequency in Hz.
+    beta: float
+        Spectral index.
+    ell_0: float
+        Reference ell
 
-    def powspec(ell, **kwargs):
+    Methods
+    -------
+    __call__(self, ell, beta, ell_0)
+        return the ell scaling given by a power law.
+    """
+
+    def powspec(self, ell, beta, ell_0):
         return (ell/ell_0)**beta
+
+
+
 
 # Power law in ell
 

@@ -14,29 +14,14 @@ and BeFoRe (David Alonso and Ben Thorne).
 import numpy as np
 from scipy import constants
 
-# TODO: we need to figure out the unit situation. 
+# TODO: we need to figure out the unit situation.
 
 class FrequencySpectrum:
     """Base class for frequency dependent components."""
 
     def __init__(self, sed_name=''):
         """Initialize the component."""
-        self.sed_name = sed_name
-        self.params = {}
-        return
-    
-    def get_missing(self, input_dict):
-        """Copy self.params and ensure no values are None."""
-        params = self.params.copy()
-        for p in params:
-            if (params[p] is None) and (p in input_dict):
-                params[p] = input_dict[p]
-                
-        missing_params = [p for p in params if params[p] is None]
-        if len(missing_params) > 0:
-            raise Exception(f'Missing parameters: {missing_params}.')
-            
-        return params
+        pass
 
     def __call__(self, nu, **kwargs):
         """Calls the object's `sed(nu, **kwargs)` method."""
@@ -47,29 +32,25 @@ class PowerLaw(FrequencySpectrum):
     r"""
     FrequencySpectrum for a power law.
     .. math:: f(\nu) = (nu / nu_0)^{\beta}
-    
+
     Parameters
     ----------
     nu: float or array
         Frequency in Hz.
     beta: float
-        Spectral index. 
+        Spectral index.
     nu0: float
-        Reference frequency in Hz.  
-    
+        Reference frequency in Hz.
+
     Methods
     -------
     __call__(self, nu, beta)
-        return the frequency scaling given by a power law. 
+        return the frequency scaling given by a power law.
     """
-
-    def __init__(self, nu0=None):
-        """Intialize object with parameters."""
-        self.sed_name = "power law"
-        
-    def sed(self, nu, beta):
+    def sed(nu, beta, nu_0):
         """Compute the SED with the given frequency and parameters."""
-        return (nu / nu0)**beta 
+        par = self.get_missing(kwargs)
+        return (nu / nu_0)**beta
 
 
 class Synchrotron(PowerLaw):
@@ -81,42 +62,30 @@ class Synchrotron(PowerLaw):
 class ModifiedBlackBody(FrequencySpectrum):
     r"""
     FrequencySpectrum for a modified black body.
-    .. math:: f(\nu) = (nu / nu_0)^{\beta + 1} / (e^X - 1) 
+    .. math:: f(\nu) = (nu / nu_0)^{\beta + 1} / (e^X - 1)
 
     where :math:`X = h \nu / k_B T_d`
-    
+
     Parameters
     ----------
     nu: float or array
         Frequency in Hz.
     beta: float
-        Spectral index. 
-    Td: float
-        Dust temperature. 
+        Spectral index.
+    T_d: float
+        Dust temperature.
     nu0: float
-        Reference frequency in Hz.  
-    
+        Reference frequency in Hz.
+
     Methods
     -------
-    __call__(self, nu, beta, Td)
-        return the frequency dependent component of Synchrotron. 
+    __call__(self, nu, beta, T_d)
+        return the frequency dependent component of Synchrotron.
     """
-
-    def __init__(self, nu0=None, Td=None, beta=None):
-        """Intialize object with parameters."""
-        self.sed_name = "synchrotron"
-        self.params = { 
-            'nu0' : nu0, 
-            'Td' : Td, 
-            'beta' : beta
-        }
-        
-    def sed(self, nu, **kwargs):
+    def sed(nu, nu_0, T_d, beta):
         """Compute the SED with the given frequency and parameters."""
-        # kwargs is always a copy of a dictionary
-        params = self.copy_defaults(kwargs)
-        x = constants.h * (nu * 1e9) / (constants.k * params['Td'])
-        return (nu / params['nu0'])**(params['beta']+1) / (np.exp(X) - 1) 
+        x = constants.h * (nu * 1e9) / (constants.k * T_d)
+        return (nu / nu_0)**(beta+1) / (np.exp(X) - 1)
 
 
 class ThermalSZFreq(FrequencySpectrum):
@@ -134,22 +103,50 @@ class ThermalSZFreq(FrequencySpectrum):
     __call__(self, nu)
         return the frequency dependent component of the tSZ.
     """
-
-    def __init__(self, TCMB=2.725):
-        """Intialize object with parameters."""
-        self.sed_name = "tSZ_ACT_f"
-        self.params = {'TCMB' : TCMB}
-
-    def sed(self, nu, **kwargs):
+    def sed(self, nu, T_CMB=2.725):
         """Compute the SED with the given frequency and parameters.
-        
+
         nu : float
             Frequency in GHz.
-        TCMB (optional) : float
+        T_CMB (optional) : float
         """
-        params = self.get_missing(kwargs)
-        x = constants.h * (nu*1e9) / (constants.k * params['TCMB'])
-        return x * np.cosh(x/2.0) / np.sinh(x/2.0) - 4.0    
+        x = constants.h * (nu*1e9) / (constants.k * T_CMB)
+        return x * np.cosh(x/2.0) / np.sinh(x/2.0) - 4.0
+
+
+class CIBFreq(FrequencySpectrum):
+    r"""
+    FrequencySpectrum for :math:`g(\nu` for CIB models, where
+
+    .. math:: g(\mu) = (\partial B_{\nu}/\partial T)^{-1} |_{T_CMB}
+
+    Parameters
+    ----------
+    nu: float or array
+        Frequency in Hz.
+    beta: float
+        Spectral index.
+
+    Methods
+    -------
+    __call__(self, nu, beta)
+        return the frequency scaling given by a power law.
+    """
+    def g(self, nu, T_CMB):
+        """Convert from flux to thermodynamic units."""
+        x = constants.h * (nu*1e9) / (constants.k * T_CMB)
+        return constants.c**2 * constants.k * T_CMB**2 * (np.cosh(x) - 1) / (
+            constants.h**2 * (nu*1e9)**4)
+
+    def planckB(self, nu, T_d):
+        """Planck function at dust temperature."""
+        x = constants.h * (nu*1e9) / (constants.k * T_d)
+        return 2 * constants.h * (nu*1e9)**3 / constants.c**2 / (np.exp(x) - 1)
+
+    def sed(self, nu, beta, T_d, T_CMB):
+        """Modified blackbody mu(nu, beta)"""
+        return nu**beta * self.planckB(nu, T_d) * self.g(nu, T_CMB)
+
 
 # CMB
 # blackbody, derivative BB
