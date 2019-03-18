@@ -194,6 +194,7 @@ class CIBP(CompositeModel):
         1D array of floats : model result of same shape as input ells
         """
         par = self.get_missing(kwargs)
+
         mu_i = self.mu(nu_i, beta=par['beta_p'],
                       T_d=par['T_d'], T_CMB=par['T_CMB'])
         mu_j = self.mu(nu_j, beta=par['beta_p'],
@@ -246,9 +247,24 @@ class CIBC(CompositeModel):
                       T_d=par['T_d'], T_CMB=par['T_CMB'])
         mu_0 = self.mu(par['nu_0'], beta=par['beta_c'],
                       T_d=par['T_d'], T_CMB=par['T_CMB'])
-        return par['a_c'] * (ell / par['ell_0'])**(2-par['n_CIBC']) \
-            * (mu_i * mu_j / mu_0**2)
 
+        from scipy import constants
+        x = constants.h * (nu_i*1e9) / (constants.k * par['T_CMB'])
+        nu_0 = par['nu_0']
+        x0 = constants.h * (nu_0*1e9) / (constants.k * par['T_CMB'])
+        T_CMB = par['T_CMB']
+        T_d = par['T_d']
+        top =  (np.cosh(x) - 1) / (
+              (nu_i*1e9)**4)
+        bottom =  (np.cosh(x0) - 1) / (
+              (nu_0*1e9)**4)
+
+
+
+        return par['a_c'] * (ell*(ell+1)/3000**2)*(ell/3000)**(-par['n_CIBC']
+            ) * (mu_i * mu_j / mu_0**2)
+
+# %%
 
 class tSZxCIB(CompositeModel):
     """Model for tSZxCIB clustering component (Dunkley et al. 2013)."""
@@ -296,8 +312,9 @@ class tSZxCIB(CompositeModel):
                       T_d=par['T_d'], T_CMB=par['T_CMB'])
         mu_0 = self.mu(par['nu_0'], beta=par['beta_c'],
                       T_d=par['T_d'], T_CMB=par['T_CMB'])
-        fp = self.fnu(nu_i) * mu_j + self.fnu(nu_j) * mu_i
-        fp_0 = self.fnu(par['nu_0']) * mu_0 + self.fnu(par['nu_0']) * mu_0
+        fp = self.fnu(nu_i) * mu_j + self.fnu(nu_j) * mu_i # THIS IS WRONG, NEED TSZ FREQ
+        fp_0 = self.fnu(par['nu_0']) * mu_0 * 2
+
         return -par['xi'] * np.sqrt(par['a_tSZ'] * par['a_c']) * (2 *
             fp / fp_0 * self.Dl_tSZxCIB(ell) / self.Dl_tSZxCIB(par['ell_0']))
 
