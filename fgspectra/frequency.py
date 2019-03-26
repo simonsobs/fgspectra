@@ -39,19 +39,39 @@ class PowerLaw(FrequencySpectrum):
         Parameters
         ----------
         nu: float or array
-            Frequency in Hz.
+            Frequency in the same units as `nu0`. If array, the shape is
+            ``(freq)``.
         beta: float or array
-            Spectral index.
-        nu0: float
-            Reference frequency in Hz.
+            Spectral index. If array, the shape is ``(...)``.
+        nu0: float or array
+            Reference frequency in the same units as `nu`. If array, the shape
+            is ``(...)``.
 
         Returns
         -------
         sed: ndarray
-            The last dimension is the frequency dependence.
-            The leading dimensions are the hypothetic dimensions of `beta`
+            If `nu` is an array, the shape is ``(..., freq)``.
+            If `nu` is scalar, the shape is ``(..., 1)``.
+            Note that the last dimension is guaranteed to be the frequency.
+
+        Note
+        ----
+        The extra dimensions ``...`` in the output are the broadcast of the
+        ``...`` in the input (which are required to be broadcast-compatible).
+
+        Examples
+        --------
+
+        - T, E and B synchrotron SEDs with the same reference frequency but
+          different spectral indices. `beta` is an array with shape ``(3)``,
+          `nu0` is a scalar.
+
+        - SEDs of synchrotron and dust (approximated as power law). Both `beta`
+          and `nu0` are arrays with shape ``(2)``
+
         """
         beta = np.array(beta)[..., np.newaxis]
+        nu0 = np.array(nu0)[..., np.newaxis]
         return (nu / nu0)**beta
 
 
