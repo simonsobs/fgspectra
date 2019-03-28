@@ -1,89 +1,134 @@
-# -*- coding: utf-8 -*-
 r"""
-Foreground models.
+Models of cross-spectra
 
 This module draws inspiration from FGBuster (Davide Poletti and Josquin Errard)
 and BeFoRe (David Alonso and Ben Thorne).
 """
-import fgspectra.frequency, fgspectra.power
+from abc import ABC, abstractmethod
 import numpy as np
+from . import frequency as fgf
+from . import power as fgp
 
 
-class CompositeModel:
-    def __init__(self):
-        self.params = {}
-        return
+class CrossSpectrum(ABC):
+    """Base class for cross-spectra."""
 
-    def model(self, nu_i, nu_j, ell, **kwargs):
+    @abstractmethod
+    def __call__(self, *args):
+        """Make it callable."""
+        pass
+
+
+class FactorizedCrossSpectrum(CrossSpectrum):
+    r"""Factorized cross-spectrum
+
+    Cross-spectrum of **one** component for which the scaling in frequency
+    and in multipoles are factorizable
+
+    .. math:: xC_{\ell}^{(ij)} = f(\nu_j) f(\nu_i) C_{\ell}
+
+    Parameters
+    ----------
+    sed : callable
+        :math:`f(\nu)`. It returns an array with shape ``(..., freq)``.
+        It can be :class:`fgspectra.frequency.SED`.
+    cl_args : callable
+        :math:`C_\ell`. It returns an array with shape ``(..., ell)``.
+        It can be :class:`fgspectra.power.PowerSpectrum`
+
+    Note
+    ----
+    The two (optional) sets of extra dimensions ``...`` must be
+    broadcast-compatible.
+    """
+
+    def __init__(self, sed, cl):
+        self._sed = sed
+        self._cl = cl
+
+    def __call__(self, sed_args, cl_args):
         """Compute the model at frequency and ell combinations.
 
-        Specific models will override this method.
-
         Parameters
         ----------
-        nu_i : float
-            first frequency channel in cross-spectrum
-        nu_j : float
-            second frequency channel in cross-spectrum
-        ell : 1D array
-            ells at which we evaluate the model
-        **kwargs :
-            additional parameters for the model
+        sed_args : list
+            Arguments for which the `sed` is evaluated.
+        cl_args : list
+            Arguments for which the `cl` is evaluated.
 
         Returns
         -------
-        1D array of floats : model result of same shape as input ells
+        cross : ndarray
+            Cross-spectrum. The shape is ``(..., freq, freq, ell)``.
         """
-        raise NotImplementedError
+        f_nu = self._cl(*sed_args)[..., np.newaxis]
+        return f_nu[..., np.newaxis] * f_nu * self._cl(*cl_args)
 
-    def get_missing(self, input_dict):
-        """Copy self.params and ensure no values are None."""
-        params = self.params.copy()
-        for p in params:
-            if (params[p] is None) and (p in input_dict):
-                params[p] = input_dict[p]
 
-        missing_params = [p for p in params if params[p] is None]
-        if len(missing_params) > 0:
-            raise Exception(f'Missing parameters: {missing_params}.')
+class CorrelatedFactorizedCrossSpectrum(CrossSpectrum):
+    r"""Factorized cross-spectrum
 
-        return params
+    Cross-spectrum of multiple correlated components for which the scaling in
+    frequency and in multipoles are factorizable.
 
-    def get_mix(self, freqs, l_max, **kwargs):
-        """Compute the mixing matrix up to some ell, with effective frequencies.
+    .. math::
+
+        xC_\ell^{\nu_i\ \nu_j} = \sum_{kl} f^k(\nu_j) f^n(\nu_i) C^{kn}_\ell
+
+    where :math:`k` and :math:`n` are component indices.
+
+    Parameters
+    ----------
+    sed : callable
+        :math:`f(\nu)`. It returns an array with shape ``(comp, ..., freq)``.
+        It can be :class:`fgspectra.frequency.SED`.
+    cl_args : callable
+        :math:`C_\ell`. It returns an array with shape
+        ``(..., comp, comp, ell)``.
+        It can be :class:`fgspectra.power.PowerSpectrum`
+
+    Note
+    ----
+    The two (optional) sets of extra dimensions ``...`` must be
+    broadcast-compatible.
+    """
+
+    def __init__(self, sed, cl):
+        self._sed = sed
+        self._cl = cl
+
+    def __call__(self, sed_args, cl_args):
+        """Compute the model at frequency and ell combinations.
 
         Parameters
         ----------
-        freqs : array of floats
-            Compute the mixing matrix containing cross-spectra at single
-            frequencies, i.e. delta function bandpowers. For example,
-            ACT-E has frequencies=[148.0, 220.0].
-
-        l_max : int
-            Maximum multipole to compute mixing matrix.
+        sed_args : list
+            Arguments for which the `sed` is evaluated.
+        cl_args : list
+            Arguments for which the `cl` is evaluated.
 
         Returns
         -------
-        3D array, first two dimensions correspond to frequency index
-        and third dimension is multipole.
+        cross : ndarray
+            Cross-spectrum. The shape is ``(..., freq, freq, ell)``.
         """
-        N_freq = len(freqs)
-        ells = np.arange(l_max+1)
-        mix = np.zeros((N_freq, N_freq, l_max+1))
-        for i in range(N_freq):
-            for j in range(N_freq):
-                params = kwargs.copy()
-                params['i'] = i
-                params['j'] = j
-                params['effective_frequencies'] = True
-                mix[i,j,:] = self.model(freqs[i], freqs[j], ells, **params)
-
-        return mix
-
-    def get_mix_bandpowers(self, bandpower_windows, bandpower_frequencies):
-        raise NotImplementedError # gotta put in bandpower integration
+        f_nu = self._sed(*sed_args)
+        return np.einsum('k...i,n...j,...knl->...ijl',
+                         f_nu, f_nu, self._cl(*cl_args))
 
 
+class PowerLaw(FactorizedCrossSpectrum):
+    """ Single Power law in both fequency and multipoles
+
+    See :class:`fgspectra.frequency.PowerLaw` for the frequency dependence and
+    :class:`fgspectra.power.PowerLaw` for the ell-dependence.
+    """
+
+    def __init__(self):
+        super().__init__(fgf.PowerLaw(), fgp.PowerLaw())
+
+
+'''
 class ThermalSZ(CompositeModel):
     """Model for Thermal Sunyaev-Zel'dovich (Dunkley et al. 2013)."""
 
@@ -413,3 +458,4 @@ class GalacticCirrus(CompositeModel):
             par['nu_0']**2)**par['beta_g'] * (self.cib.g(nu_i, par['T_CMB']) *
             self.cib.g(nu_j, par['T_CMB']) /
             self.cib.g(par['nu_0'], par['T_CMB'])**2 )
+'''

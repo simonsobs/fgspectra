@@ -1,51 +1,93 @@
-# -*- coding: utf-8 -*-
 r"""
-Frequency-dependent foreground components.
+Power spectrum
 
 This module implements the ell-dependent component of common foreground
-contaminants. This consist only of factorizable components -- i.e. the
-components in this module describe :math:`f(\nu)` for which the component X has
-spectrum
-
-.. math:: C_{\ell}^{X} = f(\nu) C^X_{0,\ell}
+contaminants.
 
 This module draws inspiration from FGBuster (Davide Poletti and Josquin Errard)
 and BeFoRe (David Alonso and Ben Thorne).
 """
-import numpy as np
-from scipy import constants
-import pkg_resources
+
 import os
+import pkg_resources
+from abc import ABC, abstractmethod
+import numpy as np
+
+def _get_power_file(model):
+    """ File path for the named model
+    """
+    data_path = pkg_resources.resource_filename('fgspectra', 'data/')
+    filename = os.path.join(data_path, 'cl_%s.dat'%model)
+    if os.path.exists(filename):
+        return filename
+    raise ValueError('No template for model '+model)
 
 
-class PowerSpectrum:
+class PowerSpectrum(ABC):
     """Base class for frequency dependent components."""
 
-    def __init__(self):
-        """Initialize the component."""
-        pass
-
-    def __call__(self, ell, **kwargs):
+    @abstractmethod
+    def __call__(self, ell, *args):
         """Make component objects callable."""
-        return self.powspec(ell, **kwargs)
+        pass
 
 
 class PowerSpectrumFromFile(PowerSpectrum):
-    """Generic PowerSpectrum loaded from file."""
+    """Power spectrum loaded from file(s)
 
-    def __init__(self, filename):
-        """Intialize object with parameters.
+    Parameters
+    ----------
+    filenames: array_like of strings
+        File(s) to load. It can be a string or any (nested) sequence of strings
+
+    Examples
+    --------
+
+    >>> ell = range(5)
+
+    Power spectrum of a single file
+
+    >>> my_file = 'cl.dat'
+    >>> ps = PowerSpectrumFromFile(my_file)
+    >>> ps(ell).shape
+    (5)
+    >>> ps = PowerSpectrumFromFile([my_file])  # List
+    >>> ps(ell).shape
+    (1, 5)
+    
+    Two correlated components
+
+    >>> my_files = [['cl_comp1.dat', 'cl_comp1xcomp2.dat'],
+    ...             ['cl_comp1xcomp2.dat', 'cl_comp2.dat']]
+    >>> ps = PowerSpectrumFromFile(my_files)
+    >>> ps(ell).shape
+    (2, 2, 5)
+
+    """
+
+    def __init__(self, filenames):
+        """
 
         The file format should be two columns, ell and the spectrum.
         """
-        data_path = pkg_resources.resource_filename('fgspectra', 'data/')
-        file_path = os.path.join(data_path, filename)
-        self.data_ell, self.data_spec = np.genfromtxt(file_path, unpack=True)
-        return
+        filenames = np.array(filenames)
+        self._cl = np.empty(filenames.shape+(0,))
 
-    def powspec(self, ell):
+        for i, filename in np.ndenumerate(filenames):
+            ell, spec = np.genfromtxt(filename, unpack=True)
+
+            # Make sure that the new spectrum fits self._cl
+            n_missing_ells = ell.max() + 1 - self._cl.shape[-1]
+            if n_missing_ells > 0:
+                self._cl = np.pad(self._cl, ((0,0), (0, n_missing_ells)),
+                                  mode='constant', constant_values=0)
+
+            self._cl[i+(ell,)] = spec
+
+
+    def __call__(self, ell):
         """Compute the power spectrum with the given ell and parameters."""
-        return np.interp(ell, self.data_ell, self.data_spec)
+        return self._cl[..., ell]
 
 
 class tSZ_150_bat(PowerSpectrumFromFile):
@@ -53,8 +95,7 @@ class tSZ_150_bat(PowerSpectrumFromFile):
 
     def __init__(self):
         """Intialize object with parameters."""
-        super().__init__("cl_tsz_150_bat.dat")
-        return
+        super().__init__(_get_power_file('tsz_150_bat'))
 
 
 class kSZ_bat(PowerSpectrumFromFile):
@@ -62,8 +103,7 @@ class kSZ_bat(PowerSpectrumFromFile):
 
     def __init__(self):
         """Intialize object with parameters."""
-        super().__init__("cl_ksz_bat.dat")
-        return
+        super().__init__(_get_power_file('ksz_bat'))
 
 
 class sz_x_cib_template(PowerSpectrumFromFile):
@@ -71,34 +111,34 @@ class sz_x_cib_template(PowerSpectrumFromFile):
 
     def __init__(self):
         """Intialize object with parameters."""
-        super().__init__("sz_x_cib_template.dat")
-        return
+        super().__init__(_get_power_file('sz_x_cib'))
 
 
 class PowerLaw(PowerSpectrum):
-    r"""
-    PowerSpectrum for a power law.
-    .. math:: f(\nu) = (nu / nu_0)^{\beta}
+    r""" Power law
 
-    Parameters
-    ----------
-    ell: float or array
-        Frequency in Hz.
-    beta: float
-        Spectral index.
-    ell_0: float
-        Reference ell
-
-    Methods
-    -------
-    __call__(self, ell, beta, ell_0)
-        return the ell scaling given by a power law.
+    .. math:: C_\ell = (\ell / \ell_0)^\alpha
     """
+    def __call__(self, ell, alpha, ell_0):
+        """
 
-    def powspec(self, ell, beta, ell_0):
-        return (ell/ell_0)**beta
+        Parameters
+        ----------
+        ell: float or array
+            Multipole
+        alpha: float or array
+            Spectral index.
+        ell_0: float
+            Reference ell
 
-
+        Returns
+        -------
+        cl: ndarray
+            The last dimension is ell.
+            The leading dimensions are the hypothetic dimensions of `alpha`
+        """
+        alpha = np.array(alpha)[..., np.newaxis]
+        return (ell / ell_0)**alpha
 
 
 # Power law in ell
