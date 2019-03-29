@@ -18,7 +18,7 @@ from scipy import constants
 T_CMB = 2.725
 
 
-class FrequencySpectrum(ABC):
+class SED(ABC):
     """Base class for frequency dependent components."""
 
     @abstractmethod
@@ -27,7 +27,7 @@ class FrequencySpectrum(ABC):
         pass
 
 
-class PowerLaw(FrequencySpectrum):
+class PowerLaw(SED):
     r""" Power Law
 
     .. math:: f(\nu) = (\nu / nu_0)^{\beta}
@@ -81,7 +81,7 @@ class Synchrotron(PowerLaw):
     pass
 
 
-class ModifiedBlackBody(FrequencySpectrum):
+class ModifiedBlackBody(SED):
     """ Modified black body in K_RJ
 
     .. math:: f(\nu) = (nu / nu_0)^{\beta + 1} / (e^x - 1)
@@ -115,7 +115,7 @@ class ModifiedBlackBody(FrequencySpectrum):
         return (nu / nu_0)**(beta + 1.0) / np.expm1(x)
 
 
-class ThermalSZ(FrequencySpectrum):
+class ThermalSZ(SED):
     r""" Thermal Sunyaev-Zel'dovich in K_CMB
 
     This class implements the
@@ -136,9 +136,9 @@ class ThermalSZ(FrequencySpectrum):
 
 
 r'''
-class CIB(FrequencySpectrum):
+class CIB(SED):
     r"""
-    FrequencySpectrum for :math:`g(\nu)` for CIB models, where
+    SED for :math:`g(\nu)` for CIB models, where
 
     .. math:: g(\mu) = (\partial B_{\nu}/\partial T)^{-1} |_{T_CMB}
 
