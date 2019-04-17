@@ -54,7 +54,7 @@ class PowerSpectrumFromFile(PowerSpectrum):
     >>> ps = PowerSpectrumFromFile([my_file])  # List
     >>> ps(ell).shape
     (1, 5)
-    
+
     Two correlated components
 
     >>> my_files = [['cl_comp1.dat', 'cl_comp1xcomp2.dat'],
@@ -75,19 +75,19 @@ class PowerSpectrumFromFile(PowerSpectrum):
 
         for i, filename in np.ndenumerate(filenames):
             ell, spec = np.genfromtxt(filename, unpack=True)
-
+            ell = ell.astype(int)
             # Make sure that the new spectrum fits self._cl
             n_missing_ells = ell.max() + 1 - self._cl.shape[-1]
             if n_missing_ells > 0:
                 self._cl = np.pad(self._cl, ((0,0), (0, n_missing_ells)),
                                   mode='constant', constant_values=0)
 
-            self._cl[i+(ell,)] = spec
+            self._cl[(i,)+(ell,)] = spec
 
 
-    def __call__(self, ell):
+    def __call__(self, ell, ell_0=3000):
         """Compute the power spectrum with the given ell and parameters."""
-        return self._cl[..., ell]
+        return self._cl[..., ell] / self._cl[..., ell_0]
 
 
 class tSZ_150_bat(PowerSpectrumFromFile):
@@ -95,7 +95,7 @@ class tSZ_150_bat(PowerSpectrumFromFile):
 
     def __init__(self):
         """Intialize object with parameters."""
-        super().__init__(_get_power_file('tsz_150_bat'))
+        super().__init__([_get_power_file('tsz_150_bat')])
 
 
 class kSZ_bat(PowerSpectrumFromFile):
@@ -103,7 +103,7 @@ class kSZ_bat(PowerSpectrumFromFile):
 
     def __init__(self):
         """Intialize object with parameters."""
-        super().__init__(_get_power_file('ksz_bat'))
+        super().__init__([_get_power_file('ksz_bat')])
 
 
 class sz_x_cib_template(PowerSpectrumFromFile):
@@ -111,7 +111,7 @@ class sz_x_cib_template(PowerSpectrumFromFile):
 
     def __init__(self):
         """Intialize object with parameters."""
-        super().__init__(_get_power_file('sz_x_cib'))
+        super().__init__([_get_power_file('sz_x_cib')])
 
 
 class PowerLaw(PowerSpectrum):
