@@ -156,6 +156,7 @@ class UnitSED(SED):
 
 class CIB(SED):
 
+
     @staticmethod
     def planckB(nu, T_d):
         """Planck function at dust temperature."""
@@ -179,6 +180,10 @@ class CIB(SED):
 
 
 class tSZxCIB(SED):
+    def __init__(self, effective_frequencies=False):
+        """This is the only object for which it matters to have legacy
+        support for effective frequencies."""
+        self.effective_frequencies = effective_frequencies
 
     def __call__(self, nu_1, nu_2, beta, nu_0, T_d=9.7, T_CMB=2.725):
         """Compute the SED with the given frequency and parameters.
@@ -191,10 +196,14 @@ class tSZxCIB(SED):
         """
         beta = np.array(beta)[..., np.newaxis]
         T_d = np.array(T_d)[..., np.newaxis]
-
-        return (2 * (ThermalSZ.f(nu_1, T_CMB)[...,np.newaxis] * CIB.mu(nu_2, beta, T_d, T_CMB) +
-                     CIB.mu(nu_1, beta, T_d, T_CMB)[...,np.newaxis] * ThermalSZ.f(nu_2, T_CMB))
-                     / (2 * ThermalSZ.f(nu_0, T_CMB) * CIB.mu(nu_0, beta, T_d, T_CMB)))
+        if self.effective_frequencies:
+            return np.sqrt( ThermalSZ.f(nu_1, T_CMB)[...,np.newaxis] * CIB.mu(nu_2, beta, T_d, T_CMB)
+                         / (ThermalSZ.f(nu_0, T_CMB) * CIB.mu(nu_0, beta, T_d, T_CMB)))
+        else:
+            # NOTE: Dunkley et al. 2013 does not use both terms in equation 12
+            return ( (ThermalSZ.f(nu_1, T_CMB)[...,np.newaxis] * CIB.mu(nu_2, beta, T_d, T_CMB) +
+                         CIB.mu(nu_1, beta, T_d, T_CMB)[...,np.newaxis] * ThermalSZ.f(nu_2, T_CMB))
+                         / (2 * ThermalSZ.f(nu_0, T_CMB) * CIB.mu(nu_0, beta, T_d, T_CMB)))
 
 
 class PowerLaw_g(SED):

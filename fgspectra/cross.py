@@ -113,7 +113,7 @@ class CorrelatedFactorizedCrossSpectrum(CrossSpectrum):
             Cross-spectrum. The shape is ``(..., freq, freq, ell)``.
         """
 
-        f_nu = self._sed(*sed_args)
+        f_nu1, f_nu2 = self._sed(*sed_args)
         cl = self._cl(*cl_args)
         for _ in range(3-cl.ndim):
             cl = cl[np.newaxis, ...]
