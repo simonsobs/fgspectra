@@ -200,7 +200,6 @@ class tSZxCIB(SED):
             return np.sqrt( ThermalSZ.f(nu_1, T_CMB)[...,np.newaxis] * CIB.mu(nu_2, beta, T_d, T_CMB)
                          / (ThermalSZ.f(nu_0, T_CMB) * CIB.mu(nu_0, beta, T_d, T_CMB)))
         else:
-            # NOTE: Dunkley et al. 2013 does not use both terms in equation 12
             return ( (ThermalSZ.f(nu_1, T_CMB)[...,np.newaxis] * CIB.mu(nu_2, beta, T_d, T_CMB) +
                          CIB.mu(nu_1, beta, T_d, T_CMB)[...,np.newaxis] * ThermalSZ.f(nu_2, T_CMB))
                          / (2 * ThermalSZ.f(nu_0, T_CMB) * CIB.mu(nu_0, beta, T_d, T_CMB)))

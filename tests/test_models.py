@@ -70,7 +70,7 @@ def test_ACT_models():
     line 188 of `ACT_equa_likelihood.f90` in the Fortran ACT multifrequency
     likelihood.
 
-    ```python
+    ```fortran
     if(il==2000) then
       write(*,*) (f1*f1)/(f0*f0)*amp_tsz*cl_tsz(il)
       write(*,*) amp_ksz*cl_ksz(il)
