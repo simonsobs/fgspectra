@@ -178,23 +178,20 @@ class CIB(SED):
         return CIB.mu(nu, beta, T_d, T_CMB) / CIB.mu(nu_0, beta, T_d, T_CMB)
 
 
-class tSZxCIB(SED):
+class Join(SED):
 
-    def __call__(self, nu_1, nu_2, beta, nu_0, T_d=9.7, T_CMB=2.725):
+    def __init__(self, *seds):
+        self._seds = seds
+
+    def __call__(self, *argss):
         """Compute the SED with the given frequency and parameters.
 
-        nu : float
-            Frequency in GHz.
-        beta : power law parameter
-        T_d : dust temperature
-        T_CMB (optional) : float
+        *argss
+            The length of `argss` has to be equal to the number of SEDs joined.
+            ``argss[i]`` is the argument list of the ``i``-th SED.
         """
-        beta = np.array(beta)[..., np.newaxis]
-        T_d = np.array(T_d)[..., np.newaxis]
-
-        return (2 * (ThermalSZ.f(nu_1, T_CMB)[...,np.newaxis] * CIB.mu(nu_2, beta, T_d, T_CMB) +
-                     CIB.mu(nu_1, beta, T_d, T_CMB)[...,np.newaxis] * ThermalSZ.f(nu_2, T_CMB))
-                     / (2 * ThermalSZ.f(nu_0, T_CMB) * CIB.mu(nu_0, beta, T_d, T_CMB)))
+        seds = (sed(*args) for sed, args in zip(self._seds, argss))
+        return np.stack(np.broadcast(*seds))
 
 
 class PowerLaw_g(SED):

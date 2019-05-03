@@ -1,8 +1,4 @@
-%matplotlib inline
-%load_ext autoreload
-%autoreload 2
-
-# %%
+#!/usr/bin/env python3
 from fgspectra import cross as fgc
 from fgspectra import power as fgp
 from fgspectra import frequency as fgf
@@ -75,4 +71,5 @@ def get_model(par, freqs, ells):
 dunk13 = np.array( [5.04810070670028, 1.60000000000000, 6.79588405229860,
                     6.03620247694243, -0.993450058059464, 3.66974746746919, 0.870032016703448] )
 
-get_model(test_params, freqs, ells)
+print(get_model(test_params, freqs, ells))
+print(dunk13)
