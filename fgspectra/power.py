@@ -13,6 +13,7 @@ import pkg_resources
 from abc import ABC, abstractmethod
 import numpy as np
 
+
 def _get_power_file(model):
     """ File path for the named model
     """
@@ -106,12 +107,14 @@ class kSZ_bat(PowerSpectrumFromFile):
         super().__init__([_get_power_file('ksz_bat')])
 
 
-class sz_x_cib_template(PowerSpectrumFromFile):
+class SZxCIB(PowerSpectrumFromFile):
     """PowerSpectrum for SZxCIB (Dunkley et al. 2013)."""
 
     def __init__(self):
         """Intialize object with parameters."""
-        super().__init__([_get_power_file('sz_x_cib')])
+        files = [[_get_power_file('tsz_150_bat'), _get_power_file('sz_x_cib')],
+                 [_get_power_file('sz_x_cib'), _get_power_file('cib')]]
+        super().__init__(files)
 
 
 class PowerLaw(PowerSpectrum):
