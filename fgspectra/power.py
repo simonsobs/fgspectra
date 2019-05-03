@@ -96,7 +96,7 @@ class tSZ_150_bat(PowerSpectrumFromFile):
 
     def __init__(self):
         """Intialize object with parameters."""
-        super().__init__([_get_power_file('tsz_150_bat')])
+        super().__init__(_get_power_file('tsz_150_bat'))
 
 
 class kSZ_bat(PowerSpectrumFromFile):
@@ -104,7 +104,7 @@ class kSZ_bat(PowerSpectrumFromFile):
 
     def __init__(self):
         """Intialize object with parameters."""
-        super().__init__([_get_power_file('ksz_bat')])
+        super().__init__(_get_power_file('ksz_bat'))
 
 
 class SZxCIB(PowerSpectrumFromFile):
