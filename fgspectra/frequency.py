@@ -152,7 +152,7 @@ class UnitSED(SED):
 
     def __call__(self, nu, *args):
         # Return the evaluation of the SED
-        return np.ones(np.array(nu).shape)
+        return np.ones_like(np.array(nu))
 
 class CIB(SED):
 
@@ -190,8 +190,11 @@ class Join(SED):
             The length of `argss` has to be equal to the number of SEDs joined.
             ``argss[i]`` is the argument list of the ``i``-th SED.
         """
-        seds = (sed(*args) for sed, args in zip(self._seds, argss))
-        return np.stack(np.broadcast(*seds))
+        seds = [sed(*args) for sed, args in zip(self._seds, argss)]
+        res = np.empty((len(seds),) + np.broadcast(*seds).shape)
+        for i in range(len(seds)):
+            res[i] = seds[i]
+        return res
 
 
 class PowerLaw_g(SED):

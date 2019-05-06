@@ -129,7 +129,7 @@ class PowerLaw(FactorizedCrossSpectrum):
         super().__init__(fgf.PowerLaw(), fgp.PowerLaw())
 
 
-class SZxCIB(FactorizedCrossSpectrum):
+class SZxCIB(CorrelatedFactorizedCrossSpectrum):
     
     def __init__(self):
         sed = fgf.Join(fgf.ThermalSZ(), fgf.CIB())
