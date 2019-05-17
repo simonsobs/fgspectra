@@ -45,6 +45,12 @@ class FactorizedCrossSpectrum(CrossSpectrum):
     def __init__(self, sed, cl):
         self._sed = sed
         self._cl = cl
+        
+    def __str__(self):
+        """Inspect list of SED and Cl signatures."""
+        import inspect
+        return (f"SED arguments: {inspect.signature(self._sed)}\n"
+                f"Cl arguments: {inspect.signature(self._cl)}")
 
     def __call__(self, sed_args, cl_args):
         """Compute the model at frequency and ell combinations.
@@ -96,6 +102,12 @@ class CorrelatedFactorizedCrossSpectrum(CrossSpectrum):
     def __init__(self, sed, cl):
         self._sed = sed
         self._cl = cl
+
+    def __str__(self):
+        """Inspect list of SED and Cl signatures."""
+        import inspect
+        return (f"SED arguments: {[inspect.signature(s) for s in self._sed._seds]}\n"
+                f"Cl arguments: {[inspect.signature(c) for c in self._cl._power_spectra]}")
 
     def __call__(self, sed_args, cl_args):
         """Compute the model at frequency and ell combinations.
