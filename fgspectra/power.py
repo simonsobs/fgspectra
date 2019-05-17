@@ -148,7 +148,8 @@ class PowerSpectraAndCorrelation(PowerSpectrum):
         The series has lenght :math:`N (N + 1) / 2`, where :math:`N` is the
         number of components. They specify the upper (or lower) triangle of the
         component-component cross spectra, which is symmetric. The series stores
-        the main diagonal (i.e. the autospectra) goes first, the second diagonal
+        a `PowerSpectrum` for each component-component combination.
+        The main diagonal (i.e. the autospectra) goes first, the second diagonal
         of the correlation matrix follows, then the third, etc.
         The ordering is similar to the one returned by `healpy.anafast`.
     """
