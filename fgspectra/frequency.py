@@ -152,10 +152,9 @@ class UnitSED(SED):
 
     def __call__(self, nu, *args):
         # Return the evaluation of the SED
-        return np.ones(np.array(nu).shape)
+        return np.ones_like(np.array(nu))
 
 class CIB(SED):
-
 
     @staticmethod
     def planckB(nu, T_d):
@@ -179,30 +178,23 @@ class CIB(SED):
         return CIB.mu(nu, beta, T_d, T_CMB) / CIB.mu(nu_0, beta, T_d, T_CMB)
 
 
-class tSZxCIB(SED):
-    def __init__(self, effective_frequencies=False):
-        """This is the only object for which it matters to have legacy
-        support for effective frequencies."""
-        self.effective_frequencies = effective_frequencies
+class Join(SED):
 
-    def __call__(self, nu_1, nu_2, beta, nu_0, T_d=9.7, T_CMB=2.725):
+    def __init__(self, *seds):
+        self._seds = seds
+
+    def __call__(self, *argss):
         """Compute the SED with the given frequency and parameters.
 
-        nu : float
-            Frequency in GHz.
-        beta : power law parameter
-        T_d : dust temperature
-        T_CMB (optional) : float
+        *argss
+            The length of `argss` has to be equal to the number of SEDs joined.
+            ``argss[i]`` is the argument list of the ``i``-th SED.
         """
-        beta = np.array(beta)[..., np.newaxis]
-        T_d = np.array(T_d)[..., np.newaxis]
-        if self.effective_frequencies:
-            return np.sqrt( ThermalSZ.f(nu_1, T_CMB)[...,np.newaxis] * CIB.mu(nu_2, beta, T_d, T_CMB)
-                         / (ThermalSZ.f(nu_0, T_CMB) * CIB.mu(nu_0, beta, T_d, T_CMB)))
-        else:
-            return ( (ThermalSZ.f(nu_1, T_CMB)[...,np.newaxis] * CIB.mu(nu_2, beta, T_d, T_CMB) +
-                         CIB.mu(nu_1, beta, T_d, T_CMB)[...,np.newaxis] * ThermalSZ.f(nu_2, T_CMB))
-                         / (2 * ThermalSZ.f(nu_0, T_CMB) * CIB.mu(nu_0, beta, T_d, T_CMB)))
+        seds = [sed(*args) for sed, args in zip(self._seds, argss)]
+        res = np.empty((len(seds),) + np.broadcast(*seds).shape)
+        for i in range(len(seds)):
+            res[i] = seds[i]
+        return res
 
 
 class PowerLaw_g(SED):

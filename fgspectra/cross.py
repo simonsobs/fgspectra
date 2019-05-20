@@ -45,6 +45,12 @@ class FactorizedCrossSpectrum(CrossSpectrum):
     def __init__(self, sed, cl):
         self._sed = sed
         self._cl = cl
+        
+    def __str__(self):
+        """Inspect list of SED and Cl signatures."""
+        import inspect
+        return (f"SED arguments: {inspect.signature(self._sed)}\n"
+                f"Cl arguments: {inspect.signature(self._cl)}")
 
     def __call__(self, sed_args, cl_args):
         """Compute the model at frequency and ell combinations.
@@ -97,6 +103,12 @@ class CorrelatedFactorizedCrossSpectrum(CrossSpectrum):
         self._sed = sed
         self._cl = cl
 
+    def __str__(self):
+        """Inspect list of SED and Cl signatures."""
+        import inspect
+        return (f"SED arguments: {[inspect.signature(s) for s in self._sed._seds]}\n"
+                f"Cl arguments: {[inspect.signature(c) for c in self._cl._power_spectra]}")
+
     def __call__(self, sed_args, cl_args):
         """Compute the model at frequency and ell combinations.
 
@@ -113,16 +125,9 @@ class CorrelatedFactorizedCrossSpectrum(CrossSpectrum):
             Cross-spectrum. The shape is ``(..., freq, freq, ell)``.
         """
 
-        f_nu1, f_nu2 = self._sed(*sed_args)
-        cl = self._cl(*cl_args)
-        for _ in range(3-cl.ndim):
-            cl = cl[np.newaxis, ...]
+        f_nu = self._sed(*sed_args)
         return np.einsum('k...i,n...j,...knl->...ijl',
-                         f_nu, f_nu, cl)
-
-        # f_nu = self._sed(*sed_args)
-        # return np.einsum('k...i,n...j,...knl->...ijl',
-        #                  f_nu, f_nu, self._cl(*cl_args))
+                         f_nu, f_nu, self._cl(*cl_args))
 
 
 class PowerLaw(FactorizedCrossSpectrum):
@@ -134,3 +139,10 @@ class PowerLaw(FactorizedCrossSpectrum):
 
     def __init__(self):
         super().__init__(fgf.PowerLaw(), fgp.PowerLaw())
+
+
+class SZxCIB(CorrelatedFactorizedCrossSpectrum):
+    
+    def __init__(self):
+        sed = fgf.Join(fgf.ThermalSZ(), fgf.CIB())
+        super().__init__(sed, fgp.SZxCIB())
