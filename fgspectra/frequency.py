@@ -137,7 +137,7 @@ class ThermalSZ(SED):
         x = constants.h * (nu*1e9) / (constants.k * T_CMB)
         return (x / np.tanh(x / 2.0) - 4.0)
 
-    def __call__(self, nu, nu_0, T_CMB):
+    def __call__(self, nu, nu_0, T_CMB=2.725):
         """Compute the SED with the given frequency and parameters.
 
         nu : float

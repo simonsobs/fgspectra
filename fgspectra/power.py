@@ -88,9 +88,9 @@ class PowerSpectrumFromFile(PowerSpectrum):
             self._cl[i+(ell,)] = spec
 
 
-    def __call__(self, ell, ell_0=3000):
+    def __call__(self, ell, ell_0, amp=1.0):
         """Compute the power spectrum with the given ell and parameters."""
-        return self._cl[..., ell] / self._cl[..., ell_0]
+        return amp*self._cl[..., ell] / self._cl[..., ell_0]
 
 
 class tSZ_150_bat(PowerSpectrumFromFile):
@@ -114,7 +114,7 @@ class PowerLaw(PowerSpectrum):
 
     .. math:: C_\ell = (\ell / \ell_0)^\alpha
     """
-    def __call__(self, ell, alpha, ell_0):
+    def __call__(self, ell, alpha, ell_0, amp=1.0):
         """
 
         Parameters
@@ -133,7 +133,7 @@ class PowerLaw(PowerSpectrum):
             The leading dimensions are the hypothetic dimensions of `alpha`
         """
         alpha = np.array(alpha)[..., np.newaxis]
-        return (ell / ell_0)**alpha
+        return amp * (ell / ell_0)**alpha
 
 
 class PowerSpectraAndCorrelation(PowerSpectrum):
@@ -202,8 +202,68 @@ class PowerSpectraAndCorrelation(PowerSpectrum):
         assert i_corr == len(corrs)
         return res
 
+class PowerSpectraAndCovariance(PowerSpectrum):
+    r"""Components' spectra and their covariance
 
-class SZxCIB(PowerSpectraAndCorrelation):
+    Spectrum of correlated components defined by the spectrum of each component
+    and their correlation
+
+    Parameters
+    ----------
+    *power_spectra : series of `PowerSpectrum`
+        The series has length :math:`N (N + 1) / 2`, where :math:`N` is the
+        number of components. They specify the upper (or lower) triangle of the
+        component-component cross spectra, which is symmetric. The series stores
+        a `PowerSpectrum` for each component-component combination.
+        The main diagonal (i.e. the autospectra) goes first, the second diagonal
+        of the covariance matrix follows, then the third, etc.
+        The ordering is similar to the one returned by `healpy.anafast`.
+    """
+    
+    def __init__(self, *power_spectra):
+        self._power_spectra = power_spectra
+        self.n_comp = np.rint(-1 + np.sqrt(1 + 8 * len(power_spectra))) // 2
+        self.n_comp = int(self.n_comp)
+        assert (self.n_comp + 1) * self.n_comp // 2 == len(power_spectra)
+    
+    def __call__(self, *argss):
+        """Compute the Cl with the given frequency and parameters.
+
+        *argss
+            The length of `argss` has to be equal to the number of SEDs joined.
+            ``argss[i]`` is the argument list of the ``i``-th SED.
+        """
+        spectra = np.array([ps(*args) for ps, args in zip(self._power_spectra, argss)])
+        res = np.empty(  # Shape is (..., comp, comp, ell)
+            spectra.shape[1:-1] + (self.n_comp, self.n_comp) + spectra.shape[-1:])
+        
+        i_corr = 0
+        for k_off_diag in range(0, self.n_comp):
+            for el_off_diag in range(self.n_comp - k_off_diag):
+                i = el_off_diag
+                j = el_off_diag + k_off_diag
+                res[..., i, j, :] = spectra[i_corr]
+                res[..., j, i, :] = res[..., i, j, :]
+                i_corr += 1
+
+        assert i_corr == len(spectra)
+        return res
+    
+    
+class SZxCIB_Reichardt2012(PowerSpectraAndCorrelation):
+    """PowerSpectrum for SZxCIB (Dunkley et al. 2013)."""
+
+    def __init__(self):
+        """Intialize object with parameters."""
+        power_spectra = [
+            PowerSpectrumFromFile(_get_power_file('tsz_150_bat')),
+            PowerLaw(),
+            lambda xi : xi 
+        ]
+        super().__init__(*power_spectra)
+        
+        
+class SZxCIB_Addison2012(PowerSpectraAndCovariance):
     """PowerSpectrum for SZxCIB (Dunkley et al. 2013)."""
 
     def __init__(self):
@@ -215,9 +275,5 @@ class SZxCIB(PowerSpectraAndCorrelation):
         ]
         super().__init__(*power_spectra)
 
-
-# Power law in ell
-
-# Extragalactic FGs: from tile-c?? or Erminia / Jo
 
 # CMB template cls?
