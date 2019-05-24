@@ -90,7 +90,7 @@ class PowerSpectrumFromFile(PowerSpectrum):
 
     def __call__(self, ell, ell_0, amp=1.0):
         """Compute the power spectrum with the given ell and parameters."""
-        return amp*self._cl[..., ell] / self._cl[..., ell_0]
+        return amp * self._cl[..., ell] / self._cl[..., ell_0]
 
 
 class tSZ_150_bat(PowerSpectrumFromFile):
@@ -133,7 +133,44 @@ class PowerLaw(PowerSpectrum):
             The leading dimensions are the hypothetic dimensions of `alpha`
         """
         alpha = np.array(alpha)[..., np.newaxis]
+        amp = np.array(amp)[..., np.newaxis]
         return amp * (ell / ell_0)**alpha
+
+
+class CorrelatedPowerLaws(PowerLaw):
+    """ As PowerLaw, but requires only the diagonal of the component-component
+    dimensions and the correlation coefficient between TWO PL
+    """
+    def __call__(self, ell, amp, alpha, ell_0, rho):
+        """ 
+        Parameters
+        ----------
+        ell: float or array
+            Multipole
+        alpha: float or array
+            Spectral index.
+        amp: float or array
+            amplitude of the auto-spectra
+        ell_0: float
+            Reference ell
+
+        Returns
+        -------
+        cl: ndarray
+            The dimensions are ``(..., comp1, comp2, ell)``.
+            The leading dimensions are the hypothetic dimensions of `alpha` and
+            `amplitude`.
+        """
+        alpha = np.array(alpha)
+        amp = np.array(amplitude)
+
+        alpha = (alpha[..., np.newaxis, :] + alpha[..., np.newaxis]) / 2
+        amp = (amp[..., np.newaxis, :]
+               * amp[..., np.newaxis])**0.5
+        amp[..., 1, 0] *= rho
+        amp[..., 0, 1] *= rho
+
+        return super().__call__(ell, amp, alpha, ell_0)
 
 
 class PowerSpectraAndCorrelation(PowerSpectrum):

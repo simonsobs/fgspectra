@@ -141,6 +141,17 @@ class PowerLaw(FactorizedCrossSpectrum):
         super().__init__(fgf.PowerLaw(), fgp.PowerLaw())
 
 
+class CorrelatedPowerLaw(CorrelatedFactorizedCrossSpectrum):
+    """ Correlated Power law in both fequency and multipoles
+
+    See :class:`fgspectra.frequency.PowerLaw` for the frequency dependence and
+    :class:`fgspectra.power.PowerLaw` for the ell-dependence.
+    """
+
+    def __init__(self):
+        super().__init__(fgf.PowerLaw(), fgp.CorrelatedPowerLaws())
+
+
 class SZxCIB(CorrelatedFactorizedCrossSpectrum):
     
     def __init__(self):
