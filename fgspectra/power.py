@@ -141,16 +141,16 @@ class CorrelatedPowerLaws(PowerLaw):
     """ As PowerLaw, but requires only the diagonal of the component-component
     dimensions and the correlation coefficient between TWO PL
     """
-    def __call__(self, ell, amp, alpha, ell_0, rho):
+    def __call__(self, ell, alpha, ell_0, amp, rho):
         """ 
         Parameters
         ----------
         ell: float or array
             Multipole
-        alpha: float or array
-            Spectral index.
         amp: float or array
             amplitude of the auto-spectra
+        alpha: float or array
+            Spectral index.
         ell_0: float
             Reference ell
 
@@ -162,7 +162,7 @@ class CorrelatedPowerLaws(PowerLaw):
             `amplitude`.
         """
         alpha = np.array(alpha)
-        amp = np.array(amplitude)
+        amp = np.array(amp)
 
         alpha = (alpha[..., np.newaxis, :] + alpha[..., np.newaxis]) / 2
         amp = (amp[..., np.newaxis, :]
@@ -170,7 +170,7 @@ class CorrelatedPowerLaws(PowerLaw):
         amp[..., 1, 0] *= rho
         amp[..., 0, 1] *= rho
 
-        return super().__call__(ell, amp, alpha, ell_0)
+        return super().__call__(ell, alpha, ell_0, amp)
 
 
 class PowerSpectraAndCorrelation(PowerSpectrum):

@@ -109,7 +109,7 @@ class CorrelatedFactorizedCrossSpectrum(CrossSpectrum):
         return (f"SED arguments: {[inspect.signature(s) for s in self._sed._seds]}\n"
                 f"Cl arguments: {[inspect.signature(c) for c in self._cl._power_spectra]}")
 
-    def __call__(self, sed_args, cl_args):
+    def __call__(self, sed_kwargs, cl_args):
         """Compute the model at frequency and ell combinations.
 
         Parameters
@@ -125,7 +125,7 @@ class CorrelatedFactorizedCrossSpectrum(CrossSpectrum):
             Cross-spectrum. The shape is ``(..., freq, freq, ell)``.
         """
 
-        f_nu = self._sed(*sed_args)
+        f_nu = self._sed(**sed_kwargs)
         return np.einsum('k...i,n...j,...knl->...ijl',
                          f_nu, f_nu, self._cl(*cl_args))
 
@@ -150,6 +150,19 @@ class CorrelatedPowerLaw(CorrelatedFactorizedCrossSpectrum):
 
     def __init__(self):
         super().__init__(fgf.PowerLaw(), fgp.CorrelatedPowerLaws())
+
+
+class CorrelatedDustSynchrotron(CorrelatedFactorizedCrossSpectrum):
+    """ CorrelatedDustSynchrotron
+    
+    Correlated power law and modified black body, both with power law amplitude
+    """
+
+    def __init__(self):
+        super().__init__(
+            fgf.Join(fgf.ModifiedBlackBody(), fgf.PowerLaw()),
+            fgp.CorrelatedPowerLaws()
+        )
 
 
 class SZxCIB(CorrelatedFactorizedCrossSpectrum):

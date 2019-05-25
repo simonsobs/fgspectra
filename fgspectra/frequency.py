@@ -16,6 +16,34 @@ from scipy import constants
 # TODO: we need to figure out the unit situation.
 
 T_CMB = 2.725
+H_OVER_KT_CMB = constants.h * 1e9 / constants.k / T_CMB
+
+def _to_cmb(nu):
+    x = H_OVER_KT_CMB * nu
+    return (np.expm1(x) / x)**2 / np.exp(x)
+
+
+def convert_to_k_cmb_unless_rj_is_true(f):
+    """ Convert to CMB units by defaults
+    
+    Unless RJ=TRUE in the arguments, convert the output in CMB units,
+    making use of the ``nu`` keyword argument. 
+    If `nu_0` is among the arguments, normalize the conversion factor at that
+    frequency to one.
+    """
+    def f_cmb_by_default(self, **kwargs):
+        # We'll add RJ option in the future
+        #if 'RJ' in kwargs:
+            #use_rj = kwargs['RJ']
+            #del kwargs['RJ']
+            #if use_rj:
+                #return f(self, **kwargs)
+        factor = _to_cmb(kwargs['nu'])
+        if 'nu_0' in kwargs:
+            factor /= _to_cmb(kwargs['nu_0'])
+        return f(self, **kwargs) * factor
+    return f_cmb_by_default
+
 
 
 class SED(ABC):
@@ -33,7 +61,8 @@ class PowerLaw(SED):
     .. math:: f(\nu) = (\nu / nu_0)^{\beta}
     """
 
-    def __call__(self, nu, beta, nu_0):
+    @convert_to_k_cmb_unless_rj_is_true
+    def __call__(self, nu=None, beta=None, nu_0=None):
         """ Evaluation of the SED
 
         Parameters
@@ -88,13 +117,14 @@ class ModifiedBlackBody(SED):
 
     where :math:`x = h \nu / k_B T_d`
     """
-    def __call__(nu, nu_0, temp, beta):
+    @convert_to_k_cmb_unless_rj_is_true
+    def __call__(self, nu=None, nu_0=None, temp=None, beta=None):
         """ Evaluation of the SED
 
         Parameters
         ----------
         nu: float or array
-            Frequency in Hz.
+            Frequency in GHz.
         beta: float or array
             Spectral index.
         temp: float or array
@@ -111,8 +141,9 @@ class ModifiedBlackBody(SED):
         """
         beta = np.array(beta)[..., np.newaxis]
         temp = np.array(temp)[..., np.newaxis]
-        x = constants.h * nu / (constants.k * temp)
-        return (nu / nu_0)**(beta + 1.0) / np.expm1(x)
+        x = 1e+9 * constants.h * nu / (constants.k * temp)
+        x_0 = 1e+9 * constants.h * nu_0 / (constants.k * temp)
+        return (nu / nu_0)**(beta + 1.0) * np.expm1(x_0) / np.expm1(x)
 
 
 def g(nu, T_CMB=2.725):
@@ -134,7 +165,7 @@ class ThermalSZ(SED):
 
     @staticmethod
     def f(nu, T_CMB=2.725):
-        x = constants.h * (nu*1e9) / (constants.k * T_CMB)
+        x = constants.h * (nu * 1e9) / (constants.k * T_CMB)
         return (x / np.tanh(x / 2.0) - 4.0)
 
     def __call__(self, nu, nu_0, T_CMB=2.725):
@@ -153,6 +184,7 @@ class UnitSED(SED):
     def __call__(self, nu, *args):
         # Return the evaluation of the SED
         return np.ones_like(np.array(nu))
+
 
 class CIB(SED):
 
@@ -183,14 +215,15 @@ class Join(SED):
     def __init__(self, *seds):
         self._seds = seds
 
-    def __call__(self, *argss):
+    def __call__(self, kwargs_seq=None):
         """Compute the SED with the given frequency and parameters.
 
-        *argss
-            The length of `argss` has to be equal to the number of SEDs joined.
-            ``argss[i]`` is the argument list of the ``i``-th SED.
+        *kwargss
+            The length of ``kwargss`` has to be equal to the number of SEDs
+            joined. ``kwargss[i]`` is a dictionary containing the keyword
+            arguments of the ``i``-th SED.
         """
-        seds = [sed(*args) for sed, args in zip(self._seds, argss)]
+        seds = [sed(**kwargs) for sed, kwargs in zip(self._seds, kwargs_seq)]
         res = np.empty((len(seds),) + np.broadcast(*seds).shape)
         for i in range(len(seds)):
             res[i] = seds[i]
