@@ -173,7 +173,7 @@ class ThermalSZ(SED):
             Frequency in GHz.
         T_CMB (optional) : float
         """
-        return ThermalSZ.f(nu, T_CMB) / ThermalSZ.f(nu_0, T_CMB)
+        return ThermalSZ.f(nu) / ThermalSZ.f(nu_0)
 
 
 class UnitSED(SED):
