@@ -13,9 +13,8 @@ from abc import ABC, abstractmethod
 import numpy as np
 from scipy import constants
 
-# TODO: we need to figure out the unit situation.
 
-T_CMB = 2.725
+T_CMB = 2.72548
 H_OVER_KT_CMB = constants.h * 1e9 / constants.k / T_CMB
 
 def _to_cmb(nu):
@@ -146,11 +145,10 @@ class ModifiedBlackBody(SED):
         return (nu / nu_0)**(beta + 1.0) * np.expm1(x_0) / np.expm1(x)
 
 
-def g(nu, T_CMB=2.725):
-    """Convert from flux to thermodynamic units."""
-    x = constants.h * (nu*1e9) / (constants.k * T_CMB)
-    return constants.c**2 * constants.k * T_CMB**2 * (np.cosh(x) - 1) / (
-        constants.h**2 * (nu*1e9)**4)
+class CIB(ModifiedBlackBody):
+    """ Alias of :class:`ModifiedBlackBOdy`
+    """
+    pass
 
 
 class ThermalSZ(SED):
@@ -164,11 +162,11 @@ class ThermalSZ(SED):
     """
 
     @staticmethod
-    def f(nu, T_CMB=2.725):
+    def f(nu):
         x = constants.h * (nu * 1e9) / (constants.k * T_CMB)
         return (x / np.tanh(x / 2.0) - 4.0)
 
-    def __call__(self, nu, nu_0, T_CMB=2.725):
+    def __call__(self, nu, nu_0):
         """Compute the SED with the given frequency and parameters.
 
         nu : float
@@ -182,32 +180,7 @@ class UnitSED(SED):
     """Frequency-independent component."""
 
     def __call__(self, nu, *args):
-        # Return the evaluation of the SED
         return np.ones_like(np.array(nu))
-
-
-class CIB(SED):
-
-    @staticmethod
-    def planckB(nu, T_d):
-        """Planck function at dust temperature."""
-        x = constants.h * (nu*1e9) / (constants.k * T_d)
-        return 2 * constants.h * (nu*1e9)**3 / constants.c**2 / (np.exp(x) - 1)
-
-    @staticmethod
-    def mu(nu, beta, T_d, T_CMB):
-        return nu**beta * CIB.planckB(nu, T_d) * g(nu, T_CMB)
-
-    def __call__(self, nu, beta, T_d, nu_0, T_CMB=2.725):
-        """Compute the SED with the given frequency and parameters.
-
-        nu : float
-            Frequency in GHz.
-        beta : power law parameter
-        T_d : dust temperature
-        T_CMB (optional) : float
-        """
-        return CIB.mu(nu, beta, T_d, T_CMB) / CIB.mu(nu_0, beta, T_d, T_CMB)
 
 
 class Join(SED):
@@ -229,19 +202,3 @@ class Join(SED):
             res[i] = seds[i]
         return res
 
-
-class PowerLaw_g(SED):
-
-    def __call__(self, nu, beta, nu_0, T_CMB=2.725):
-        """Compute the SED with the given frequency and parameters.
-
-        nu : float
-            Frequency in GHz.
-        beta : power law parameter
-        T_d : dust temperature
-        T_CMB (optional) : float
-        """
-
-        beta = np.array(beta)[..., np.newaxis]
-        norm = nu_0**beta * g(nu_0, T_CMB)
-        return nu**beta * g(nu, T_CMB) / norm
