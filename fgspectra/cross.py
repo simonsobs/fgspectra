@@ -67,7 +67,7 @@ class FactorizedCrossSpectrum(CrossSpectrum):
         cross : ndarray
             Cross-spectrum. The shape is ``(..., freq, freq, ell)``.
         """
-        f_nu = self._sed(*sed_args)[..., np.newaxis]
+        f_nu = self._sed(**sed_kwargs)[..., np.newaxis]
         return f_nu[..., np.newaxis] * f_nu * self._cl(**cl_kwargs)
 
 
