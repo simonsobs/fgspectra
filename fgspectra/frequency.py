@@ -3,7 +3,7 @@ r"""
 Frequency-dependent foreground components.
 
 This module implements the frequency-dependent component of common foreground
-contaminants. 
+contaminants.
 
 This package draws inspiration from FGBuster (Davide Poletti and Josquin Errard)
 and BeFoRe (David Alonso and Ben Thorne).
@@ -13,9 +13,36 @@ from abc import ABC, abstractmethod
 import numpy as np
 from scipy import constants
 
-# TODO: we need to figure out the unit situation.
 
-T_CMB = 2.725
+T_CMB = 2.72548
+H_OVER_KT_CMB = constants.h * 1e9 / constants.k / T_CMB
+
+def _to_cmb(nu):
+    x = H_OVER_KT_CMB * nu
+    return (np.expm1(x) / x)**2 / np.exp(x)
+
+
+def convert_to_k_cmb_unless_rj_is_true(f):
+    """ Convert to CMB units by defaults
+    
+    Unless RJ=TRUE in the arguments, convert the output in CMB units,
+    making use of the ``nu`` keyword argument. 
+    If `nu_0` is among the arguments, normalize the conversion factor at that
+    frequency to one.
+    """
+    def f_cmb_by_default(self, **kwargs):
+        # We'll add RJ option in the future
+        #if 'RJ' in kwargs:
+            #use_rj = kwargs['RJ']
+            #del kwargs['RJ']
+            #if use_rj:
+                #return f(self, **kwargs)
+        factor = _to_cmb(kwargs['nu'])
+        if 'nu_0' in kwargs:
+            factor /= _to_cmb(kwargs['nu_0'])
+        return f(self, **kwargs) * factor
+    return f_cmb_by_default
+
 
 
 class SED(ABC):
@@ -33,17 +60,18 @@ class PowerLaw(SED):
     .. math:: f(\nu) = (\nu / nu_0)^{\beta}
     """
 
-    def __call__(self, nu, beta, nu0):
+    @convert_to_k_cmb_unless_rj_is_true
+    def __call__(self, nu=None, beta=None, nu_0=None):
         """ Evaluation of the SED
 
         Parameters
         ----------
         nu: float or array
-            Frequency in the same units as `nu0`. If array, the shape is
+            Frequency in the same units as `nu_0`. If array, the shape is
             ``(freq)``.
         beta: float or array
             Spectral index. If array, the shape is ``(...)``.
-        nu0: float or array
+        nu_0: float or array
             Reference frequency in the same units as `nu`. If array, the shape
             is ``(...)``.
 
@@ -64,15 +92,15 @@ class PowerLaw(SED):
 
         - T, E and B synchrotron SEDs with the same reference frequency but
           different spectral indices. `beta` is an array with shape ``(3)``,
-          `nu0` is a scalar.
+          `nu_0` is a scalar.
 
         - SEDs of synchrotron and dust (approximated as power law). Both `beta`
-          and `nu0` are arrays with shape ``(2)``
+          and `nu_0` are arrays with shape ``(2)``
 
         """
         beta = np.array(beta)[..., np.newaxis]
-        nu0 = np.array(nu0)[..., np.newaxis]
-        return (nu / nu0)**beta
+        nu_0 = np.array(nu_0)[..., np.newaxis]
+        return (nu / nu_0)**beta
 
 
 class Synchrotron(PowerLaw):
@@ -88,18 +116,19 @@ class ModifiedBlackBody(SED):
 
     where :math:`x = h \nu / k_B T_d`
     """
-    def __call__(nu, nu_0, temp, beta):
+    @convert_to_k_cmb_unless_rj_is_true
+    def __call__(self, nu=None, nu_0=None, temp=None, beta=None):
         """ Evaluation of the SED
 
         Parameters
         ----------
         nu: float or array
-            Frequency in Hz.
+            Frequency in GHz.
         beta: float or array
             Spectral index.
         temp: float or array
             Dust temperature.
-        nu0: float
+        nu_0: float
             Reference frequency in Hz.
 
         Returns
@@ -111,8 +140,15 @@ class ModifiedBlackBody(SED):
         """
         beta = np.array(beta)[..., np.newaxis]
         temp = np.array(temp)[..., np.newaxis]
-        x = constants.h * nu / (constants.k * temp)
-        return (nu / nu_0)**(beta + 1.0) / np.expm1(x)
+        x = 1e+9 * constants.h * nu / (constants.k * temp)
+        x_0 = 1e+9 * constants.h * nu_0 / (constants.k * temp)
+        return (nu / nu_0)**(beta + 1.0) * np.expm1(x_0) / np.expm1(x)
+
+
+class CIB(ModifiedBlackBody):
+    """ Alias of :class:`ModifiedBlackBOdy`
+    """
+    pass
 
 
 class ThermalSZ(SED):
@@ -124,64 +160,45 @@ class ThermalSZ(SED):
 
     where :math:`x = h \nu / k_B T_CMB`
     """
-    def __call__(self, nu):
+
+    @staticmethod
+    def f(nu):
+        x = constants.h * (nu * 1e9) / (constants.k * T_CMB)
+        return (x / np.tanh(x / 2.0) - 4.0)
+
+    def __call__(self, nu, nu_0):
         """Compute the SED with the given frequency and parameters.
 
         nu : float
             Frequency in GHz.
         T_CMB (optional) : float
         """
-        x = constants.h * (nu*1e9) / (constants.k * T_CMB)
-        return x / np.tanh(x / 2.0) - 4.0
+        return ThermalSZ.f(nu) / ThermalSZ.f(nu_0)
 
 
-r'''
-class CIB(SED):
-    r"""
-    SED for :math:`g(\nu)` for CIB models, where
+class UnitSED(SED):
+    """Frequency-independent component."""
 
-    .. math:: g(\mu) = (\partial B_{\nu}/\partial T)^{-1} |_{T_CMB}
-
-    Parameters
-    ----------
-    nu: float or array
-        Frequency in Hz.
-    beta: float
-        Spectral index.
-
-    Methods
-    -------
-    __call__(self, nu, beta)
-        return the frequency scaling given by a power law.
-    """
-    def g(self, nu, T_CMB):
-        """Convert from flux to thermodynamic units."""
-        x = constants.h * (nu*1e9) / (constants.k * T_CMB)
-        return constants.c**2 * constants.k * T_CMB**2 * (np.cosh(x) - 1) / (
-            constants.h**2 * (nu*1e9)**4)
-
-    def planckB(self, nu, T_d):
-        """Planck function at dust temperature."""
-        x = constants.h * (nu*1e9) / (constants.k * T_d)
-        return 2 * constants.h * (nu*1e9)**3 / constants.c**2 / (np.exp(x) - 1)
-
-    def sed(self, nu, beta, T_d, T_CMB):
-        """Modified blackbody mu(nu, beta)"""
-        return nu**beta * self.planckB(nu, T_d) * self.g(nu, T_CMB)
-'''
+    def __call__(self, nu, *args):
+        return np.ones_like(np.array(nu))
 
 
-# CMB
-# blackbody, derivative BB
+class Join(SED):
 
-# Galactic foregrounds
-# power law (synch), modified blackbody (dust)
-# extensions of these?
-# before and fgbuster
+    def __init__(self, *seds):
+        self._seds = seds
 
-# Extragalactic
-# mystery
-# tile-c
+    def __call__(self, kwargs_seq=None):
+        """Compute the SED with the given frequency and parameters.
 
-# thermodynamic CMB units - defualt
-# other units: Jy/sr or Rayleigh-Jeans, full antenna temp conversion?
+        *kwargss
+            The length of ``kwargss`` has to be equal to the number of SEDs
+            joined. ``kwargss[i]`` is a dictionary containing the keyword
+            arguments of the ``i``-th SED.
+        """
+        seds = [sed(**kwargs) for sed, kwargs in zip(self._seds, kwargs_seq)]
+        res = np.empty((len(seds),) + np.broadcast(*seds).shape)
+        for i in range(len(seds)):
+            res[i] = seds[i]
+        return res
+

@@ -21,3 +21,7 @@ Since we're still putting this together, just install in developer mode for now.
 ```
 pip install -e .
 ```
+
+## Testing
+
+Run `pytest` in the `fgspectra` directory.
