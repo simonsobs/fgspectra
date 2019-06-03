@@ -49,7 +49,7 @@ class SED(ABC):
     """Base class for frequency dependent components."""
 
     @abstractmethod
-    def __call__(self, nu, *args):
+    def __call__(self, **kwargs):
         # Return the evaluation of the SED
         pass
 

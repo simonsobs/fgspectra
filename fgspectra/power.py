@@ -28,7 +28,7 @@ class PowerSpectrum(ABC):
     """Base class for frequency dependent components."""
 
     @abstractmethod
-    def __call__(self, ell, *args):
+    def __call__(self, **kwargs):
         """Make component objects callable."""
         pass
 
@@ -88,7 +88,7 @@ class PowerSpectrumFromFile(PowerSpectrum):
             self._cl[i+(ell,)] = spec
 
 
-    def __call__(self, ell, ell_0, amp=1.0):
+    def __call__(self, ell=None, ell_0=None, amp=1.0):
         """Compute the power spectrum with the given ell and parameters."""
         return amp * self._cl[..., ell] / self._cl[..., ell_0]
 
@@ -114,7 +114,7 @@ class PowerLaw(PowerSpectrum):
 
     .. math:: C_\ell = (\ell / \ell_0)^\alpha
     """
-    def __call__(self, ell, alpha, ell_0, amp=1.0):
+    def __call__(self, ell=None, alpha=None, ell_0=None, amp=1.0):
         """
 
         Parameters
@@ -125,6 +125,8 @@ class PowerLaw(PowerSpectrum):
             Spectral index.
         ell_0: float
             Reference ell
+        amp: float or array
+            Amplitude, shape must be compatible with `alpha`.
 
         Returns
         -------
@@ -147,10 +149,11 @@ class CorrelatedPowerLaws(PowerLaw):
         ----------
         ell: float or array
             Multipole
-        amp: float or array
-            amplitude of the auto-spectra
+        amp: array
+            amplitude of the auto-spectra. Shape must be ``(..., 2)``, which
+            means that for time being we support only two correlated components
         alpha: float or array
-            Spectral index.
+            Spectral index. Shape must be broadcast-compatible with `amp`
         ell_0: float
             Reference ell
 
@@ -159,7 +162,7 @@ class CorrelatedPowerLaws(PowerLaw):
         cl: ndarray
             The dimensions are ``(..., comp1, comp2, ell)``.
             The leading dimensions are the hypothetic dimensions of `alpha` and
-            `amplitude`.
+            `amp`.
         """
         alpha = np.array(alpha)
         amp = np.array(amp)
@@ -170,7 +173,7 @@ class CorrelatedPowerLaws(PowerLaw):
         amp[..., 1, 0] *= rho
         amp[..., 0, 1] *= rho
 
-        return super().__call__(ell, alpha, ell_0, amp)
+        return super().__call__(ell=ell, alpha=alpha, ell_0=ell_0, amp=amp)
 
 
 class PowerSpectraAndCorrelation(PowerSpectrum):
@@ -263,14 +266,15 @@ class PowerSpectraAndCovariance(PowerSpectrum):
         self.n_comp = int(self.n_comp)
         assert (self.n_comp + 1) * self.n_comp // 2 == len(power_spectra)
     
-    def __call__(self, *argss):
+    def __call__(self, kwargs_seq=None):
         """Compute the Cl with the given frequency and parameters.
 
         *argss
             The length of `argss` has to be equal to the number of SEDs joined.
             ``argss[i]`` is the argument list of the ``i``-th SED.
         """
-        spectra = np.array([ps(*args) for ps, args in zip(self._power_spectra, argss)])
+        spectra = np.array(
+            [ps(**kwargs) for ps, kwargs in zip(self._power_spectra, kwargs_seq)])
         res = np.empty(  # Shape is (..., comp, comp, ell)
             spectra.shape[1:-1] + (self.n_comp, self.n_comp) + spectra.shape[-1:])
         
