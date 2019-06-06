@@ -85,6 +85,8 @@ class Model(ABC):
     def defaults(self):
         """ The current defaults
 
+        The current defaults as you would pass them to the eval method.
+
         In particular, since all the arguments have to be keyword arguments, it
         is a nested set of dictionaries with a key for each argument of the
         `eval` methods in the model.
