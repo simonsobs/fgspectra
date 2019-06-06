@@ -41,7 +41,7 @@ class Model(ABC):
         1 2 3
         >>> print_ab10c = PrintABC()
         >>> print_ab10c.set_defaults(b=10)
-        >>> print_ab10c.eval()  # The default of b ahs changed
+        >>> print_ab10c.eval()  # The default of b has changed
         1 10 3
         >>> print_abc.eval()  # Without affecting other instances
         1 2 3
@@ -85,6 +85,10 @@ class Model(ABC):
     def defaults(self):
         """ The current defaults
 
+        In particular, since all the arguments have to be keyword arguments, it
+        is a nested set of dictionaries with a key for each argument of the
+        `eval` methods in the model.
+
         >>> model.eval() == model.eval(**model_child.defaults)
         True
 
@@ -115,8 +119,14 @@ class Model(ABC):
         pass
 
     def _get_repr(self):
-        """ If `eval` calls the `eval` of other classes, you typically want to
-        call the _get_repr method of those classes and collect the result.
+        """ Readable version of defaults
+
+        In particular, it is also a nested set of dictionaries with a key for
+        each argument of the `eval` methods in the model.
+
+        If `eval` calls the `eval` of other classes, you typically want to
+        call the _get_repr method of those classes and collect the result in
+        some meaningful dictionary
         """
         res = {}
         for key, val in self.defaults.items():
@@ -124,4 +134,5 @@ class Model(ABC):
         return {type(self).__name__: res}
 
     def __repr__(self):
+        # Turns the nested set of dictionaries into a string to be printed
         return yaml.dump(self._get_repr())

@@ -71,7 +71,7 @@ class PowerLaw(Model):
         """
         beta = np.array(beta)[..., np.newaxis]
         nu_0 = np.array(nu_0)[..., np.newaxis]
-        return (nu / nu_0)**beta * _rj2cmb(nu)
+        return (nu / nu_0)**beta * (_rj2cmb(nu) / _rj2cmb(nu_0))
 
 
 class Synchrotron(PowerLaw):
@@ -152,7 +152,7 @@ class ConstantSED(Model):
 
     def eval(self, nu=None, amp=1.):
         amp = np.array(amp)
-        return amp * np.ones_like(np.array(nu)) * _rj2cmb(nu)
+        return amp * np.ones_like(np.array(nu))
 
 
 class Join(Model):
@@ -189,7 +189,7 @@ class Join(Model):
             joined. ``kwseq[i]`` is a dictionary containing the keyword
             arguments of the ``i``-th SED.
         """
-        if kwseq:
+        if kwseq:  # Handles the case in which no parameter has to be passed
             seds = [sed(**kwargs) for sed, kwargs in zip(self._seds, kwseq)]
         else:
             seds = [sed() for sed in self._seds]
