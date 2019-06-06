@@ -168,7 +168,7 @@ class Join(Model):
             Sequence of SED models to be joined together
         """
         self._seds = seds
-        set_defaults(**kwargs)
+        self.set_defaults(**kwargs)
 
     def set_defaults(self, **kwargs):
         if 'kwseq' in kwargs:
