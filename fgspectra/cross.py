@@ -11,6 +11,55 @@ from . import power as fgp
 from .model import Model
 
 
+class Sum(Model):
+    """ Sum the cross-spectra of uncorrelated components
+    """
+
+    def __init__(self, *crosses, **kwargs):
+        """
+
+        Parameters
+        ----------
+        *sed:
+            Sequence of SED models to be joined together
+        """
+        self._crosses = crosses
+        self.set_defaults(**kwargs)
+
+    def set_defaults(self, **kwargs):
+        if 'kwseq' in kwargs:
+            for cross, cross_kwargs in zip(self._crosses, kwargs['kwseq']):
+                cross.set_defaults(**cross_kwargs)
+
+    def _get_repr(self):
+        return {type(self).__name__:
+                    [cross._get_repr() for cross in self._crosses]}
+
+    @property
+    def defaults(self):
+        return {'kwseq': [cross.defaults for cross in self._crosses]}
+
+    def eval(self, kwseq=None):
+        """Compute the sum of the cross-spectra
+
+        *kwseq:
+            The length of ``kwseq`` has to be equal to the number of
+            cross-spectra summed. ``kwseq[i]`` is a dictionary containing the
+            keyword arguments of the ``i``-th cross-spectrum.
+        """
+        if kwseq:
+            crosses = (cross(**kwargs)
+                       for cross, kwargs in zip(self._crosses, kwseq))
+        else:  # Handles the case in which no parameter has to be passed
+            crosses = (cross() for cross, kwargs in self._crosses)
+
+        res = next(crosses)
+        for cross_res in crosses:
+            res = res + cross_res  # Unnecessary copies can be avoided
+
+        return res
+
+
 class FactorizedCrossSpectrum(Model):
     r"""Factorized cross-spectrum
 

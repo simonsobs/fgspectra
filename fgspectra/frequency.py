@@ -168,6 +168,7 @@ class Join(Model):
             Sequence of SED models to be joined together
         """
         self._seds = seds
+        set_defaults(**kwargs)
 
     def set_defaults(self, **kwargs):
         if 'kwseq' in kwargs:
@@ -189,9 +190,9 @@ class Join(Model):
             joined. ``kwseq[i]`` is a dictionary containing the keyword
             arguments of the ``i``-th SED.
         """
-        if kwseq:  # Handles the case in which no parameter has to be passed
+        if kwseq:
             seds = [sed(**kwargs) for sed, kwargs in zip(self._seds, kwseq)]
-        else:
+        else:  # Handles the case in which no parameter has to be passed
             seds = [sed() for sed in self._seds]
         res = np.empty((len(seds),) + np.broadcast(*seds).shape)
         for i in range(len(seds)):
