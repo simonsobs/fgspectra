@@ -8,18 +8,10 @@ from abc import ABC, abstractmethod
 import numpy as np
 from . import frequency as fgf
 from . import power as fgp
+from .model import Model
 
 
-class CrossSpectrum(ABC):
-    """Base class for cross-spectra."""
-
-    @abstractmethod
-    def __call__(self, *args):
-        """Make it callable."""
-        pass
-
-
-class FactorizedCrossSpectrum(CrossSpectrum):
+class FactorizedCrossSpectrum(Model):
     r"""Factorized cross-spectrum
 
     Cross-spectrum of **one** component for which the scaling in frequency
@@ -42,17 +34,36 @@ class FactorizedCrossSpectrum(CrossSpectrum):
     broadcast-compatible.
     """
 
-    def __init__(self, sed, cl):
+    def __init__(self, sed, cl, **kwargs):
         self._sed = sed
         self._cl = cl
-        
-    def __str__(self):
-        """Inspect list of SED and Cl signatures."""
-        import inspect
-        return (f"SED arguments: {inspect.signature(self._sed)}\n"
-                f"Cl arguments: {inspect.signature(self._cl)}")
+        self.set_defaults(**kwargs)
 
-    def __call__(self, sed_kwargs=None, cl_kwargs=None):
+    def set_defaults(self, **kwargs):
+        if 'sed_kwargs' in kwargs:
+            self._sed.set_defaults(**kwargs['sed_kwargs'])
+        if 'cl_kwargs' in kwargs:
+            self._cl.set_defaults(**kwargs['cl_kwargs'])
+
+    @property
+    def defaults(self):
+        return {
+            'sed_kwargs': self._sed.defaults,
+            'cl_kwargs': self._cl.defaults
+        }
+
+    def _get_repr(self):
+        sed_repr = self._sed._get_repr()
+        key = list(sed_repr.keys())[0]
+        sed_repr[key + ' (SED)'] = sed_repr.pop(key)
+
+        cl_repr = self._cl._get_repr()
+        key = list(cl_repr.keys())[0]
+        cl_repr[key + ' (Cl)'] = cl_repr.pop(key)
+
+        return {type(self).__name__: [sed_repr, cl_repr]}
+
+    def eval(self, sed_kwargs={}, cl_kwargs={}):
         """Compute the model at frequency and ell combinations.
 
         Parameters
@@ -71,8 +82,8 @@ class FactorizedCrossSpectrum(CrossSpectrum):
         return f_nu[..., np.newaxis] * f_nu * self._cl(**cl_kwargs)
 
 
-class CorrelatedFactorizedCrossSpectrum(CrossSpectrum):
-    r"""Factorized cross-spectrum
+class CorrelatedFactorizedCrossSpectrum(FactorizedCrossSpectrum):
+    r"""Factorized cross-spectrum of correlated components
 
     Cross-spectrum of multiple correlated components for which the scaling in
     frequency and in multipoles are factorizable.
@@ -99,17 +110,12 @@ class CorrelatedFactorizedCrossSpectrum(CrossSpectrum):
     broadcast-compatible.
     """
 
-    def __init__(self, sed, cl):
+    def __init__(self, sed, cl, **kwargs):
         self._sed = sed
         self._cl = cl
+        self.set_defaults(**kwargs)
 
-    def __str__(self):
-        """Inspect list of SED and Cl signatures."""
-        import inspect
-        return (f"SED arguments: {[inspect.signature(s) for s in self._sed._seds]}\n"
-                f"Cl arguments: {[inspect.signature(c) for c in self._cl._power_spectra]}")
-
-    def __call__(self, sed_kwargs=None, cl_kwargs=None):
+    def eval(self, sed_kwargs={}, cl_kwargs={}):
         """Compute the model at frequency and ell combinations.
 
         Parameters
@@ -137,8 +143,9 @@ class PowerLaw(FactorizedCrossSpectrum):
     :class:`fgspectra.power.PowerLaw` for the ell-dependence.
     """
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         super().__init__(fgf.PowerLaw(), fgp.PowerLaw())
+        self.set_defaults(**kwargs)
 
 
 class CorrelatedPowerLaw(CorrelatedFactorizedCrossSpectrum):
@@ -148,8 +155,9 @@ class CorrelatedPowerLaw(CorrelatedFactorizedCrossSpectrum):
     :class:`fgspectra.power.PowerLaw` for the ell-dependence.
     """
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         super().__init__(fgf.PowerLaw(), fgp.CorrelatedPowerLaws())
+        self.set_defaults(**kwargs)
 
 
 class CorrelatedDustSynchrotron(CorrelatedFactorizedCrossSpectrum):
@@ -158,15 +166,17 @@ class CorrelatedDustSynchrotron(CorrelatedFactorizedCrossSpectrum):
     Correlated power law and modified black body, both with power law amplitude
     """
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         super().__init__(
             fgf.Join(fgf.ModifiedBlackBody(), fgf.PowerLaw()),
             fgp.CorrelatedPowerLaws()
         )
+        self.set_defaults(**kwargs)
 
 
 class SZxCIB(CorrelatedFactorizedCrossSpectrum):
     
-    def __init__(self):
+    def __init__(self, **kwargs):
         sed = fgf.Join(fgf.ThermalSZ(), fgf.CIB())
         super().__init__(sed, fgp.SZxCIB())
+        self.set_defaults(**kwargs)
