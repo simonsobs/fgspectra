@@ -281,11 +281,11 @@ class PowerSpectraAndCovariance(Model):
 
     @property
     def defaults(self):
-        return {'kwargs_seq': [ps.defaults for ps in self.power_spectra]}
+        return {'kwargs_seq': [ps.defaults for ps in self._power_spectra]}
 
     def _get_repr(self):
         return {type(self).__name__:
-                    [ps._get_repr() for ps in self.power_spectra]}
+                    [ps._get_repr() for ps in self._power_spectra]}
 
     def eval(self, kwargs_seq=None):
         """Compute the Cl with the given frequency and parameters.
@@ -310,8 +310,8 @@ class PowerSpectraAndCovariance(Model):
 
         assert i_corr == len(spectra)
         return res
-    
-    
+
+
 class SZxCIB_Reichardt2012(PowerSpectraAndCorrelation):
     """PowerSpectrum for SZxCIB (Dunkley et al. 2013)."""
 

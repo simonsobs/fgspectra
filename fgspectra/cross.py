@@ -51,7 +51,7 @@ class Sum(Model):
             crosses = (cross(**kwargs)
                        for cross, kwargs in zip(self._crosses, kwseq))
         else:  # Handles the case in which no parameter has to be passed
-            crosses = (cross() for cross, kwargs in self._crosses)
+            crosses = (cross() for cross in self._crosses)
 
         res = next(crosses)
         for cross_res in crosses:
@@ -227,5 +227,5 @@ class SZxCIB(CorrelatedFactorizedCrossSpectrum):
     
     def __init__(self, **kwargs):
         sed = fgf.Join(fgf.ThermalSZ(), fgf.CIB())
-        super().__init__(sed, fgp.SZxCIB())
+        super().__init__(sed, fgp.SZxCIB_Addison2012())
         self.set_defaults(**kwargs)
