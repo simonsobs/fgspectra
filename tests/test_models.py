@@ -6,7 +6,7 @@ import numpy as np
 
 def test_ACT_models():
     # define the models from fgspectra
-    ksz = fgc.FactorizedCrossSpectrum(fgf.UnitSED(), fgp.kSZ_bat())
+    ksz = fgc.FactorizedCrossSpectrum(fgf.ConstantSED(), fgp.kSZ_bat())
     cibp = fgc.FactorizedCrossSpectrum(fgf.ModifiedBlackBody(), fgp.PowerLaw())
     radio = fgc.FactorizedCrossSpectrum(fgf.PowerLaw(), fgp.PowerLaw())
     cirrus = fgc.FactorizedCrossSpectrum(fgf.PowerLaw(), fgp.PowerLaw())
@@ -68,11 +68,11 @@ def test_ACT_models():
                 {'ell':ells, 'ell_0':par['ell_0'], 'alpha':2 - par['n_CIBC']}),
 
             tSZ_and_CIB(
-                {'kwargs_seq': (
+                {'kwseq': (
                     {'nu':fsz, 'nu_0':par['nu_0']},
                     {'nu': fdust, 'nu_0':par['nu_0'], 'temp':par['T_d'], 'beta':par['beta_c']} 
                     )},
-                {'kwargs_seq': ( 
+                {'kwseq': ( 
                     {'ell':ells, 'ell_0':par['ell_0'], 
                      'amp':par['a_tSZ']},
                     {'ell':ells, 'ell_0':par['ell_0'], 
