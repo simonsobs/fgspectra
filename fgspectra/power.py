@@ -195,20 +195,20 @@ class PowerSpectraAndCorrelation(Model):
         self.set_defaults(**kwargs)
 
     def set_defaults(self, **kwargs):
-        if 'kwargs_seq' in kwargs:
-            for i, cl_kwargs in enumerate(kwargs['kwargs_seq']):
+        if 'kwseq' in kwargs:
+            for i, cl_kwargs in enumerate(kwargs['kwseq']):
                 self._power_spectra[i].set_defaults(**cl_kwargs)
 
     @property
     def defaults(self):
-        return {'kwargs_seq': [ps.defaults for ps in self.power_spectra]}
+        return {'kwseq': [ps.defaults for ps in self.power_spectra]}
 
     def _get_repr(self):
         return {type(self).__name__:
                     [ps._get_repr() for ps in self.power_spectra]}
 
 
-    def eval(self, kwargs_seq=None):
+    def eval(self, kwseq=None):
         """Compute the SED with the given frequency and parameters.
 
         *argss
@@ -275,27 +275,27 @@ class PowerSpectraAndCovariance(Model):
         self.set_defaults(**kwargs)
 
     def set_defaults(self, **kwargs):
-        if 'kwargs_seq' in kwargs:
-            for i, cl_kwargs in enumerate(kwargs['kwargs_seq']):
+        if 'kwseq' in kwargs:
+            for i, cl_kwargs in enumerate(kwargs['kwseq']):
                 self._power_spectra[i].set_defaults(**cl_kwargs)
 
     @property
     def defaults(self):
-        return {'kwargs_seq': [ps.defaults for ps in self._power_spectra]}
+        return {'kwseq': [ps.defaults for ps in self._power_spectra]}
 
     def _get_repr(self):
         return {type(self).__name__:
                     [ps._get_repr() for ps in self._power_spectra]}
 
-    def eval(self, kwargs_seq=None):
+    def eval(self, kwseq=None):
         """Compute the Cl with the given frequency and parameters.
 
-        kwargs_seq
+        kwseq
             The length of `argss` has to be equal to the number of SEDs joined.
-            ``kwargs_seq[i]`` is the argument list of the ``i``-th SED.
+            ``kwseq[i]`` is the argument list of the ``i``-th SED.
         """
         spectra = np.array(
-            [ps(**kwargs) for ps, kwargs in zip(self._power_spectra, kwargs_seq)])
+            [ps(**kwargs) for ps, kwargs in zip(self._power_spectra, kwseq)])
         res = np.empty(  # Shape is (..., comp, comp, ell)
             spectra.shape[1:-1] + (self.n_comp, self.n_comp) + spectra.shape[-1:])
         
