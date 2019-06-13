@@ -28,10 +28,6 @@ class PowerLaw(Model):
 
     .. math:: f(\nu) = (\nu / nu_0)^{\beta}
     """
-    def __init__(self, **kwargs):
-        """ You can set defaults at construction time """
-        self.set_defaults(**kwargs)
-
     def eval(self, nu=None, beta=None, nu_0=None):
         """ Evaluation of the SED
 
