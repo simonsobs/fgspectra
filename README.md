@@ -1,4 +1,4 @@
-# FGSpectra
+# FGspectra
 Library for the evaluation of the SEDs and cross-spectra of astrophysical components.
 
 Main modules are
