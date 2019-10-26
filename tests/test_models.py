@@ -1,8 +1,12 @@
+import pytest
+
 from fgspectra import cross as fgc
 from fgspectra import power as fgp
 from fgspectra import frequency as fgf
 import numpy as np
 
+def test_ksz():
+    assert fgp.kSZ_bat() is not None
 
 def test_ACT_models():
     # define the models from fgspectra

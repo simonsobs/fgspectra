@@ -26,7 +26,7 @@ def _rj2cmb(nu):
 class PowerLaw(Model):
     r""" Power Law
 
-    .. math:: f(\nu) = (\nu / nu_0)^{\beta}
+    .. math:: f(\nu) = (\nu / \nu_0)^{\beta}
     """
     def eval(self, nu=None, beta=None, nu_0=None):
         """ Evaluation of the SED
@@ -77,9 +77,9 @@ class Synchrotron(PowerLaw):
 
 
 class ModifiedBlackBody(Model):
-    """ Modified black body in K_RJ
+    r""" Modified black body in K_RJ
 
-    .. math:: f(\nu) = (nu / nu_0)^{\beta + 1} / (e^x - 1)
+    .. math:: f(\nu) = (\nu / \nu_0)^{\beta + 1} / (e^x - 1)
 
     where :math:`x = h \nu / k_B T_d`
     """
