@@ -210,10 +210,13 @@ class PowerSpectraAndCorrelation(Model):
 
     def eval(self, kwseq=None):
         """Compute the SED with the given frequency and parameters.
-
+        
+        Parameters
+        ----------
         *argss
             The length of `argss` has to be equal to the number of SEDs joined.
             ``argss[i]`` is the argument list of the ``i``-th SED.
+        
         """
         spectra = [ps(*args) for ps, args in zip(self._power_spectra, argss)]
         corrs = spectra[self.n_comp:]
