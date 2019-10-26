@@ -8,7 +8,7 @@ install:
 # command to run tests
 script:
   - coverage run --source fgspectra -m py.test
-  - overage report
+  - coverage report
 
 # Push the results back to codecov
 after_success:
