@@ -7,7 +7,7 @@ install:
   - python setup.py install
 # command to run tests
 script:
-  - pytest --cov=./
+  - pytest tests --cov=fgspectra
 
 # Push the results back to codecov
 after_success:
