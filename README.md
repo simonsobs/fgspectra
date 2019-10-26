@@ -1,4 +1,7 @@
 # FGspectra
+
+[![Build Status](https://travis-ci.com/simonsobs/fgspectra.svg?branch=master)](https://travis-ci.com/simonsobs/fgspectra)
+
 Library for the evaluation of the SEDs and cross-spectra of astrophysical components.
 
 Main modules are
