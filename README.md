@@ -1,7 +1,8 @@
 # FGspectra
 
-[![codecov](https://codecov.io/gh/simonsobs/fgspectra/branch/master/graph/badge.svg)](https://codecov.io/gh/simonsobs/fgspectra)
+[![Latest](https://img.shields.io/badge/docs-dev-blue.svg)](https://simonsobs.github.io/fgspectra/)
 [![Build Status](https://travis-ci.com/simonsobs/fgspectra.svg?branch=master)](https://travis-ci.com/simonsobs/fgspectra)
+[![codecov](https://codecov.io/gh/simonsobs/fgspectra/branch/master/graph/badge.svg)](https://codecov.io/gh/simonsobs/fgspectra)
 
 Library for the evaluation of the SEDs and cross-spectra of astrophysical components.
 
