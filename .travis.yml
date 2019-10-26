@@ -4,6 +4,8 @@ python:
 # command to install dependencies
 install:
   - pip install -r requirements.txt
+  - pip install travis-sphinx
+  - export PATH=$HOME/.local/bin:$PATH
   - python setup.py install
 # command to run tests
 script:
@@ -13,3 +15,4 @@ script:
 # Push the results back to codecov
 after_success:
   - codecov
+  - travis-sphinx deploy
