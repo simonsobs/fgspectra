@@ -142,6 +142,50 @@ class ThermalSZ(Model):
         """
         return ThermalSZ.f(nu) / ThermalSZ.f(nu_0)
 
+class FreeFree(Model):
+    r""" Free-free
+
+    .. math:: f(\nu) = EM * ( 1 + log( 1 + (\nu_{ff} / \nu)^{3/\pi} ) )
+    .. math:: \nu_{ff} = 255.33e9 * (Te / 1000)^{3/2}
+    """
+    def eval(self, nu=None, EM=None, Te=None):
+        """ Evaluation of the SED
+
+        Parameters
+        ----------
+        nu: float or array
+            Frequency in the same units as `nu_0`. If array, the shape is
+            ``(freq)``.
+        EM: float or array
+            Emission measure in cm^-6 pc (usually around 300). If array, the shape is ``(...)``.
+        Te: float or array
+            Electron temperature (typically around 7000). If array, the shape is ``(...)``.
+
+        Returns
+        -------
+        sed: ndarray
+            If `nu` is an array, the shape is ``(..., freq)``.
+            If `nu` is scalar, the shape is ``(..., 1)``.
+            Note that the last dimension is guaranteed to be the frequency.
+
+        Note
+        ----
+        The extra dimensions ``...`` in the output are the broadcast of the
+        ``...`` in the input (which are required to be broadcast-compatible).
+
+        Examples
+        --------
+
+        - Free-free emission in temperature.
+
+        """
+        EM  = np.array(EM)[..., np.newaxis]
+        Te  = np.array(Te)[..., np.newaxis]
+        Teff = (Te / 1.e3)**(1.5)
+        nuff = 255.33e9 * Teff
+        gff = 1. + np.log(1. + (nuff / nu)**(np.sqrt(3) / np.pi))
+        print("warning: I need to check the units on this")
+        return EM * gff
 
 class ConstantSED(Model):
     """Frequency-independent component."""
