@@ -76,41 +76,6 @@ class Synchrotron(PowerLaw):
     pass
 
 
-class RadioSourcesFluxCut(Model):
-    """ Radio point source power law with amplitude from flux cut
-    
-    .. math:: f(\nu) = amp (\nu / \nu_0)^{\beta}
-    .. math:: amp = 
-    """
-    def eval(self, nu=None, nu_0=None, fluxcut=None, beta=None):
-        """ Evaluation of the SED
-
-        Parameters
-        ----------
-        nu: float or array
-            Frequency in GHz.
-        fluxcut: float or array
-            Flux cut in Jy
-        beta: float or array
-            Spectral index. Normally -2.5
-        nu_0: float
-            Reference frequency in Hz.
-
-        Returns
-        -------
-        sed: ndarray
-            The last dimension is the frequency dependence.
-            The leading dimensions are the broadcast between the hypothetic
-            dimensions of `beta` and `fluxcut`.
-        """
-        fluxcut = np.array(temp)[..., np.newaxis]
-        beta = np.array(beta)[..., np.newaxis]
-    
-        # Fill here with flux cut equations    
-    
-        return
-        
-
 class ModifiedBlackBody(Model):
     r""" Modified black body in K_RJ
 
