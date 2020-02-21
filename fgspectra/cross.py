@@ -183,6 +183,30 @@ class CorrelatedFactorizedCrossSpectrum(FactorizedCrossSpectrum):
         f_nu = self._sed(**sed_kwargs)
         return np.einsum('k...i,n...j,...knl->...ijl',
                          f_nu, f_nu, self._cl(**cl_kwargs))
+    
+    def eval_terms(self, sed_kwargs={}, cl_kwargs={}):
+        """Compute the comp-comp contribution to the cross
+        
+        The summation of this tensor over the components dimensions gives
+        the freq-freq cross spectrum (i.e. the result of `eval`
+        
+        Parameters
+        ----------
+        sed_args : list
+            Arguments for which the `sed` is evaluated.
+        cl_args : list
+            Arguments for which the `cl` is evaluated.
+
+        Returns
+        -------
+        cross : ndarray
+            Cross-spectrum. 
+            The shape is ``(..., comp, comp, freq, freq, ell)``.
+        """
+
+        f_nu = self._sed(**sed_kwargs)
+        return np.einsum('k...i,n...j,...knl->...knijl',
+                         f_nu, f_nu, self._cl(**cl_kwargs))
 
 
 class PowerLaw(FactorizedCrossSpectrum):
