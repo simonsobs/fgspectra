@@ -30,15 +30,15 @@ def _bandpass_integration():
     at the very beginning.
     This function
 
-    * iterate over the ``nu`` argument of the caller
+    * iterates over the ``nu`` argument of the caller
       (while keeping all the other arguments fixed)
     * splits each element of the iteration in ``nu_band, transmittance``
     * integrates the caller function over the bandpass.
       ``np.trapz(caller(nu_band) * transmittance, nu_band)``
       Note that no normalization nor unit conversion is done to the
       transmittance
-    * Stack the output of the iteration (the frequency dimension is the last)
-      and return it
+    * stacks the output of the iteration (the frequency dimension is the last)
+      and returns it
 
     '''
     frame = inspect.currentframe().f_back
