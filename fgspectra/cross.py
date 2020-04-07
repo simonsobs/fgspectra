@@ -139,7 +139,7 @@ class CorrelatedFactorizedCrossSpectrum(FactorizedCrossSpectrum):
 
     .. math::
 
-        xC_\ell^{\nu_i\ \nu_j} = \sum_{kl} f^k(\nu_j) f^n(\nu_i) C^{kn}_\ell
+        xC_\ell^{\nu_i\ \nu_j} = \sum_{kn} f^k(\nu_j) f^n(\nu_i) C^{kn}_\ell
 
     where :math:`k` and :math:`n` are component indices.
 
@@ -151,7 +151,7 @@ class CorrelatedFactorizedCrossSpectrum(FactorizedCrossSpectrum):
     cl_args : callable
         :math:`C_\ell`. It returns an array with shape
         ``(..., comp, comp, ell)``.
-        It can be :class:`fgspectra.power.PowerSpectrum`
+        It can, for example, any of the models in :class:`fgspectra.power`.
 
     Note
     ----

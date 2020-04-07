@@ -142,6 +142,7 @@ class ThermalSZ(Model):
         """
         return ThermalSZ.f(nu) / ThermalSZ.f(nu_0)
 
+
 class FreeFree(Model):
     r""" Free-free
 
@@ -191,7 +192,23 @@ class ConstantSED(Model):
     """Frequency-independent component."""
 
     def eval(self, nu=None, amp=1.):
-        amp = np.array(amp)
+        """ Evaluation of the SED
+
+        Parameters
+        ----------
+        nu: float or array
+            It just determines the shape of the output.
+        amp: float or array
+            Amplitude (or set of amplitudes) of the constant SED.
+
+        Returns
+        -------
+        sed: ndarray
+            If `nu` is an array, the shape is ``amp.shape + (freq)``.
+            If `nu` is scalar, the shape is ``amp.shape + (1)``.
+            Note that the last dimension is guaranteed to be the frequency.
+        """
+        amp = np.array(amp)[..., np.newaxis]
         return amp * np.ones_like(np.array(nu))
 
 
