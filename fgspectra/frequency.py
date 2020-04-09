@@ -41,6 +41,9 @@ def _bandpass_integration():
       and returns it
 
     '''
+    # It assumes that _bandpass_integration was called inside
+    # f(self, **kw) -- f is typically an eval method.
+    # Retrieve kw and (a copy of) f
     frame = inspect.currentframe().f_back
     kw = frame.f_locals
     self = kw['self']
@@ -53,7 +56,8 @@ def _bandpass_integration():
     res = np.trapz(f(self, **kw) * nus_transmittances[0][1], kw['nu'])
     # Append the frequency dimension and put res in its first entry
     res = res[..., np.newaxis] * np.array([1.]+[0.]*(len(nus_transmittances)-1))
-
+    
+    # Fill the remaining entries by iterating over the rest of the bandpasses
     for i_band, (nu, transmittance) in enumerate(nus_transmittances[1:], 1):
         kw['nu'] = nu
         res[..., i_band] = np.trapz(f(self, **kw) * transmittance, nu)
