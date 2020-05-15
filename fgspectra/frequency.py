@@ -13,7 +13,9 @@ import numpy as np
 from scipy import constants
 from .model import Model
 from functools import wraps
-
+from scipy.interpolate  import interp1d
+from scipy.integrate import quad
+import glob
 
 T_CMB = 2.72548
 H_OVER_KT_CMB = constants.h * 1e9 / constants.k / T_CMB
@@ -76,13 +78,65 @@ class Synchrotron(PowerLaw):
     pass
 
 
-class RadioSourcesFluxCut(Model):
+
+class RadioSourcesFluxCut():
     """ Radio point source power law with amplitude from flux cut
-    
+
     .. math:: f(\nu) = amp (\nu / \nu_0)^{\beta}
-    .. math:: amp = 
+    .. math:: amp =
     """
-    def eval(self, nu=None, nu_0=None, fluxcut=None, beta=None):
+
+    def get_number_counts(self ):
+        """
+        Given the frequency channels finds the total intensity  number counts from predictions of  Tucci et al. 2011 model and computes the
+        polarization number counts as in :func:`get_differential_number_counts`.
+        """
+
+        model_avail= glob.glob(  '../fgspectra/data/lagache_number_counts/ns*_radio.dat')
+        frequency_model_avail=[(k.split('ns')[1].split('_')[0]) for k in model_avail]
+        idxfreq=np.argmin(abs(self.nu  - np.array(list(map(float,frequency_model_avail)) ) ) )
+        lagachemodels= np.loadtxt(model_avail[idxfreq])
+        self.S= lagachemodels [:,0]
+        differential_counts  =lagachemodels[:,1]
+
+        self.dnds=interp1d(self.S, differential_counts )
+
+    def brightness2Kcmb(self, nu):
+        """
+        Returns conversion factor to pass from ``Ib``  brightness units
+        to physical temperature at a given frequency ``nu``
+        see eq.(7) in Puglisi et al.2018,
+        http://stacks.iop.org/0004-637X/858/i=2/a=85?key=crossref.8fabfadab2badba8bccaabda16342429
+        """
+        nu0 = 56.8 # * u.gigahertz
+
+        x = nu / nu0
+        return ( 4.0e-2 * (np.exp(x) - 1) ** 2 / (x ** 4 * np.exp(x)) ) # u.uK / (u.Jy / u.sr))
+
+
+    def estimate_auto_spectra(self):
+        """
+        Given differential  number counts :math:`dN/dS`, estimated at certain  flux densities :math:`S\in [0, S_{cut}]`,
+        it estimates the integral
+
+        .. math::
+
+            C= \int _{0} ^{ S_{cut}} dS {n(S)} S^2
+        """
+        self.get_number_counts( )
+        # function to integrate
+        integrand = lambda s: self.dnds (s) * s ** 2
+        Smin= self.S.min()
+        # integral
+        Integral = (
+            quad(integrand, Smin, self.fluxcut , limit=1000, epsrel=1.0e-3)[0]
+
+        )
+
+        flux2Kcmb = self.brightness2Kcmb(self.nu)
+        return flux2Kcmb ** 2 * Integral
+
+    def __init__ (self, nu=None,   fluxcut=None ):
         """ Evaluation of the SED
 
         Parameters
@@ -95,6 +149,8 @@ class RadioSourcesFluxCut(Model):
             Spectral index. Normally -2.5
         nu_0: float
             Reference frequency in Hz.
+        fwhm: float
+            beam FWHM in arcmin
 
         Returns
         -------
@@ -103,13 +159,16 @@ class RadioSourcesFluxCut(Model):
             The leading dimensions are the broadcast between the hypothetic
             dimensions of `beta` and `fluxcut`.
         """
-        fluxcut = np.array(temp)[..., np.newaxis]
-        beta = np.array(beta)[..., np.newaxis]
-    
-        # Fill here with flux cut equations    
-    
-        return
-        
+
+        #fluxcut = np.array(temp)[..., np.newaxis]
+        self.fluxcut= fluxcut
+        self.nu = nu
+        # Fill here with flux cut equations
+        #return self. estimate_auto_spectra()
+
+
+
+
 
 class ModifiedBlackBody(Model):
     r""" Modified black body in K_RJ
@@ -177,7 +236,6 @@ class ThermalSZ(Model):
         """
         return ThermalSZ.f(nu) / ThermalSZ.f(nu_0)
 
-
 class FreeFree(Model):
     r""" Free-free
 
@@ -227,23 +285,7 @@ class ConstantSED(Model):
     """Frequency-independent component."""
 
     def eval(self, nu=None, amp=1.):
-        """ Evaluation of the SED
-
-        Parameters
-        ----------
-        nu: float or array
-            It just determines the shape of the output.
-        amp: float or array
-            Amplitude (or set of amplitudes) of the constant SED.
-
-        Returns
-        -------
-        sed: ndarray
-            If `nu` is an array, the shape is ``amp.shape + (freq)``.
-            If `nu` is scalar, the shape is ``amp.shape + (1)``.
-            Note that the last dimension is guaranteed to be the frequency.
-        """
-        amp = np.array(amp)[..., np.newaxis]
+        amp = np.array(amp)
         return amp * np.ones_like(np.array(nu))
 
 
