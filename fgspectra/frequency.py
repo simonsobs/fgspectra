@@ -92,7 +92,7 @@ class RadioSourcesFluxCut():
         polarization number counts as in :func:`get_differential_number_counts`.
         """
 
-        model_avail= glob.glob(  '../fgspectra/data/lagache_number_counts/ns*_radio.dat')
+        model_avail= glob.glob(  'data/lagache_number_counts/ns*_radio.dat')
         frequency_model_avail=[(k.split('ns')[1].split('_')[0]) for k in model_avail]
         idxfreq=np.argmin(abs(self.nu  - np.array(list(map(float,frequency_model_avail)) ) ) )
         lagachemodels= np.loadtxt(model_avail[idxfreq])
