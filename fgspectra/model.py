@@ -188,19 +188,20 @@ class Model(ABC):
         if not hasattr(self, '_path_nones'):
             raise RuntimeError("You have to call prepare_for_arrays first")
         for path in self._path_nones:
+            inner_path = path
             inner_kwargs = self._template_kwargs
-            while len(path) > 1:
-                inner_kwargs = inner_kwargs[path[0]]
-                path.pop(0)
+            while len(inner_path) > 1:
+                inner_kwargs = inner_kwargs[inner_path[0]]
+                inner_path = inner_path[1:]
 
-            ref_val = inner_kwargs[path[0]]
+            ref_val = inner_kwargs[inner_path[0]]
             try:
                 # It's an array
-                inner_kwargs[path[0]] = x[:ref_val.size].reshape(ref_val.shape)
+                inner_kwargs[inner_path[0]] = x[:ref_val.size].reshape(ref_val.shape)
                 x = x[ref_val.size:]
             except AttributeError:
                 # It's a float
-                inner_kwargs[path[0]] = x[0]
+                inner_kwargs[inner_path[0]] = x[0]
                 x = x[1:]
         return self._template_kwargs
 
