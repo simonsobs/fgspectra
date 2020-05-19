@@ -41,14 +41,32 @@ def _bandpass_integration():
       and returns it
 
     '''
+    # This piece of code is fairly complicated, we did because:
+    # 1) We want to call eval on each element of the nu list (i.e. we iterate
+    #    over the bandpasses) but we don't want to define a new eval_bandpass
+    #    function for every class
+    # 2) We don't want to use a decorator because it breaks the signature
+    #    handling of eval and the modification of its defaults.
+    #    _bandpass_integration does from the insides of eval the same thing that 
+    #    a decorator would do from the outside. This is achieved through the
+    #    following pretty ugly kludge
+    # Simpler code that achieve the same result is welcome
+
+    # You are here because this function was called inside eval before any other
+    # variable was defined.
+    # We now retrieve the keyword arguments that were passed to eval because we
+    # have to use them for the evaluation of eval on each bandpass
     # It assumes that _bandpass_integration was called inside
-    # f(self, **kw) -- f is typically an eval method.
-    # Retrieve kw and (a copy of) f
+    # f(self, **kw) -- f is typically the eval method.
     frame = inspect.currentframe().f_back
-    kw = frame.f_locals
+    kw = frame.f_locals  
     self = kw['self']
-    del kw['self']
+    del kw['self']  # self was in the locals but is not a keyword argument
+
+    # We create a copy of eval itself, we'll call it for each bandpass
     f = types.FunctionType(frame.f_code, frame.f_globals)
+    # Store the nu-transmittance list because the nu keyword argumnt has to be
+    # modified with the frequencies of each bandpass
     nus_transmittances = kw['nu']
 
     # Get the shape of the output from the result of the first bandpass
