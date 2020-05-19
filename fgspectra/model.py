@@ -3,6 +3,7 @@ import types
 import inspect
 import yaml
 import numpy as np
+import importlib
 
 class Model(ABC):
     """ Abstract class for model definition
@@ -17,7 +18,18 @@ class Model(ABC):
     """
 
     def __init__(self, **kwargs):
-        """ You can set defaults at construction time """
+        """You can set defaults at construction time using
+        1) the keyword arguments passed at construction time
+        2) if existing, the `defaults` dictionary defined globally in the module
+           of the class being constructed
+
+        1) overrides 2)
+        """
+        try:
+            module_defaults = importlib.import_module(self.__module__).defaults
+            kwargs = {**module_defaults, **kwargs}
+        except AttributeError:
+            pass
         self.set_defaults(**kwargs)
 
     def set_defaults(self, **kwargs):
