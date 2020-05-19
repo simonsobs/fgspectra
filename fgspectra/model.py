@@ -14,7 +14,9 @@ class Model(ABC):
 
     If the `eval` method of a hypotetical ``Child`` class calls the `eval`
     method of other `Model`s, it is likely that ``Child`` has also to override
-    `set_defaults`, `defaults` and `_get_repr`
+    `set_defaults`, `defaults` and `_get_repr`.
+    Note also that if you override `__init__`, you may want to allow to set the
+    defaults at construction time, including the module-level defaults
     """
 
     def __init__(self, **kwargs):
@@ -25,6 +27,10 @@ class Model(ABC):
 
         1) overrides 2)
         """
+        self.set_defaults_init(**kwargs)
+
+    def set_defaults_init(self, **kwargs):
+        # As set_defaults, but also considers module-level defaults, if existing
         try:
             module_defaults = importlib.import_module(self.__module__).defaults
             kwargs = {**module_defaults, **kwargs}

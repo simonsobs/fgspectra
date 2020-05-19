@@ -77,7 +77,7 @@ class PowerSpectrumFromFile(Model):
                                   mode='constant', constant_values=0)
 
             self._cl[i+(ell,)] = spec
-        self.set_defaults(**kwargs)
+        self.set_defaults_init(**kwargs)
 
     def eval(self, ell=None, ell_0=None, amp=1.0):
         """Compute the power spectrum with the given ell and parameters."""
@@ -192,6 +192,10 @@ class PowerSpectraAndCorrelation(Model):
         self.n_comp = np.rint(-1 + np.sqrt(1 + 8 * len(power_spectra))) // 2
         self.n_comp = int(self.n_comp)
         assert (self.n_comp + 1) * self.n_comp // 2 == len(power_spectra)
+        try:
+            kwargs = {**defaults, **kwargs}
+        except NameError:
+            pass
         self.set_defaults(**kwargs)
 
     def set_defaults(self, **kwargs):
@@ -275,6 +279,10 @@ class PowerSpectraAndCovariance(Model):
         self.n_comp = np.rint(-1 + np.sqrt(1 + 8 * len(power_spectra))) // 2
         self.n_comp = int(self.n_comp)
         assert (self.n_comp + 1) * self.n_comp // 2 == len(power_spectra)
+        try:
+            kwargs = {**defaults, **kwargs}
+        except NameError:
+            pass
         self.set_defaults(**kwargs)
 
     def set_defaults(self, **kwargs):
