@@ -138,3 +138,71 @@ class Model(ABC):
     def __repr__(self):
         # Turns the nested set of dictionaries into a string to be printed
         return yaml.dump(self._get_repr())
+
+    def _key_value_iteration(self, dict_list_tuple):
+        if isinstance(dict_list_tuple, dict):
+            return dict_list_tuple.items()
+        if isinstance(dict_list_tuple, (list, tuple)):
+            return enumerate(dict_list_tuple)
+        raise TypeError("Only dict, list or tuple are allowed")
+
+    def _update_path_nones(self):
+        self._path_nones = []
+        def search_for_none(kwargs, base=[]):
+            for key, val in self._key_value_iteration(kwargs):
+                if val is None:
+                    self._path_nones.append(base+[key])
+                else:
+                    try:
+                        search_for_none(val, base+[key])
+                    except TypeError:
+                        pass
+        search_for_none(self.defaults)
+
+    def prepare_for_arrays(self, template_kwargs):
+        """Preapre for using arrays
+
+        reference_kwargs are necessary to define the shape you expect for each
+        argument, which are necessary to convert from array to nested
+        dictionaries of arguments. They are required to have at least all the
+        arguments for which the default is None.
+        """
+        self._template_kwargs = template_kwargs
+        self._update_path_nones()
+
+    def kwargs2array(self, kwargs):
+        """ (Nested) dictionaries to float array
+        """
+        if not hasattr(self, '_path_nones'):
+            raise RuntimeError("You have to call prepare_for_arrays first")
+        res_list = []
+        for path in self._path_nones:
+            val = kwargs
+            for p in path:
+                val = val[p]
+            res_list.append(np.array(val).reshape(-1))
+
+        return np.concatenate(res_list)
+
+    def array2kwargs(self, x):
+        if not hasattr(self, '_path_nones'):
+            raise RuntimeError("You have to call prepare_for_arrays first")
+        for path in self._path_nones:
+            inner_kwargs = self._template_kwargs
+            while len(path) > 1:
+                inner_kwargs = inner_kwargs[path[0]]
+                path.pop(0)
+
+            ref_val = inner_kwargs[path[0]]
+            try:
+                # It's an array
+                inner_kwargs[path[0]] = x[:ref_val.size].reshape(ref_val.shape)
+                x = x[ref_val.size:]
+            except AttributeError:
+                # It's a float
+                inner_kwargs[path[0]] = x[0]
+                x = x[1:]
+        return self._template_kwargs
+
+    def eval_array(self, x):
+        return self.eval(**self.array2kwargs(x))
