@@ -9,6 +9,7 @@ def test_ksz():
     assert fgp.kSZ_bat() is not None
 
 def test_ACT_models():
+    fgp.defaults = {'ell': np.array([2000])}
     # define the models from fgspectra
     ksz = fgc.FactorizedCrossSpectrum(fgf.ConstantSED(), fgp.kSZ_bat())
     cibp = fgc.FactorizedCrossSpectrum(fgf.ModifiedBlackBody(), fgp.PowerLaw())
@@ -24,8 +25,6 @@ def test_ACT_models():
     # for testing purposes we'll also compute the tSZ and clustered CIB alone
     tsz = fgc.FactorizedCrossSpectrum(fgf.ThermalSZ(), fgp.tSZ_150_bat())
     cibc = fgc.FactorizedCrossSpectrum(fgf.CIB(), fgp.PowerLaw())
-
-    ells = np.array([2000])
 
 
     par = {
@@ -58,18 +57,18 @@ def test_ACT_models():
 
             par['a_tSZ'] * tsz(
                 {'nu':fsz, 'nu_0': par['nu_0']},
-                {'ell':ells, 'ell_0':par['ell_0']}) ,
+                {'ell_0':par['ell_0']}) ,
             par['a_kSZ'] * ksz(
                 {'nu':fsz},
-                {'ell':ells, 'ell_0':par['ell_0']}) ,
+                {'ell_0':par['ell_0']}) ,
 
             par['a_p'] * cibp(
                 {'nu': fdust, 'nu_0':par['nu_0'], 'temp':par['T_d'], 'beta':par['beta_p']},
-                {'ell':ells, 'ell_0':par['ell_0'], 'alpha':2}),
+                {'ell_0':par['ell_0'], 'alpha':2}),
 
             par['a_c'] * cibc(
                 {'nu': fdust, 'nu_0':par['nu_0'], 'temp':par['T_d'], 'beta':par['beta_c']},
-                {'ell':ells, 'ell_0':par['ell_0'], 'alpha':2 - par['n_CIBC']}),
+                {'ell_0':par['ell_0'], 'alpha':2 - par['n_CIBC']}),
 
             tSZ_and_CIB(
                 {'kwseq': (
@@ -77,20 +76,20 @@ def test_ACT_models():
                     {'nu': fdust, 'nu_0':par['nu_0'], 'temp':par['T_d'], 'beta':par['beta_c']} 
                     )},
                 {'kwseq': ( 
-                    {'ell':ells, 'ell_0':par['ell_0'], 
+                    {'ell_0':par['ell_0'], 
                      'amp':par['a_tSZ']},
-                    {'ell':ells, 'ell_0':par['ell_0'], 
+                    {'ell_0':par['ell_0'], 
                      'alpha':2-par['n_CIBC'], 'amp':par['a_c']},
-                    {'ell':ells, 'ell_0':par['ell_0'], 
+                    {'ell_0':par['ell_0'], 
                      'amp': -par['xi'] * np.sqrt(par['a_tSZ'] * par['a_c'])}
                     )}),
 
             par['a_s'] * radio(
                 {'nu': fsynch, 'nu_0':par['nu_0'], 'beta':-0.5 - 2},
-                {'ell':ells, 'ell_0':par['ell_0'], 'alpha':2}) ,
+                {'ell_0':par['ell_0'], 'alpha':2}) ,
             par['a_g'] * cirrus(
                 {'nu': fdust, 'nu_0':par['nu_0'], 'beta':3.8 - 2},
-                {'ell':ells, 'ell_0':par['ell_0'], 'alpha':-0.7})
+                {'ell_0':par['ell_0'], 'alpha':-0.7})
     )
 
     """

@@ -12,7 +12,6 @@ and BeFoRe (David Alonso and Ben Thorne).
 import numpy as np
 from scipy import constants
 from .model import Model
-from functools import wraps
 
 
 T_CMB = 2.72548
