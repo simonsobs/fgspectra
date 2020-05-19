@@ -3,6 +3,7 @@ import types
 import inspect
 import yaml
 import numpy as np
+from copy import deepcopy
 
 class Model(ABC):
     """ Abstract class for model definition
@@ -167,7 +168,7 @@ class Model(ABC):
         dictionaries of arguments. They are required to have at least all the
         arguments for which the default is None.
         """
-        self._template_kwargs = template_kwargs
+        self._template_kwargs = deepcopy(template_kwargs)
         self._update_path_nones()
 
     def kwargs2array(self, kwargs):
