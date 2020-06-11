@@ -13,7 +13,11 @@ import numpy as np
 from scipy import constants
 from .model import Model
 from functools import wraps
+from scipy.interpolate  import interp1d
+from scipy.integrate import quad
+import itertools
 
+import glob
 
 T_CMB = 2.72548
 H_OVER_KT_CMB = constants.h * 1e9 / constants.k / T_CMB
@@ -76,13 +80,135 @@ class Synchrotron(PowerLaw):
     pass
 
 
-class RadioSourcesFluxCut(Model):
+
+class RadioSourcesFluxCut():
     """ Radio point source power law with amplitude from flux cut
-    
+
     .. math:: f(\nu) = amp (\nu / \nu_0)^{\beta}
-    .. math:: amp = 
+    .. math:: amp =
     """
-    def eval(self, nu=None, nu_0=None, fluxcut=None, beta=None):
+
+    def get_number_counts(self,nu  ):
+        """
+        Given the frequency channels finds the total intensity  number counts from predictions of  Tucci et al. 2011 model and computes the
+        polarization number counts as in :func:`get_differential_number_counts`.
+        """
+
+        model_avail= glob.glob(  '../fgspectra/data/lagache_number_counts/ns*_radio.dat')
+        frequency_model_avail=[(k.split('ns')[1].split('_')[0]) for k in model_avail]
+        idxfreq=np.argmin(abs(nu  - np.array(list(map(float,frequency_model_avail)) ) ) )
+        lagachemodels= np.loadtxt(model_avail[idxfreq])
+        S= lagachemodels [:,0]
+        differential_counts  =lagachemodels[:,1]
+
+        dnds=interp1d(S, differential_counts )
+        return S,dnds
+
+    def brightness2Kcmb(self, nu):
+        """
+        Returns conversion factor to pass from ``Ib``  brightness units
+        to physical temperature at a given frequency ``nu``
+        see eq.(7) in Puglisi et al.2018,
+        http://stacks.iop.org/0004-637X/858/i=2/a=85?key=crossref.8fabfadab2badba8bccaabda16342429
+        """
+        nu0 = 56.8 # * u.gigahertz
+
+        x = nu / nu0
+        return ( 4.0e-2 * (np.exp(x) - 1) ** 2 / (x ** 4 * np.exp(x)) ) # u.uK / (u.Jy / u.sr))
+
+
+    def estimate_auto_spectra(self):
+        """
+        Given differential  number counts :math:`dN/dS`, estimated at certain  flux densities :math:`S\in [0, S_{cut}]`,
+        it estimates the integral
+
+        .. math::
+
+            C^{radio}_{\nu} (S_{cut} )= \int _{0} ^{ S_{cut}} dS {n(S)} S^2
+
+        the output of this estimate is a dictionary  of values  of :math:`C^{radio}_{\nu} (S_{cut} )` at a given frequency and Scut .
+        """
+        auto_spectra = {}
+        for i,nu in enumerate (self.nu ) :
+            S, dndS = self.get_number_counts( nu )
+            Integral = self.integrate_number_counts(S,dndS, self.fluxcut[i] )
+            flux2Kcmb = self.brightness2Kcmb(nu)
+            auto_spectra[nu] = flux2Kcmb ** 2 * Integral
+
+        return auto_spectra
+
+    def integrate_number_counts (self, S, dndS , Scut ):
+        """
+        integral from 0 to Scut
+
+        """
+        # function to integrate
+
+        integrand = lambda s: dndS (s) * s ** 2
+        Smin=  S.min()
+        # integral N(<S) per srad
+        Integral = (
+            quad(integrand, Smin, Scut  , limit=1000, epsrel=1.0e-3)[0]
+
+        )
+        return Integral
+
+
+    def get_SED_from_Planck (self ):
+
+        data = np.load('../fgspectra/data/PointSource_Spectral_indices_Planck_catalogue.npy')
+        nu        = data[:,0]
+        alpha_bar = data[:,1]
+        sigma     = data[:,2]
+
+        self.alpha_bar = interp1d(nu,alpha_bar,fill_value='extrapolate', )
+        self.sigma     = interp1d(nu,sigma,    fill_value='extrapolate',  )
+
+    def estimate_cross_spectra ( self ,  nu0 =100  ):
+        """
+        implementing the Xspectra approach in Reichardt et al. 2012  (R12, see eq. 18 )
+
+        .. math::
+
+            D^{radio}_{\nu1, \nu2}(S_{cut1}, S_{cut2}) = D^{radio}_{\ell=3000, \nu0} \left( \frac{\ell}{3000}\right)^2 \epsilon_{\nu1,\nu2} \eta_{\nu1,\nu2} ^{\alpha +0.5 \ln(\eta_{\nu1,\nu2}) \sigma^2  }
+
+        The major difference is in the estimates of the distribution of spectral indices for
+        point  sources obtained from the Planck Catalogue PCCS2 .
+        The R12 approach rely on a reference freq.,  nu0, and a fluxcut related to it in order
+        to forecast the cross power.
+        the default for nu0 is set to 100 GHz
+        whereas the flux cut for each cross power is set to the maximum value between the
+        flux cuts at the two frequency, this is motivated by the fact that the poissonian contribution
+        to the power spectra is nearly proportional to Scut.
+
+        the output of this estimate is a dictionary  of amplitude of  (:math:`D^{radio}_{\ell=3000,\nu1, \nu2}(S_{cut1}, S_{cut2})`)
+         with keys the  tuple of (nu1, nu2)  combinations.
+
+        """
+        Dcross ={}
+        ell0 =3000
+        for nu1,nu2 in itertools.combinations(self.nu, 2 ):
+            id1 = np.argmin(np.fabs (self.nu -nu1))
+            id2 = np.argmin(np.fabs (self.nu -nu2))
+            fluxcut_nu0  = np.max ((self.fluxcut[id1], self.fluxcut[id2]))
+            eta = (nu1*nu2) / nu0**2
+            epsilon  = ( self.brightness2Kcmb(nu0) *  self.brightness2Kcmb(nu0)
+                                                    /
+                        (self.brightness2Kcmb(nu1)* self.brightness2Kcmb(nu2) ) )  # see eq.14 of R12
+
+            S, dnds = self.get_number_counts( nu0 )
+            Integral_counts  = self.integrate_number_counts(S,dnds, fluxcut_nu0 )
+            flux2Kcmb = self.brightness2Kcmb(nu0)
+            D3000_nu0 = flux2Kcmb *Integral_counts *ell0 *(ell0+1 )/2/np.pi
+            self.get_SED_from_Planck()
+            eta_exponent = (self.alpha_bar(nu0) +0.5* np.log(eta)*self.sigma(nu0 )**2 )
+            #print(  D3000_nu0 , epsilon , eta , eta_exponent )
+            Dcross[(nu1,nu2)]=  D3000_nu0 * epsilon * eta ** eta_exponent
+
+        return Dcross
+
+
+    def __init__ (self, nu=None,   fluxcut=None  ):
         """ Evaluation of the SED
 
         Parameters
@@ -95,6 +221,8 @@ class RadioSourcesFluxCut(Model):
             Spectral index. Normally -2.5
         nu_0: float
             Reference frequency in Hz.
+        fwhm: float
+            beam FWHM in arcmin
 
         Returns
         -------
@@ -103,13 +231,22 @@ class RadioSourcesFluxCut(Model):
             The leading dimensions are the broadcast between the hypothetic
             dimensions of `beta` and `fluxcut`.
         """
-        fluxcut = np.array(temp)[..., np.newaxis]
-        beta = np.array(beta)[..., np.newaxis]
-    
-        # Fill here with flux cut equations    
-    
-        return
-        
+        self.fluxcut= fluxcut
+        self.nu = nu
+        try:
+            assert type(self.nu)==list or type(self.nu)==np.array
+            assert type(self.fluxcut )== list or type(self.fluxcut )== np.array
+        except AssertionError :
+            self.nu =  [self.nu]
+            self.fluxcut= [self.fluxcut]
+        finally :
+            self.fluxcut= np.array(self.fluxcut )
+            self.nu=np.array(self.nu)
+
+
+
+
+
 
 class ModifiedBlackBody(Model):
     r""" Modified black body in K_RJ
