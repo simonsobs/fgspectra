@@ -59,6 +59,18 @@ class Sum(Model):
 
         return res
 
+    def eval_terms(self, kwseq=None):
+        """Compute the sum of the cross-spectra
+
+        *kwseq:
+            The length of ``kwseq`` has to be equal to the number of
+            cross-spectra summed. ``kwseq[i]`` is a dictionary containing the
+            keyword arguments of the ``i``-th cross-spectrum.
+        """
+        if kwseq:
+            return [cross(**kwargs) for cross, kwargs in zip(self._crosses, kwseq)]
+        return []
+
 
 class FactorizedCrossSpectrum(Model):
     r"""Factorized cross-spectrum
