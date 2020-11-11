@@ -1,0 +1,415 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>fgspectra.model &mdash; fgspectra  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> fgspectra
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">fgspectra</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">fgspectra</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>fgspectra.model</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for fgspectra.model</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">import</span> <span class="nn">types</span>
+<span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+
+<div class="viewcode-block" id="Model"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.model.Model">[docs]</a><span class="k">class</span> <span class="nc">Model</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Abstract class for model definition</span>
+
+<span class="sd">    A model is a class that has one purpose: evaluating the model. What</span>
+<span class="sd">    evaluation means is defined by the `eval` method that any child class has to</span>
+<span class="sd">    override.</span>
+
+<span class="sd">    If the `eval` method of a hypotetical ``Child`` class calls the `eval`</span>
+<span class="sd">    method of other `Model`s, it is likely that ``Child`` has also to override</span>
+<span class="sd">    `set_defaults`, `defaults` and `_get_repr`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; You can set defaults at construction time &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Model.set_defaults"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.model.Model.set_defaults">[docs]</a>    <span class="k">def</span> <span class="nf">set_defaults</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Change the defaults of the evaluation</span>
+
+<span class="sd">        Call ``set_defaults`` with the same arguments (or a subset) of ``eval``</span>
+<span class="sd">        (or ``__call__``).</span>
+<span class="sd">        This will change the default value of those arguments in ``eval``. If</span>
+<span class="sd">        `kwargs` has keys that are not arguments of `eval`, these keys are</span>
+<span class="sd">        ignored.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+
+<span class="sd">        &gt;&gt;&gt; class PrintABC(Model):</span>
+<span class="sd">        ...     def eval(self, a=1, b=2, c=3):</span>
+<span class="sd">        ...         print(a, b, c)</span>
+<span class="sd">        ...</span>
+<span class="sd">        &gt;&gt;&gt; print_abc = PrintABC()</span>
+<span class="sd">        &gt;&gt;&gt; print_abc.eval()</span>
+<span class="sd">        1 2 3</span>
+<span class="sd">        &gt;&gt;&gt; print_ab10c = PrintABC()</span>
+<span class="sd">        &gt;&gt;&gt; print_ab10c.set_defaults(b=10)</span>
+<span class="sd">        &gt;&gt;&gt; print_ab10c.eval()  # The default of b has changed</span>
+<span class="sd">        1 10 3</span>
+<span class="sd">        &gt;&gt;&gt; print_abc.eval()  # Without affecting other instances</span>
+<span class="sd">        1 2 3</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># This is a dirty business, and has limitations. The most important</span>
+        <span class="c1"># known one is that it breaks with decorated eval</span>
+        <span class="c1"># To change the default values of the eval method</span>
+        <span class="c1"># we have to bind a new method to the instance</span>
+        <span class="c1"># (not the class, otherwise we change the defaults of all the instances)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">kwargs</span><span class="p">:</span>  <span class="c1"># No default to be replaced</span>
+            <span class="k">return</span>
+
+        <span class="c1"># Make a deep copy of the eval function, assuming no variadic arguments</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="o">.</span><span class="vm">__func__</span>
+
+        <span class="n">new_func</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">FunctionType</span><span class="p">(</span>
+            <span class="n">func</span><span class="o">.</span><span class="vm">__code__</span><span class="p">,</span> <span class="n">func</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+            <span class="n">argdefs</span><span class="o">=</span><span class="n">func</span><span class="o">.</span><span class="vm">__defaults__</span><span class="p">,</span> <span class="n">closure</span><span class="o">=</span><span class="n">func</span><span class="o">.</span><span class="vm">__closure__</span><span class="p">)</span>
+
+        <span class="c1"># Build the defaults from scratch, assuming no positional argument</span>
+        <span class="c1"># Update the defaults that have a corresponding key in kwargs</span>
+        <span class="c1"># Note that if kwargs has keys that are not in the arguments,</span>
+        <span class="c1"># these keys are ignored</span>
+        <span class="n">fas</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getfullargspec</span><span class="p">(</span><span class="n">new_func</span><span class="p">)</span>
+        <span class="n">defaults</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">arg</span><span class="p">,</span> <span class="n">default</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">fas</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">fas</span><span class="o">.</span><span class="n">defaults</span><span class="p">):</span>
+            <span class="c1">#[1:] skips self, the only positional argument</span>
+            <span class="k">if</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                <span class="n">defaults</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">arg</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">defaults</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">default</span><span class="p">)</span>
+
+        <span class="n">new_func</span><span class="o">.</span><span class="vm">__defaults__</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">defaults</span><span class="p">)</span>
+
+        <span class="c1"># Bind the new method to the instance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eval</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">MethodType</span><span class="p">(</span><span class="n">new_func</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">defaults</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The current defaults</span>
+
+<span class="sd">        The current defaults as you would pass them to the eval method.</span>
+
+<span class="sd">        In particular, since all the arguments have to be keyword arguments, it</span>
+<span class="sd">        is a nested set of dictionaries with a key for each argument of the</span>
+<span class="sd">        `eval` methods in the model.</span>
+
+<span class="sd">        &gt;&gt;&gt; model.eval() == model.eval(**model_child.defaults)</span>
+<span class="sd">        True</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">par</span><span class="o">.</span><span class="n">default</span>
+                <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">par</span> <span class="ow">in</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># __call__ can&#39;t be rebound, that&#39;s why we use eval</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Model.eval"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.model.Model.eval">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Evaluation of the model</span>
+
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        The signature must contain</span>
+
+<span class="sd">        - only keyword arguments (except for ``self``)</span>
+<span class="sd">        - no variadic argument (*args, **kwargs)</span>
+
+<span class="sd">        and</span>
+
+<span class="sd">        - no decoration</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Readable version of defaults</span>
+
+<span class="sd">        In particular, it is also a nested set of dictionaries with a key for</span>
+<span class="sd">        each argument of the `eval` methods in the model.</span>
+
+<span class="sd">        If `eval` calls the `eval` of other classes, you typically want to</span>
+<span class="sd">        call the _get_repr method of those classes and collect the result in</span>
+<span class="sd">        some meaningful dictionary</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">defaults</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">res</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="k">else</span> <span class="n">val</span>
+        <span class="k">return</span> <span class="p">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span> <span class="n">res</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Turns the nested set of dictionaries into a string to be printed</span>
+        <span class="k">return</span> <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_repr</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">_key_value_iteration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dict_list_tuple</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dict_list_tuple</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">dict_list_tuple</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dict_list_tuple</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dict_list_tuple</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Only dict, list or tuple are allowed&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_update_path_nones</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_path_nones</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">def</span> <span class="nf">search_for_none</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="p">[]):</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key_value_iteration</span><span class="p">(</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_path_nones</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">base</span><span class="o">+</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">search_for_none</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">base</span><span class="o">+</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+                    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                        <span class="k">pass</span>
+        <span class="n">search_for_none</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">defaults</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Model.prepare_for_arrays"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.model.Model.prepare_for_arrays">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_for_arrays</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">template_kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Preapre for using arrays</span>
+
+<span class="sd">        reference_kwargs are necessary to define the shape you expect for each</span>
+<span class="sd">        argument, which are necessary to convert from array to nested</span>
+<span class="sd">        dictionaries of arguments. They are required to have at least all the</span>
+<span class="sd">        arguments for which the default is None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_template_kwargs</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">template_kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_path_nones</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Model.kwargs2array"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.model.Model.kwargs2array">[docs]</a>    <span class="k">def</span> <span class="nf">kwargs2array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; (Nested) dictionaries to float array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_path_nones&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You have to call prepare_for_arrays first&quot;</span><span class="p">)</span>
+        <span class="n">res_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_nones</span><span class="p">:</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">kwargs</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">path</span><span class="p">:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="n">p</span><span class="p">]</span>
+            <span class="n">res_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">val</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">res_list</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Model.array2kwargs"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.model.Model.array2kwargs">[docs]</a>    <span class="k">def</span> <span class="nf">array2kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_path_nones&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You have to call prepare_for_arrays first&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_nones</span><span class="p">:</span>
+            <span class="n">inner_path</span> <span class="o">=</span> <span class="n">path</span>
+            <span class="n">inner_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_template_kwargs</span>
+            <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">inner_path</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">inner_kwargs</span> <span class="o">=</span> <span class="n">inner_kwargs</span><span class="p">[</span><span class="n">inner_path</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+                <span class="n">inner_path</span> <span class="o">=</span> <span class="n">inner_path</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+
+            <span class="n">ref_val</span> <span class="o">=</span> <span class="n">inner_kwargs</span><span class="p">[</span><span class="n">inner_path</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># It&#39;s an array</span>
+                <span class="n">inner_kwargs</span><span class="p">[</span><span class="n">inner_path</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:</span><span class="n">ref_val</span><span class="o">.</span><span class="n">size</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">ref_val</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">ref_val</span><span class="o">.</span><span class="n">size</span><span class="p">:]</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="c1"># It&#39;s a float</span>
+                <span class="n">inner_kwargs</span><span class="p">[</span><span class="n">inner_path</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_template_kwargs</span></div>
+
+<div class="viewcode-block" id="Model.eval_array"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.model.Model.eval_array">[docs]</a>    <span class="k">def</span> <span class="nf">eval_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">array2kwargs</span><span class="p">(</span><span class="n">x</span><span class="p">))</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2019, Davide Poletti, Max Abitbol, Zack Li
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

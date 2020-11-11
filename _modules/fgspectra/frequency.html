@@ -1,0 +1,530 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>fgspectra.frequency &mdash; fgspectra  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> fgspectra
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">fgspectra</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">fgspectra</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>fgspectra.frequency</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for fgspectra.frequency</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Frequency-dependent foreground components.</span>
+
+<span class="sd">This module implements the frequency-dependent component of common foreground</span>
+<span class="sd">contaminants.</span>
+
+<span class="sd">This package draws inspiration from FGBuster (Davide Poletti and Josquin Errard)</span>
+<span class="sd">and BeFoRe (David Alonso and Ben Thorne).</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">import</span> <span class="nn">types</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">constants</span>
+<span class="kn">from</span> <span class="nn">.model</span> <span class="kn">import</span> <span class="n">Model</span>
+
+
+<span class="n">T_CMB</span> <span class="o">=</span> <span class="mf">2.72548</span>
+<span class="n">H_OVER_KT_CMB</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">h</span> <span class="o">*</span> <span class="mf">1e9</span> <span class="o">/</span> <span class="n">constants</span><span class="o">.</span><span class="n">k</span> <span class="o">/</span> <span class="n">T_CMB</span>
+
+<span class="k">def</span> <span class="nf">_bandpass_integration</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39; Bandpass integrated version of the caller</span>
+
+<span class="sd">    The caller should have</span>
+
+<span class="sd">        if isinstance(nu, list):</span>
+<span class="sd">            return _bandpass_integration()</span>
+
+<span class="sd">    at the very beginning.</span>
+<span class="sd">    This function</span>
+
+<span class="sd">    * iterates over the ``nu`` argument of the caller</span>
+<span class="sd">      (while keeping all the other arguments fixed)</span>
+<span class="sd">    * splits each element of the iteration in ``nu_band, transmittance``</span>
+<span class="sd">    * integrates the caller function over the bandpass.</span>
+<span class="sd">      ``np.trapz(caller(nu_band) * transmittance, nu_band)``</span>
+<span class="sd">      Note that no normalization nor unit conversion is done to the</span>
+<span class="sd">      transmittance</span>
+<span class="sd">    * stacks the output of the iteration (the frequency dimension is the last)</span>
+<span class="sd">      and returns it</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># This piece of code is fairly complicated, we did because:</span>
+    <span class="c1"># 1) We want to call eval on each element of the nu list (i.e. we iterate</span>
+    <span class="c1">#    over the bandpasses) but we don&#39;t want to define a new eval_bandpass</span>
+    <span class="c1">#    function for every class</span>
+    <span class="c1"># 2) We don&#39;t want to use a decorator because it breaks the signature</span>
+    <span class="c1">#    handling of eval and the modification of its defaults.</span>
+    <span class="c1">#    _bandpass_integration does from the insides of eval the same thing that </span>
+    <span class="c1">#    a decorator would do from the outside. This is achieved through the</span>
+    <span class="c1">#    following pretty ugly kludge</span>
+    <span class="c1"># Simpler code that achieve the same result is welcome</span>
+
+    <span class="c1"># You are here because this function was called inside eval before any other</span>
+    <span class="c1"># variable was defined.</span>
+    <span class="c1"># We now retrieve the keyword arguments that were passed to eval because we</span>
+    <span class="c1"># have to use them for the evaluation of eval on each bandpass</span>
+    <span class="c1"># It assumes that _bandpass_integration was called inside</span>
+    <span class="c1"># f(self, **kw) -- f is typically the eval method.</span>
+    <span class="n">frame</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">currentframe</span><span class="p">()</span><span class="o">.</span><span class="n">f_back</span>
+    <span class="n">kw</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">f_locals</span>  
+    <span class="bp">self</span> <span class="o">=</span> <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;self&#39;</span><span class="p">]</span>
+    <span class="k">del</span> <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;self&#39;</span><span class="p">]</span>  <span class="c1"># self was in the locals but is not a keyword argument</span>
+
+    <span class="c1"># We create a copy of eval itself, we&#39;ll call it for each bandpass</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">FunctionType</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">f_code</span><span class="p">,</span> <span class="n">frame</span><span class="o">.</span><span class="n">f_globals</span><span class="p">)</span>
+    <span class="c1"># Store the nu-transmittance list because the nu keyword argumnt has to be</span>
+    <span class="c1"># modified with the frequencies of each bandpass</span>
+    <span class="n">nus_transmittances</span> <span class="o">=</span> <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;nu&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Get the shape of the output from the result of the first bandpass</span>
+    <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;nu&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nus_transmittances</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span> <span class="o">*</span> <span class="n">nus_transmittances</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;nu&#39;</span><span class="p">])</span>
+    <span class="c1"># Append the frequency dimension and put res in its first entry</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.</span><span class="p">]</span><span class="o">+</span><span class="p">[</span><span class="mf">0.</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nus_transmittances</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+    
+    <span class="c1"># Fill the remaining entries by iterating over the rest of the bandpasses</span>
+    <span class="k">for</span> <span class="n">i_band</span><span class="p">,</span> <span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">transmittance</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">nus_transmittances</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">kw</span><span class="p">[</span><span class="s1">&#39;nu&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nu</span>
+        <span class="n">res</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i_band</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span> <span class="o">*</span> <span class="n">transmittance</span><span class="p">,</span> <span class="n">nu</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">res</span>
+
+
+<span class="k">def</span> <span class="nf">_rj2cmb</span><span class="p">(</span><span class="n">nu</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">H_OVER_KT_CMB</span> <span class="o">*</span> <span class="n">nu</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">expm1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">/</span> <span class="n">x</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="PowerLaw"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.frequency.PowerLaw">[docs]</a><span class="k">class</span> <span class="nc">PowerLaw</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot; Power Law</span>
+
+<span class="sd">    .. math:: f(\nu) = (\nu / \nu_0)^{\beta}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="PowerLaw.eval"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.frequency.PowerLaw.eval">[docs]</a>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nu</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nu_0</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Evaluation of the SED</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nu: float or array</span>
+<span class="sd">            Frequency in the same units as `nu_0`. If array, the shape is</span>
+<span class="sd">            ``(freq)``.</span>
+<span class="sd">        beta: float or array</span>
+<span class="sd">            Spectral index. If array, the shape is ``(...)``.</span>
+<span class="sd">        nu_0: float or array</span>
+<span class="sd">            Reference frequency in the same units as `nu`. If array, the shape</span>
+<span class="sd">            is ``(...)``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        sed: ndarray</span>
+<span class="sd">            If `nu` is an array, the shape is ``(..., freq)``.</span>
+<span class="sd">            If `nu` is scalar, the shape is ``(..., 1)``.</span>
+<span class="sd">            Note that the last dimension is guaranteed to be the frequency.</span>
+
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        The extra dimensions ``...`` in the output are the broadcast of the</span>
+<span class="sd">        ``...`` in the input (which are required to be broadcast-compatible).</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+
+<span class="sd">        - T, E and B synchrotron SEDs with the same reference frequency but</span>
+<span class="sd">          different spectral indices. `beta` is an array with shape ``(3)``,</span>
+<span class="sd">          `nu_0` is a scalar.</span>
+
+<span class="sd">        - SEDs of synchrotron and dust (approximated as power law). Both `beta`</span>
+<span class="sd">          and `nu_0` are arrays with shape ``(2)``</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">_bandpass_integration</span><span class="p">()</span>
+
+        <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">beta</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+        <span class="n">nu_0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">nu_0</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">nu</span> <span class="o">/</span> <span class="n">nu_0</span><span class="p">)</span><span class="o">**</span><span class="n">beta</span> <span class="o">*</span> <span class="p">(</span><span class="n">_rj2cmb</span><span class="p">(</span><span class="n">nu</span><span class="p">)</span> <span class="o">/</span> <span class="n">_rj2cmb</span><span class="p">(</span><span class="n">nu_0</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="Synchrotron"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.frequency.Synchrotron">[docs]</a><span class="k">class</span> <span class="nc">Synchrotron</span><span class="p">(</span><span class="n">PowerLaw</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Alias of :class:`PowerLaw`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="ModifiedBlackBody"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.frequency.ModifiedBlackBody">[docs]</a><span class="k">class</span> <span class="nc">ModifiedBlackBody</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot; Modified black body in K_RJ</span>
+
+<span class="sd">    .. math:: f(\nu) = (\nu / \nu_0)^{\beta + 1} / (e^x - 1)</span>
+
+<span class="sd">    where :math:`x = h \nu / k_B T_d`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="ModifiedBlackBody.eval"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.frequency.ModifiedBlackBody.eval">[docs]</a>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nu</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nu_0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">temp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Evaluation of the SED</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nu: float or array</span>
+<span class="sd">            Frequency in GHz.</span>
+<span class="sd">        beta: float or array</span>
+<span class="sd">            Spectral index.</span>
+<span class="sd">        temp: float or array</span>
+<span class="sd">            Dust temperature.</span>
+<span class="sd">        nu_0: float</span>
+<span class="sd">            Reference frequency in Hz.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        sed: ndarray</span>
+<span class="sd">            The last dimension is the frequency dependence.</span>
+<span class="sd">            The leading dimensions are the broadcast between the hypothetic</span>
+<span class="sd">            dimensions of `beta` and `temp`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">beta</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+        <span class="n">temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">temp</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="mf">1e+9</span> <span class="o">*</span> <span class="n">constants</span><span class="o">.</span><span class="n">h</span> <span class="o">*</span> <span class="n">nu</span> <span class="o">/</span> <span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">k</span> <span class="o">*</span> <span class="n">temp</span><span class="p">)</span>
+        <span class="n">x_0</span> <span class="o">=</span> <span class="mf">1e+9</span> <span class="o">*</span> <span class="n">constants</span><span class="o">.</span><span class="n">h</span> <span class="o">*</span> <span class="n">nu_0</span> <span class="o">/</span> <span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">k</span> <span class="o">*</span> <span class="n">temp</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="p">(</span><span class="n">nu</span> <span class="o">/</span> <span class="n">nu_0</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="n">beta</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">expm1</span><span class="p">(</span><span class="n">x_0</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">expm1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">res</span> <span class="o">*</span> <span class="p">(</span><span class="n">_rj2cmb</span><span class="p">(</span><span class="n">nu</span><span class="p">)</span> <span class="o">/</span> <span class="n">_rj2cmb</span><span class="p">(</span><span class="n">nu_0</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="CIB"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.frequency.CIB">[docs]</a><span class="k">class</span> <span class="nc">CIB</span><span class="p">(</span><span class="n">ModifiedBlackBody</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Alias of :class:`ModifiedBlackBOdy`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="ThermalSZ"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.frequency.ThermalSZ">[docs]</a><span class="k">class</span> <span class="nc">ThermalSZ</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot; Thermal Sunyaev-Zel&#39;dovich in K_CMB</span>
+
+<span class="sd">    This class implements the</span>
+
+<span class="sd">    .. math:: f(\nu) = x \coth(x/2) - 4</span>
+
+<span class="sd">    where :math:`x = h \nu / k_B T_CMB`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ThermalSZ.f"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.frequency.ThermalSZ.f">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">nu</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">h</span> <span class="o">*</span> <span class="p">(</span><span class="n">nu</span> <span class="o">*</span> <span class="mf">1e9</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">k</span> <span class="o">*</span> <span class="n">T_CMB</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">-</span> <span class="mf">4.0</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ThermalSZ.eval"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.frequency.ThermalSZ.eval">[docs]</a>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nu</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nu_0</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compute the SED with the given frequency and parameters.</span>
+
+<span class="sd">        nu : float</span>
+<span class="sd">            Frequency in GHz.</span>
+<span class="sd">        T_CMB (optional) : float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ThermalSZ</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">nu</span><span class="p">)</span> <span class="o">/</span> <span class="n">ThermalSZ</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">nu_0</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="FreeFree"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.frequency.FreeFree">[docs]</a><span class="k">class</span> <span class="nc">FreeFree</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot; Free-free</span>
+
+<span class="sd">    .. math:: f(\nu) = EM * ( 1 + log( 1 + (\nu_{ff} / \nu)^{3/\pi} ) )</span>
+<span class="sd">    .. math:: \nu_{ff} = 255.33e9 * (Te / 1000)^{3/2}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="FreeFree.eval"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.frequency.FreeFree.eval">[docs]</a>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nu</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">EM</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Te</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Evaluation of the SED</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nu: float or array</span>
+<span class="sd">            Frequency in the same units as `nu_0`. If array, the shape is</span>
+<span class="sd">            ``(freq)``.</span>
+<span class="sd">        EM: float or array</span>
+<span class="sd">            Emission measure in cm^-6 pc (usually around 300). If array, the shape is ``(...)``.</span>
+<span class="sd">        Te: float or array</span>
+<span class="sd">            Electron temperature (typically around 7000). If array, the shape is ``(...)``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        sed: ndarray</span>
+<span class="sd">            If `nu` is an array, the shape is ``(..., freq)``.</span>
+<span class="sd">            If `nu` is scalar, the shape is ``(..., 1)``.</span>
+<span class="sd">            Note that the last dimension is guaranteed to be the frequency.</span>
+
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        The extra dimensions ``...`` in the output are the broadcast of the</span>
+<span class="sd">        ``...`` in the input (which are required to be broadcast-compatible).</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+
+<span class="sd">        - Free-free emission in temperature.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">EM</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">EM</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+        <span class="n">Te</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Te</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+        <span class="n">Teff</span> <span class="o">=</span> <span class="p">(</span><span class="n">Te</span> <span class="o">/</span> <span class="mf">1.e3</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mf">1.5</span><span class="p">)</span>
+        <span class="n">nuff</span> <span class="o">=</span> <span class="mf">255.33e9</span> <span class="o">*</span> <span class="n">Teff</span>
+        <span class="n">gff</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="p">(</span><span class="n">nuff</span> <span class="o">/</span> <span class="n">nu</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;warning: I need to check the units on this&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">EM</span> <span class="o">*</span> <span class="n">gff</span></div></div>
+
+<div class="viewcode-block" id="ConstantSED"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.frequency.ConstantSED">[docs]</a><span class="k">class</span> <span class="nc">ConstantSED</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Frequency-independent component.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ConstantSED.eval"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.frequency.ConstantSED.eval">[docs]</a>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nu</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">amp</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Evaluation of the SED</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nu: float or array</span>
+<span class="sd">            It just determines the shape of the output.</span>
+<span class="sd">        amp: float or array</span>
+<span class="sd">            Amplitude (or set of amplitudes) of the constant SED.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        sed: ndarray</span>
+<span class="sd">            If `nu` is an array, the shape is ``amp.shape + (freq)``.</span>
+<span class="sd">            If `nu` is scalar, the shape is ``amp.shape + (1)``.</span>
+<span class="sd">            Note that the last dimension is guaranteed to be the frequency.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">amp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">amp</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">amp</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">nu</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="Join"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.frequency.Join">[docs]</a><span class="k">class</span> <span class="nc">Join</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Join several SED models together</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">seds</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Join several SED models together</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        *sed:</span>
+<span class="sd">            Sequence of SED models to be joined together</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_seds</span> <span class="o">=</span> <span class="n">seds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Join.set_defaults"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.frequency.Join.set_defaults">[docs]</a>    <span class="k">def</span> <span class="nf">set_defaults</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;kwseq&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">sed</span><span class="p">,</span> <span class="n">sed_kwargs</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_seds</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;kwseq&#39;</span><span class="p">]):</span>
+                <span class="n">sed</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="o">**</span><span class="n">sed_kwargs</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span> <span class="p">[</span><span class="n">sed</span><span class="o">.</span><span class="n">_get_repr</span><span class="p">()</span> <span class="k">for</span> <span class="n">sed</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_seds</span><span class="p">]}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">defaults</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;kwseq&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">sed</span><span class="o">.</span><span class="n">defaults</span> <span class="k">for</span> <span class="n">sed</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_seds</span><span class="p">]}</span>
+
+<div class="viewcode-block" id="Join.eval"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.frequency.Join.eval">[docs]</a>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kwseq</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compute the SED with the given frequency and parameters.</span>
+
+<span class="sd">        *kwseq</span>
+<span class="sd">            The length of ``kwseq`` has to be equal to the number of SEDs</span>
+<span class="sd">            joined. ``kwseq[i]`` is a dictionary containing the keyword</span>
+<span class="sd">            arguments of the ``i``-th SED.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">kwseq</span><span class="p">:</span>
+            <span class="n">seds</span> <span class="o">=</span> <span class="p">[</span><span class="n">sed</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">for</span> <span class="n">sed</span><span class="p">,</span> <span class="n">kwargs</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_seds</span><span class="p">,</span> <span class="n">kwseq</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># Handles the case in which no parameter has to be passed</span>
+            <span class="n">seds</span> <span class="o">=</span> <span class="p">[</span><span class="n">sed</span><span class="p">()</span> <span class="k">for</span> <span class="n">sed</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_seds</span><span class="p">]</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">seds</span><span class="p">),)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="o">*</span><span class="n">seds</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">seds</span><span class="p">)):</span>
+            <span class="n">res</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">seds</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">res</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2019, Davide Poletti, Max Abitbol, Zack Li
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

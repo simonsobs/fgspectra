@@ -1,0 +1,1128 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>fgspectra package &mdash; fgspectra  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="fgspectra" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> fgspectra
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">fgspectra</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">fgspectra package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-fgspectra.cross">fgspectra.cross module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-fgspectra.frequency">fgspectra.frequency module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-fgspectra.model">fgspectra.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-fgspectra.power">fgspectra.power module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-fgspectra">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">fgspectra</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="modules.html">fgspectra</a> &raquo;</li>
+        
+      <li>fgspectra package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/fgspectra.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="fgspectra-package">
+<h1>fgspectra package<a class="headerlink" href="#fgspectra-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-fgspectra.cross">
+<span id="fgspectra-cross-module"></span><h2>fgspectra.cross module<a class="headerlink" href="#module-fgspectra.cross" title="Permalink to this headline">¶</a></h2>
+<p>Models of cross-spectra</p>
+<p>This module draws inspiration from FGBuster (Davide Poletti and Josquin Errard)
+and BeFoRe (David Alonso and Ben Thorne).</p>
+<dl class="py class">
+<dt id="fgspectra.cross.CorrelatedDustSynchrotron">
+<em class="property">class </em><code class="sig-prename descclassname">fgspectra.cross.</code><code class="sig-name descname">CorrelatedDustSynchrotron</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/cross.html#CorrelatedDustSynchrotron"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.cross.CorrelatedDustSynchrotron" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fgspectra.cross.CorrelatedFactorizedCrossSpectrum" title="fgspectra.cross.CorrelatedFactorizedCrossSpectrum"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.cross.CorrelatedFactorizedCrossSpectrum</span></code></a></p>
+<p>Correlated power law and modified black body, both with power law amplitude</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="fgspectra.cross.CorrelatedFactorizedCrossSpectrum">
+<em class="property">class </em><code class="sig-prename descclassname">fgspectra.cross.</code><code class="sig-name descname">CorrelatedFactorizedCrossSpectrum</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sed</span></em>, <em class="sig-param"><span class="n">cl</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/cross.html#CorrelatedFactorizedCrossSpectrum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.cross.CorrelatedFactorizedCrossSpectrum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fgspectra.cross.FactorizedCrossSpectrum" title="fgspectra.cross.FactorizedCrossSpectrum"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.cross.FactorizedCrossSpectrum</span></code></a></p>
+<p>Factorized cross-spectrum of correlated components</p>
+<p>Cross-spectrum of multiple correlated components for which the scaling in
+frequency and in multipoles are factorizable.</p>
+<div class="math notranslate nohighlight">
+\[xC_\ell^{\nu_i\ \nu_j} = \sum_{kn} f^k(\nu_j) f^n(\nu_i) C^{kn}_\ell\]</div>
+<p>where <span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\(n\)</span> are component indices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sed</strong> (<em>callable</em>) – <span class="math notranslate nohighlight">\(f(\nu)\)</span>. It returns an array with shape <code class="docutils literal notranslate"><span class="pre">(comp,</span> <span class="pre">...,</span> <span class="pre">freq)</span></code>.
+It can be <code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.frequency.SED</span></code>.</p></li>
+<li><p><strong>cl_args</strong> (<em>callable</em>) – <span class="math notranslate nohighlight">\(C_\ell\)</span>. It returns an array with shape
+<code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">comp,</span> <span class="pre">comp,</span> <span class="pre">ell)</span></code>.
+It can, for example, any of the models in <a class="reference internal" href="#module-fgspectra.power" title="fgspectra.power"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.power</span></code></a>.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The two (optional) sets of extra dimensions <code class="docutils literal notranslate"><span class="pre">...</span></code> must be
+broadcast-compatible.</p>
+</div>
+<dl class="py method">
+<dt id="fgspectra.cross.CorrelatedFactorizedCrossSpectrum.eval">
+<code class="sig-name descname">eval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sed_kwargs</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">cl_kwargs</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/cross.html#CorrelatedFactorizedCrossSpectrum.eval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.cross.CorrelatedFactorizedCrossSpectrum.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the model at frequency and ell combinations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sed_args</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a>) – Arguments for which the <cite>sed</cite> is evaluated.</p></li>
+<li><p><strong>cl_args</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a>) – Arguments for which the <cite>cl</cite> is evaluated.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>cross</strong> – Cross-spectrum. The shape is <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">freq,</span> <span class="pre">freq,</span> <span class="pre">ell)</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="fgspectra.cross.CorrelatedPowerLaw">
+<em class="property">class </em><code class="sig-prename descclassname">fgspectra.cross.</code><code class="sig-name descname">CorrelatedPowerLaw</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/cross.html#CorrelatedPowerLaw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.cross.CorrelatedPowerLaw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fgspectra.cross.CorrelatedFactorizedCrossSpectrum" title="fgspectra.cross.CorrelatedFactorizedCrossSpectrum"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.cross.CorrelatedFactorizedCrossSpectrum</span></code></a></p>
+<p>Correlated Power law in both fequency and multipoles</p>
+<p>See <a class="reference internal" href="#fgspectra.frequency.PowerLaw" title="fgspectra.frequency.PowerLaw"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.frequency.PowerLaw</span></code></a> for the frequency dependence and
+<a class="reference internal" href="#fgspectra.power.PowerLaw" title="fgspectra.power.PowerLaw"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.power.PowerLaw</span></code></a> for the ell-dependence.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="fgspectra.cross.FactorizedCrossSpectrum">
+<em class="property">class </em><code class="sig-prename descclassname">fgspectra.cross.</code><code class="sig-name descname">FactorizedCrossSpectrum</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sed</span></em>, <em class="sig-param"><span class="n">cl</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/cross.html#FactorizedCrossSpectrum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.cross.FactorizedCrossSpectrum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fgspectra.model.Model" title="fgspectra.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.model.Model</span></code></a></p>
+<p>Factorized cross-spectrum</p>
+<p>Cross-spectrum of <strong>one</strong> component for which the scaling in frequency
+and in multipoles are factorizable</p>
+<div class="math notranslate nohighlight">
+\[xC_{\ell}^{(ij)} = f(\nu_j) f(\nu_i) C_{\ell}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sed</strong> (<em>callable</em>) – <span class="math notranslate nohighlight">\(f(\nu)\)</span>. It returns an array with shape <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">freq)</span></code>.
+It can be <code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.frequency.SED</span></code>.</p></li>
+<li><p><strong>cl_args</strong> (<em>callable</em>) – <span class="math notranslate nohighlight">\(C_\ell\)</span>. It returns an array with shape <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">ell)</span></code>.
+It can be <code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.power.PowerSpectrum</span></code></p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The two (optional) sets of extra dimensions <code class="docutils literal notranslate"><span class="pre">...</span></code> must be
+broadcast-compatible.</p>
+</div>
+<dl class="py method">
+<dt id="fgspectra.cross.FactorizedCrossSpectrum.defaults">
+<em class="property">property </em><code class="sig-name descname">defaults</code><a class="headerlink" href="#fgspectra.cross.FactorizedCrossSpectrum.defaults" title="Permalink to this definition">¶</a></dt>
+<dd><p>The current defaults</p>
+<p>The current defaults as you would pass them to the eval method.</p>
+<p>In particular, since all the arguments have to be keyword arguments, it
+is a nested set of dictionaries with a key for each argument of the
+<cite>eval</cite> methods in the model.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span> <span class="o">==</span> <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="o">**</span><span class="n">model_child</span><span class="o">.</span><span class="n">defaults</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fgspectra.cross.FactorizedCrossSpectrum.eval">
+<code class="sig-name descname">eval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sed_kwargs</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">cl_kwargs</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/cross.html#FactorizedCrossSpectrum.eval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.cross.FactorizedCrossSpectrum.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the model at frequency and ell combinations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sed_args</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a>) – Arguments for which the <cite>sed</cite> is evaluated.</p></li>
+<li><p><strong>cl_args</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a>) – Arguments for which the <cite>cl</cite> is evaluated.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>cross</strong> – Cross-spectrum. The shape is <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">freq,</span> <span class="pre">freq,</span> <span class="pre">ell)</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fgspectra.cross.FactorizedCrossSpectrum.set_defaults">
+<code class="sig-name descname">set_defaults</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/cross.html#FactorizedCrossSpectrum.set_defaults"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.cross.FactorizedCrossSpectrum.set_defaults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the defaults of the evaluation</p>
+<p>Call <code class="docutils literal notranslate"><span class="pre">set_defaults</span></code> with the same arguments (or a subset) of <code class="docutils literal notranslate"><span class="pre">eval</span></code>
+(or <code class="docutils literal notranslate"><span class="pre">__call__</span></code>).
+This will change the default value of those arguments in <code class="docutils literal notranslate"><span class="pre">eval</span></code>. If
+<cite>kwargs</cite> has keys that are not arguments of <cite>eval</cite>, these keys are
+ignored.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">PrintABC</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_abc</span> <span class="o">=</span> <span class="n">PrintABC</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_abc</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="go">1 2 3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_ab10c</span> <span class="o">=</span> <span class="n">PrintABC</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_ab10c</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">b</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_ab10c</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>  <span class="c1"># The default of b has changed</span>
+<span class="go">1 10 3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_abc</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>  <span class="c1"># Without affecting other instances</span>
+<span class="go">1 2 3</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="fgspectra.cross.PowerLaw">
+<em class="property">class </em><code class="sig-prename descclassname">fgspectra.cross.</code><code class="sig-name descname">PowerLaw</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/cross.html#PowerLaw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.cross.PowerLaw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fgspectra.cross.FactorizedCrossSpectrum" title="fgspectra.cross.FactorizedCrossSpectrum"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.cross.FactorizedCrossSpectrum</span></code></a></p>
+<p>Single Power law in both fequency and multipoles</p>
+<p>See <a class="reference internal" href="#fgspectra.frequency.PowerLaw" title="fgspectra.frequency.PowerLaw"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.frequency.PowerLaw</span></code></a> for the frequency dependence and
+<a class="reference internal" href="#fgspectra.power.PowerLaw" title="fgspectra.power.PowerLaw"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.power.PowerLaw</span></code></a> for the ell-dependence.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="fgspectra.cross.SZxCIB">
+<em class="property">class </em><code class="sig-prename descclassname">fgspectra.cross.</code><code class="sig-name descname">SZxCIB</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/cross.html#SZxCIB"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.cross.SZxCIB" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fgspectra.cross.CorrelatedFactorizedCrossSpectrum" title="fgspectra.cross.CorrelatedFactorizedCrossSpectrum"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.cross.CorrelatedFactorizedCrossSpectrum</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="fgspectra.cross.Sum">
+<em class="property">class </em><code class="sig-prename descclassname">fgspectra.cross.</code><code class="sig-name descname">Sum</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">crosses</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/cross.html#Sum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.cross.Sum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fgspectra.model.Model" title="fgspectra.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.model.Model</span></code></a></p>
+<p>Sum the cross-spectra of uncorrelated components</p>
+<dl class="py method">
+<dt id="fgspectra.cross.Sum.defaults">
+<em class="property">property </em><code class="sig-name descname">defaults</code><a class="headerlink" href="#fgspectra.cross.Sum.defaults" title="Permalink to this definition">¶</a></dt>
+<dd><p>The current defaults</p>
+<p>The current defaults as you would pass them to the eval method.</p>
+<p>In particular, since all the arguments have to be keyword arguments, it
+is a nested set of dictionaries with a key for each argument of the
+<cite>eval</cite> methods in the model.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span> <span class="o">==</span> <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="o">**</span><span class="n">model_child</span><span class="o">.</span><span class="n">defaults</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fgspectra.cross.Sum.eval">
+<code class="sig-name descname">eval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kwseq</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/cross.html#Sum.eval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.cross.Sum.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the sum of the cross-spectra</p>
+<dl class="simple">
+<dt><a href="#id1"><span class="problematic" id="id2">*</span></a>kwseq:</dt><dd><p>The length of <code class="docutils literal notranslate"><span class="pre">kwseq</span></code> has to be equal to the number of
+cross-spectra summed. <code class="docutils literal notranslate"><span class="pre">kwseq[i]</span></code> is a dictionary containing the
+keyword arguments of the <code class="docutils literal notranslate"><span class="pre">i</span></code>-th cross-spectrum.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fgspectra.cross.Sum.eval_terms">
+<code class="sig-name descname">eval_terms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kwseq</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/cross.html#Sum.eval_terms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.cross.Sum.eval_terms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the sum of the cross-spectra</p>
+<dl class="simple">
+<dt><a href="#id3"><span class="problematic" id="id4">*</span></a>kwseq:</dt><dd><p>The length of <code class="docutils literal notranslate"><span class="pre">kwseq</span></code> has to be equal to the number of
+cross-spectra summed. <code class="docutils literal notranslate"><span class="pre">kwseq[i]</span></code> is a dictionary containing the
+keyword arguments of the <code class="docutils literal notranslate"><span class="pre">i</span></code>-th cross-spectrum.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fgspectra.cross.Sum.set_defaults">
+<code class="sig-name descname">set_defaults</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/cross.html#Sum.set_defaults"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.cross.Sum.set_defaults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the defaults of the evaluation</p>
+<p>Call <code class="docutils literal notranslate"><span class="pre">set_defaults</span></code> with the same arguments (or a subset) of <code class="docutils literal notranslate"><span class="pre">eval</span></code>
+(or <code class="docutils literal notranslate"><span class="pre">__call__</span></code>).
+This will change the default value of those arguments in <code class="docutils literal notranslate"><span class="pre">eval</span></code>. If
+<cite>kwargs</cite> has keys that are not arguments of <cite>eval</cite>, these keys are
+ignored.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">PrintABC</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_abc</span> <span class="o">=</span> <span class="n">PrintABC</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_abc</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="go">1 2 3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_ab10c</span> <span class="o">=</span> <span class="n">PrintABC</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_ab10c</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">b</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_ab10c</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>  <span class="c1"># The default of b has changed</span>
+<span class="go">1 10 3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_abc</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>  <span class="c1"># Without affecting other instances</span>
+<span class="go">1 2 3</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-fgspectra.frequency">
+<span id="fgspectra-frequency-module"></span><h2>fgspectra.frequency module<a class="headerlink" href="#module-fgspectra.frequency" title="Permalink to this headline">¶</a></h2>
+<p>Frequency-dependent foreground components.</p>
+<p>This module implements the frequency-dependent component of common foreground
+contaminants.</p>
+<p>This package draws inspiration from FGBuster (Davide Poletti and Josquin Errard)
+and BeFoRe (David Alonso and Ben Thorne).</p>
+<dl class="py class">
+<dt id="fgspectra.frequency.CIB">
+<em class="property">class </em><code class="sig-prename descclassname">fgspectra.frequency.</code><code class="sig-name descname">CIB</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/frequency.html#CIB"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.frequency.CIB" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fgspectra.frequency.ModifiedBlackBody" title="fgspectra.frequency.ModifiedBlackBody"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.frequency.ModifiedBlackBody</span></code></a></p>
+<p>Alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">ModifiedBlackBOdy</span></code></p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="fgspectra.frequency.ConstantSED">
+<em class="property">class </em><code class="sig-prename descclassname">fgspectra.frequency.</code><code class="sig-name descname">ConstantSED</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/frequency.html#ConstantSED"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.frequency.ConstantSED" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fgspectra.model.Model" title="fgspectra.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.model.Model</span></code></a></p>
+<p>Frequency-independent component.</p>
+<dl class="py method">
+<dt id="fgspectra.frequency.ConstantSED.eval">
+<code class="sig-name descname">eval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nu</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">amp</span><span class="o">=</span><span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/frequency.html#ConstantSED.eval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.frequency.ConstantSED.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluation of the SED</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nu</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><em>array</em>) – It just determines the shape of the output.</p></li>
+<li><p><strong>amp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><em>array</em>) – Amplitude (or set of amplitudes) of the constant SED.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>sed</strong> – If <cite>nu</cite> is an array, the shape is <code class="docutils literal notranslate"><span class="pre">amp.shape</span> <span class="pre">+</span> <span class="pre">(freq)</span></code>.
+If <cite>nu</cite> is scalar, the shape is <code class="docutils literal notranslate"><span class="pre">amp.shape</span> <span class="pre">+</span> <span class="pre">(1)</span></code>.
+Note that the last dimension is guaranteed to be the frequency.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="fgspectra.frequency.FreeFree">
+<em class="property">class </em><code class="sig-prename descclassname">fgspectra.frequency.</code><code class="sig-name descname">FreeFree</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/frequency.html#FreeFree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.frequency.FreeFree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fgspectra.model.Model" title="fgspectra.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.model.Model</span></code></a></p>
+<p>Free-free</p>
+<div class="math notranslate nohighlight">
+\[f(\nu) = EM * ( 1 + log( 1 + (\nu_{ff} / \nu)^{3/\pi} ) )\]</div>
+<div class="math notranslate nohighlight">
+\[\nu_{ff} = 255.33e9 * (Te / 1000)^{3/2}\]</div>
+<dl class="py method">
+<dt id="fgspectra.frequency.FreeFree.eval">
+<code class="sig-name descname">eval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nu</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">EM</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">Te</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/frequency.html#FreeFree.eval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.frequency.FreeFree.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluation of the SED</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nu</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><em>array</em>) – Frequency in the same units as <cite>nu_0</cite>. If array, the shape is
+<code class="docutils literal notranslate"><span class="pre">(freq)</span></code>.</p></li>
+<li><p><strong>EM</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><em>array</em>) – Emission measure in cm^-6 pc (usually around 300). If array, the shape is <code class="docutils literal notranslate"><span class="pre">(...)</span></code>.</p></li>
+<li><p><strong>Te</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><em>array</em>) – Electron temperature (typically around 7000). If array, the shape is <code class="docutils literal notranslate"><span class="pre">(...)</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>sed</strong> – If <cite>nu</cite> is an array, the shape is <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">freq)</span></code>.
+If <cite>nu</cite> is scalar, the shape is <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">1)</span></code>.
+Note that the last dimension is guaranteed to be the frequency.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The extra dimensions <code class="docutils literal notranslate"><span class="pre">...</span></code> in the output are the broadcast of the
+<code class="docutils literal notranslate"><span class="pre">...</span></code> in the input (which are required to be broadcast-compatible).</p>
+</div>
+<p class="rubric">Examples</p>
+<ul class="simple">
+<li><p>Free-free emission in temperature.</p></li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="fgspectra.frequency.Join">
+<em class="property">class </em><code class="sig-prename descclassname">fgspectra.frequency.</code><code class="sig-name descname">Join</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">seds</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/frequency.html#Join"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.frequency.Join" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fgspectra.model.Model" title="fgspectra.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.model.Model</span></code></a></p>
+<p>Join several SED models together</p>
+<dl class="py method">
+<dt id="fgspectra.frequency.Join.defaults">
+<em class="property">property </em><code class="sig-name descname">defaults</code><a class="headerlink" href="#fgspectra.frequency.Join.defaults" title="Permalink to this definition">¶</a></dt>
+<dd><p>The current defaults</p>
+<p>The current defaults as you would pass them to the eval method.</p>
+<p>In particular, since all the arguments have to be keyword arguments, it
+is a nested set of dictionaries with a key for each argument of the
+<cite>eval</cite> methods in the model.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span> <span class="o">==</span> <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="o">**</span><span class="n">model_child</span><span class="o">.</span><span class="n">defaults</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fgspectra.frequency.Join.eval">
+<code class="sig-name descname">eval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kwseq</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/frequency.html#Join.eval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.frequency.Join.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the SED with the given frequency and parameters.</p>
+<dl class="simple">
+<dt><a href="#id5"><span class="problematic" id="id6">*</span></a>kwseq</dt><dd><p>The length of <code class="docutils literal notranslate"><span class="pre">kwseq</span></code> has to be equal to the number of SEDs
+joined. <code class="docutils literal notranslate"><span class="pre">kwseq[i]</span></code> is a dictionary containing the keyword
+arguments of the <code class="docutils literal notranslate"><span class="pre">i</span></code>-th SED.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fgspectra.frequency.Join.set_defaults">
+<code class="sig-name descname">set_defaults</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/frequency.html#Join.set_defaults"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.frequency.Join.set_defaults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the defaults of the evaluation</p>
+<p>Call <code class="docutils literal notranslate"><span class="pre">set_defaults</span></code> with the same arguments (or a subset) of <code class="docutils literal notranslate"><span class="pre">eval</span></code>
+(or <code class="docutils literal notranslate"><span class="pre">__call__</span></code>).
+This will change the default value of those arguments in <code class="docutils literal notranslate"><span class="pre">eval</span></code>. If
+<cite>kwargs</cite> has keys that are not arguments of <cite>eval</cite>, these keys are
+ignored.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">PrintABC</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_abc</span> <span class="o">=</span> <span class="n">PrintABC</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_abc</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="go">1 2 3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_ab10c</span> <span class="o">=</span> <span class="n">PrintABC</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_ab10c</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">b</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_ab10c</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>  <span class="c1"># The default of b has changed</span>
+<span class="go">1 10 3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_abc</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>  <span class="c1"># Without affecting other instances</span>
+<span class="go">1 2 3</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="fgspectra.frequency.ModifiedBlackBody">
+<em class="property">class </em><code class="sig-prename descclassname">fgspectra.frequency.</code><code class="sig-name descname">ModifiedBlackBody</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/frequency.html#ModifiedBlackBody"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.frequency.ModifiedBlackBody" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fgspectra.model.Model" title="fgspectra.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.model.Model</span></code></a></p>
+<p>Modified black body in K_RJ</p>
+<div class="math notranslate nohighlight">
+\[f(\nu) = (\nu / \nu_0)^{\beta + 1} / (e^x - 1)\]</div>
+<p>where <span class="math notranslate nohighlight">\(x = h \nu / k_B T_d\)</span></p>
+<dl class="py method">
+<dt id="fgspectra.frequency.ModifiedBlackBody.eval">
+<code class="sig-name descname">eval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nu</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nu_0</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">temp</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">beta</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/frequency.html#ModifiedBlackBody.eval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.frequency.ModifiedBlackBody.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluation of the SED</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nu</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><em>array</em>) – Frequency in GHz.</p></li>
+<li><p><strong>beta</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><em>array</em>) – Spectral index.</p></li>
+<li><p><strong>temp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><em>array</em>) – Dust temperature.</p></li>
+<li><p><strong>nu_0</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Reference frequency in Hz.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>sed</strong> – The last dimension is the frequency dependence.
+The leading dimensions are the broadcast between the hypothetic
+dimensions of <cite>beta</cite> and <cite>temp</cite>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="fgspectra.frequency.PowerLaw">
+<em class="property">class </em><code class="sig-prename descclassname">fgspectra.frequency.</code><code class="sig-name descname">PowerLaw</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/frequency.html#PowerLaw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.frequency.PowerLaw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fgspectra.model.Model" title="fgspectra.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.model.Model</span></code></a></p>
+<p>Power Law</p>
+<div class="math notranslate nohighlight">
+\[f(\nu) = (\nu / \nu_0)^{\beta}\]</div>
+<dl class="py method">
+<dt id="fgspectra.frequency.PowerLaw.eval">
+<code class="sig-name descname">eval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nu</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">beta</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nu_0</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/frequency.html#PowerLaw.eval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.frequency.PowerLaw.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluation of the SED</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nu</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><em>array</em>) – Frequency in the same units as <cite>nu_0</cite>. If array, the shape is
+<code class="docutils literal notranslate"><span class="pre">(freq)</span></code>.</p></li>
+<li><p><strong>beta</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><em>array</em>) – Spectral index. If array, the shape is <code class="docutils literal notranslate"><span class="pre">(...)</span></code>.</p></li>
+<li><p><strong>nu_0</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><em>array</em>) – Reference frequency in the same units as <cite>nu</cite>. If array, the shape
+is <code class="docutils literal notranslate"><span class="pre">(...)</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>sed</strong> – If <cite>nu</cite> is an array, the shape is <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">freq)</span></code>.
+If <cite>nu</cite> is scalar, the shape is <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">1)</span></code>.
+Note that the last dimension is guaranteed to be the frequency.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The extra dimensions <code class="docutils literal notranslate"><span class="pre">...</span></code> in the output are the broadcast of the
+<code class="docutils literal notranslate"><span class="pre">...</span></code> in the input (which are required to be broadcast-compatible).</p>
+</div>
+<p class="rubric">Examples</p>
+<ul class="simple">
+<li><p>T, E and B synchrotron SEDs with the same reference frequency but
+different spectral indices. <cite>beta</cite> is an array with shape <code class="docutils literal notranslate"><span class="pre">(3)</span></code>,
+<cite>nu_0</cite> is a scalar.</p></li>
+<li><p>SEDs of synchrotron and dust (approximated as power law). Both <cite>beta</cite>
+and <cite>nu_0</cite> are arrays with shape <code class="docutils literal notranslate"><span class="pre">(2)</span></code></p></li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="fgspectra.frequency.Synchrotron">
+<em class="property">class </em><code class="sig-prename descclassname">fgspectra.frequency.</code><code class="sig-name descname">Synchrotron</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/frequency.html#Synchrotron"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.frequency.Synchrotron" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fgspectra.frequency.PowerLaw" title="fgspectra.frequency.PowerLaw"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.frequency.PowerLaw</span></code></a></p>
+<p>Alias of <a class="reference internal" href="#fgspectra.frequency.PowerLaw" title="fgspectra.frequency.PowerLaw"><code class="xref py py-class docutils literal notranslate"><span class="pre">PowerLaw</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="fgspectra.frequency.ThermalSZ">
+<em class="property">class </em><code class="sig-prename descclassname">fgspectra.frequency.</code><code class="sig-name descname">ThermalSZ</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/frequency.html#ThermalSZ"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.frequency.ThermalSZ" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fgspectra.model.Model" title="fgspectra.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.model.Model</span></code></a></p>
+<p>Thermal Sunyaev-Zel’dovich in K_CMB</p>
+<p>This class implements the</p>
+<div class="math notranslate nohighlight">
+\[f(\nu) = x \coth(x/2) - 4\]</div>
+<p>where <span class="math notranslate nohighlight">\(x = h \nu / k_B T_CMB\)</span></p>
+<dl class="py method">
+<dt id="fgspectra.frequency.ThermalSZ.eval">
+<code class="sig-name descname">eval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nu</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nu_0</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/frequency.html#ThermalSZ.eval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.frequency.ThermalSZ.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the SED with the given frequency and parameters.</p>
+<dl class="simple">
+<dt>nu<span class="classifier">float</span></dt><dd><p>Frequency in GHz.</p>
+</dd>
+</dl>
+<p>T_CMB (optional) : float</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fgspectra.frequency.ThermalSZ.f">
+<em class="property">static </em><code class="sig-name descname">f</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nu</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/frequency.html#ThermalSZ.f"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.frequency.ThermalSZ.f" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-fgspectra.model">
+<span id="fgspectra-model-module"></span><h2>fgspectra.model module<a class="headerlink" href="#module-fgspectra.model" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="fgspectra.model.Model">
+<em class="property">class </em><code class="sig-prename descclassname">fgspectra.model.</code><code class="sig-name descname">Model</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/model.html#Model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.model.Model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></a></p>
+<p>Abstract class for model definition</p>
+<p>A model is a class that has one purpose: evaluating the model. What
+evaluation means is defined by the <cite>eval</cite> method that any child class has to
+override.</p>
+<p>If the <cite>eval</cite> method of a hypotetical <code class="docutils literal notranslate"><span class="pre">Child</span></code> class calls the <cite>eval</cite>
+method of other <cite>Model`s, it is likely that ``Child`</cite> has also to override
+<cite>set_defaults</cite>, <cite>defaults</cite> and <cite>_get_repr</cite></p>
+<dl class="py method">
+<dt id="fgspectra.model.Model.array2kwargs">
+<code class="sig-name descname">array2kwargs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/model.html#Model.array2kwargs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.model.Model.array2kwargs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="fgspectra.model.Model.defaults">
+<em class="property">property </em><code class="sig-name descname">defaults</code><a class="headerlink" href="#fgspectra.model.Model.defaults" title="Permalink to this definition">¶</a></dt>
+<dd><p>The current defaults</p>
+<p>The current defaults as you would pass them to the eval method.</p>
+<p>In particular, since all the arguments have to be keyword arguments, it
+is a nested set of dictionaries with a key for each argument of the
+<cite>eval</cite> methods in the model.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span> <span class="o">==</span> <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="o">**</span><span class="n">model_child</span><span class="o">.</span><span class="n">defaults</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fgspectra.model.Model.eval">
+<em class="property">abstract </em><code class="sig-name descname">eval</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/model.html#Model.eval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.model.Model.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluation of the model</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The signature must contain</p>
+<ul class="simple">
+<li><p>only keyword arguments (except for <code class="docutils literal notranslate"><span class="pre">self</span></code>)</p></li>
+<li><p>no variadic argument (<a href="#id7"><span class="problematic" id="id8">*</span></a>args, <a href="#id9"><span class="problematic" id="id10">**</span></a>kwargs)</p></li>
+</ul>
+<p>and</p>
+<ul class="simple">
+<li><p>no decoration</p></li>
+</ul>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fgspectra.model.Model.eval_array">
+<code class="sig-name descname">eval_array</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/model.html#Model.eval_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.model.Model.eval_array" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="fgspectra.model.Model.kwargs2array">
+<code class="sig-name descname">kwargs2array</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/model.html#Model.kwargs2array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.model.Model.kwargs2array" title="Permalink to this definition">¶</a></dt>
+<dd><p>(Nested) dictionaries to float array</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fgspectra.model.Model.prepare_for_arrays">
+<code class="sig-name descname">prepare_for_arrays</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">template_kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/model.html#Model.prepare_for_arrays"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.model.Model.prepare_for_arrays" title="Permalink to this definition">¶</a></dt>
+<dd><p>Preapre for using arrays</p>
+<p>reference_kwargs are necessary to define the shape you expect for each
+argument, which are necessary to convert from array to nested
+dictionaries of arguments. They are required to have at least all the
+arguments for which the default is None.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fgspectra.model.Model.set_defaults">
+<code class="sig-name descname">set_defaults</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/model.html#Model.set_defaults"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.model.Model.set_defaults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the defaults of the evaluation</p>
+<p>Call <code class="docutils literal notranslate"><span class="pre">set_defaults</span></code> with the same arguments (or a subset) of <code class="docutils literal notranslate"><span class="pre">eval</span></code>
+(or <code class="docutils literal notranslate"><span class="pre">__call__</span></code>).
+This will change the default value of those arguments in <code class="docutils literal notranslate"><span class="pre">eval</span></code>. If
+<cite>kwargs</cite> has keys that are not arguments of <cite>eval</cite>, these keys are
+ignored.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">PrintABC</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_abc</span> <span class="o">=</span> <span class="n">PrintABC</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_abc</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="go">1 2 3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_ab10c</span> <span class="o">=</span> <span class="n">PrintABC</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_ab10c</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">b</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_ab10c</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>  <span class="c1"># The default of b has changed</span>
+<span class="go">1 10 3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_abc</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>  <span class="c1"># Without affecting other instances</span>
+<span class="go">1 2 3</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-fgspectra.power">
+<span id="fgspectra-power-module"></span><h2>fgspectra.power module<a class="headerlink" href="#module-fgspectra.power" title="Permalink to this headline">¶</a></h2>
+<p>Power spectrum</p>
+<p>This module implements the ell-dependent component of common foreground
+contaminants.</p>
+<p>This module draws inspiration from FGBuster (Davide Poletti and Josquin Errard)
+and BeFoRe (David Alonso and Ben Thorne).</p>
+<dl class="py class">
+<dt id="fgspectra.power.CorrelatedPowerLaws">
+<em class="property">class </em><code class="sig-prename descclassname">fgspectra.power.</code><code class="sig-name descname">CorrelatedPowerLaws</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/power.html#CorrelatedPowerLaws"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.power.CorrelatedPowerLaws" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fgspectra.power.PowerLaw" title="fgspectra.power.PowerLaw"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.power.PowerLaw</span></code></a></p>
+<p>As PowerLaw, but requires only the diagonal of the component-component
+dimensions and the correlation coefficient between TWO PL</p>
+<dl class="py method">
+<dt id="fgspectra.power.CorrelatedPowerLaws.eval">
+<code class="sig-name descname">eval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ell</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">alpha</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ell_0</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">amp</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">rho</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/power.html#CorrelatedPowerLaws.eval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.power.CorrelatedPowerLaws.eval" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ell</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><em>array</em>) – Multipole</p></li>
+<li><p><strong>amp</strong> (<em>array</em>) – amplitude of the auto-spectra. Shape must be <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">2)</span></code>, which
+means that for time being we support only two correlated components</p></li>
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><em>array</em>) – Spectral index. Shape must be broadcast-compatible with <cite>amp</cite></p></li>
+<li><p><strong>ell_0</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Reference ell</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>cl</strong> – The dimensions are <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">comp1,</span> <span class="pre">comp2,</span> <span class="pre">ell)</span></code>.
+The leading dimensions are the hypothetic dimensions of <cite>alpha</cite> and
+<cite>amp</cite>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="fgspectra.power.PowerLaw">
+<em class="property">class </em><code class="sig-prename descclassname">fgspectra.power.</code><code class="sig-name descname">PowerLaw</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/power.html#PowerLaw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.power.PowerLaw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fgspectra.model.Model" title="fgspectra.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.model.Model</span></code></a></p>
+<p>Power law</p>
+<div class="math notranslate nohighlight">
+\[C_\ell = (\ell / \ell_0)^\alpha\]</div>
+<dl class="py method">
+<dt id="fgspectra.power.PowerLaw.eval">
+<code class="sig-name descname">eval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ell</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">alpha</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ell_0</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">amp</span><span class="o">=</span><span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/power.html#PowerLaw.eval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.power.PowerLaw.eval" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ell</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><em>array</em>) – Multipole</p></li>
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><em>array</em>) – Spectral index.</p></li>
+<li><p><strong>ell_0</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Reference ell</p></li>
+<li><p><strong>amp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><em>array</em>) – Amplitude, shape must be compatible with <cite>alpha</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>cl</strong> – The last dimension is ell.
+The leading dimensions are the hypothetic dimensions of <cite>alpha</cite></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="fgspectra.power.PowerSpectraAndCorrelation">
+<em class="property">class </em><code class="sig-prename descclassname">fgspectra.power.</code><code class="sig-name descname">PowerSpectraAndCorrelation</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">power_spectra</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/power.html#PowerSpectraAndCorrelation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.power.PowerSpectraAndCorrelation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fgspectra.model.Model" title="fgspectra.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.model.Model</span></code></a></p>
+<p>Components’ spectra and their correlation</p>
+<p>Spectrum of correlated components defined by the spectrum of each component
+and their correlation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>*power_spectra</strong> (series of <cite>PowerSpectrum</cite>) – The series has lenght <span class="math notranslate nohighlight">\(N (N + 1) / 2\)</span>, where <span class="math notranslate nohighlight">\(N\)</span> is the
+number of components. They specify the upper (or lower) triangle of the
+component-component cross spectra, which is symmetric. The series stores
+a <cite>PowerSpectrum</cite> for each component-component combination.
+The main diagonal (i.e. the autospectra) goes first, the second diagonal
+of the correlation matrix follows, then the third, etc.
+The ordering is similar to the one returned by <cite>healpy.anafast</cite>.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="fgspectra.power.PowerSpectraAndCorrelation.defaults">
+<em class="property">property </em><code class="sig-name descname">defaults</code><a class="headerlink" href="#fgspectra.power.PowerSpectraAndCorrelation.defaults" title="Permalink to this definition">¶</a></dt>
+<dd><p>The current defaults</p>
+<p>The current defaults as you would pass them to the eval method.</p>
+<p>In particular, since all the arguments have to be keyword arguments, it
+is a nested set of dictionaries with a key for each argument of the
+<cite>eval</cite> methods in the model.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span> <span class="o">==</span> <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="o">**</span><span class="n">model_child</span><span class="o">.</span><span class="n">defaults</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fgspectra.power.PowerSpectraAndCorrelation.eval">
+<code class="sig-name descname">eval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kwseq</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/power.html#PowerSpectraAndCorrelation.eval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.power.PowerSpectraAndCorrelation.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the SED with the given frequency and parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>*argss</strong> – The length of <cite>argss</cite> has to be equal to the number of SEDs joined.
+<code class="docutils literal notranslate"><span class="pre">argss[i]</span></code> is the argument list of the <code class="docutils literal notranslate"><span class="pre">i</span></code>-th SED.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fgspectra.power.PowerSpectraAndCorrelation.set_defaults">
+<code class="sig-name descname">set_defaults</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/power.html#PowerSpectraAndCorrelation.set_defaults"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.power.PowerSpectraAndCorrelation.set_defaults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the defaults of the evaluation</p>
+<p>Call <code class="docutils literal notranslate"><span class="pre">set_defaults</span></code> with the same arguments (or a subset) of <code class="docutils literal notranslate"><span class="pre">eval</span></code>
+(or <code class="docutils literal notranslate"><span class="pre">__call__</span></code>).
+This will change the default value of those arguments in <code class="docutils literal notranslate"><span class="pre">eval</span></code>. If
+<cite>kwargs</cite> has keys that are not arguments of <cite>eval</cite>, these keys are
+ignored.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">PrintABC</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_abc</span> <span class="o">=</span> <span class="n">PrintABC</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_abc</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="go">1 2 3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_ab10c</span> <span class="o">=</span> <span class="n">PrintABC</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_ab10c</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">b</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_ab10c</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>  <span class="c1"># The default of b has changed</span>
+<span class="go">1 10 3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_abc</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>  <span class="c1"># Without affecting other instances</span>
+<span class="go">1 2 3</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="fgspectra.power.PowerSpectraAndCovariance">
+<em class="property">class </em><code class="sig-prename descclassname">fgspectra.power.</code><code class="sig-name descname">PowerSpectraAndCovariance</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">power_spectra</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/power.html#PowerSpectraAndCovariance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.power.PowerSpectraAndCovariance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fgspectra.model.Model" title="fgspectra.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.model.Model</span></code></a></p>
+<p>Components’ spectra and their covariance</p>
+<p>Spectrum of correlated components defined by the spectrum of each component
+and their correlation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>*power_spectra</strong> (series of <cite>PowerSpectrum</cite>) – The series has length <span class="math notranslate nohighlight">\(N (N + 1) / 2\)</span>, where <span class="math notranslate nohighlight">\(N\)</span> is the
+number of components. They specify the upper (or lower) triangle of the
+component-component cross spectra, which is symmetric. The series stores
+a <cite>PowerSpectrum</cite> for each component-component combination.
+The main diagonal (i.e. the autospectra) goes first, the second diagonal
+of the covariance matrix follows, then the third, etc.
+The ordering is similar to the one returned by <cite>healpy.anafast</cite>.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="fgspectra.power.PowerSpectraAndCovariance.defaults">
+<em class="property">property </em><code class="sig-name descname">defaults</code><a class="headerlink" href="#fgspectra.power.PowerSpectraAndCovariance.defaults" title="Permalink to this definition">¶</a></dt>
+<dd><p>The current defaults</p>
+<p>The current defaults as you would pass them to the eval method.</p>
+<p>In particular, since all the arguments have to be keyword arguments, it
+is a nested set of dictionaries with a key for each argument of the
+<cite>eval</cite> methods in the model.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span> <span class="o">==</span> <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="o">**</span><span class="n">model_child</span><span class="o">.</span><span class="n">defaults</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fgspectra.power.PowerSpectraAndCovariance.eval">
+<code class="sig-name descname">eval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kwseq</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/power.html#PowerSpectraAndCovariance.eval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.power.PowerSpectraAndCovariance.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the Cl with the given frequency and parameters.</p>
+<dl class="simple">
+<dt>kwseq</dt><dd><p>The length of <cite>argss</cite> has to be equal to the number of SEDs joined.
+<code class="docutils literal notranslate"><span class="pre">kwseq[i]</span></code> is the argument list of the <code class="docutils literal notranslate"><span class="pre">i</span></code>-th SED.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fgspectra.power.PowerSpectraAndCovariance.set_defaults">
+<code class="sig-name descname">set_defaults</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/power.html#PowerSpectraAndCovariance.set_defaults"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.power.PowerSpectraAndCovariance.set_defaults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the defaults of the evaluation</p>
+<p>Call <code class="docutils literal notranslate"><span class="pre">set_defaults</span></code> with the same arguments (or a subset) of <code class="docutils literal notranslate"><span class="pre">eval</span></code>
+(or <code class="docutils literal notranslate"><span class="pre">__call__</span></code>).
+This will change the default value of those arguments in <code class="docutils literal notranslate"><span class="pre">eval</span></code>. If
+<cite>kwargs</cite> has keys that are not arguments of <cite>eval</cite>, these keys are
+ignored.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">PrintABC</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_abc</span> <span class="o">=</span> <span class="n">PrintABC</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_abc</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="go">1 2 3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_ab10c</span> <span class="o">=</span> <span class="n">PrintABC</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_ab10c</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">b</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_ab10c</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>  <span class="c1"># The default of b has changed</span>
+<span class="go">1 10 3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">print_abc</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>  <span class="c1"># Without affecting other instances</span>
+<span class="go">1 2 3</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="fgspectra.power.PowerSpectrumFromFile">
+<em class="property">class </em><code class="sig-prename descclassname">fgspectra.power.</code><code class="sig-name descname">PowerSpectrumFromFile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filenames</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/power.html#PowerSpectrumFromFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.power.PowerSpectrumFromFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fgspectra.model.Model" title="fgspectra.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.model.Model</span></code></a></p>
+<p>Power spectrum loaded from file(s)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filenames</strong> (<em>array_like of strings</em>) – File(s) to load. It can be a string or any (nested) sequence of strings</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ell</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Power spectrum of a single file</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">my_file</span> <span class="o">=</span> <span class="s1">&#39;cl.dat&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ps</span> <span class="o">=</span> <span class="n">PowerSpectrumFromFile</span><span class="p">(</span><span class="n">my_file</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ps</span><span class="p">(</span><span class="n">ell</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(5)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ps</span> <span class="o">=</span> <span class="n">PowerSpectrumFromFile</span><span class="p">([</span><span class="n">my_file</span><span class="p">])</span>  <span class="c1"># List</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ps</span><span class="p">(</span><span class="n">ell</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(1, 5)</span>
+</pre></div>
+</div>
+<p>Two correlated components</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">my_files</span> <span class="o">=</span> <span class="p">[[</span><span class="s1">&#39;cl_comp1.dat&#39;</span><span class="p">,</span> <span class="s1">&#39;cl_comp1xcomp2.dat&#39;</span><span class="p">],</span>
+<span class="gp">... </span>            <span class="p">[</span><span class="s1">&#39;cl_comp1xcomp2.dat&#39;</span><span class="p">,</span> <span class="s1">&#39;cl_comp2.dat&#39;</span><span class="p">]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ps</span> <span class="o">=</span> <span class="n">PowerSpectrumFromFile</span><span class="p">(</span><span class="n">my_files</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ps</span><span class="p">(</span><span class="n">ell</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(2, 2, 5)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="fgspectra.power.PowerSpectrumFromFile.eval">
+<code class="sig-name descname">eval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ell</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ell_0</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">amp</span><span class="o">=</span><span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/power.html#PowerSpectrumFromFile.eval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.power.PowerSpectrumFromFile.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the power spectrum with the given ell and parameters.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="fgspectra.power.SZxCIB_Addison2012">
+<em class="property">class </em><code class="sig-prename descclassname">fgspectra.power.</code><code class="sig-name descname">SZxCIB_Addison2012</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/power.html#SZxCIB_Addison2012"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.power.SZxCIB_Addison2012" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fgspectra.power.PowerSpectraAndCovariance" title="fgspectra.power.PowerSpectraAndCovariance"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.power.PowerSpectraAndCovariance</span></code></a></p>
+<p>PowerSpectrum for SZxCIB (Dunkley et al. 2013).</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="fgspectra.power.SZxCIB_Reichardt2012">
+<em class="property">class </em><code class="sig-prename descclassname">fgspectra.power.</code><code class="sig-name descname">SZxCIB_Reichardt2012</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fgspectra/power.html#SZxCIB_Reichardt2012"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.power.SZxCIB_Reichardt2012" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fgspectra.power.PowerSpectraAndCorrelation" title="fgspectra.power.PowerSpectraAndCorrelation"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.power.PowerSpectraAndCorrelation</span></code></a></p>
+<p>PowerSpectrum for SZxCIB (Dunkley et al. 2013).</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="fgspectra.power.kSZ_bat">
+<em class="property">class </em><code class="sig-prename descclassname">fgspectra.power.</code><code class="sig-name descname">kSZ_bat</code><a class="reference internal" href="_modules/fgspectra/power.html#kSZ_bat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.power.kSZ_bat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fgspectra.power.PowerSpectrumFromFile" title="fgspectra.power.PowerSpectrumFromFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.power.PowerSpectrumFromFile</span></code></a></p>
+<p>PowerSpectrum for Kinematic Sunyaev-Zel’dovich (Dunkley et al. 2013).</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="fgspectra.power.tSZ_150_bat">
+<em class="property">class </em><code class="sig-prename descclassname">fgspectra.power.</code><code class="sig-name descname">tSZ_150_bat</code><a class="reference internal" href="_modules/fgspectra/power.html#tSZ_150_bat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fgspectra.power.tSZ_150_bat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fgspectra.power.PowerSpectrumFromFile" title="fgspectra.power.PowerSpectrumFromFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">fgspectra.power.PowerSpectrumFromFile</span></code></a></p>
+<p>PowerSpectrum for Thermal Sunyaev-Zel’dovich (Dunkley et al. 2013).</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-fgspectra">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-fgspectra" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="modules.html" class="btn btn-neutral float-left" title="fgspectra" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2019, Davide Poletti, Max Abitbol, Zack Li
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

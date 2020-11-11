@@ -1,0 +1,447 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>fgspectra.cross &mdash; fgspectra  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> fgspectra
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">fgspectra</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">fgspectra</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>fgspectra.cross</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for fgspectra.cross</h1><div class="highlight"><pre>
+<span></span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Models of cross-spectra</span>
+
+<span class="sd">This module draws inspiration from FGBuster (Davide Poletti and Josquin Errard)</span>
+<span class="sd">and BeFoRe (David Alonso and Ben Thorne).</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">frequency</span> <span class="k">as</span> <span class="n">fgf</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">power</span> <span class="k">as</span> <span class="n">fgp</span>
+<span class="kn">from</span> <span class="nn">.model</span> <span class="kn">import</span> <span class="n">Model</span>
+
+
+<div class="viewcode-block" id="Sum"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.cross.Sum">[docs]</a><span class="k">class</span> <span class="nc">Sum</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Sum the cross-spectra of uncorrelated components</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">crosses</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        *sed:</span>
+<span class="sd">            Sequence of SED models to be joined together</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_crosses</span> <span class="o">=</span> <span class="n">crosses</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Sum.set_defaults"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.cross.Sum.set_defaults">[docs]</a>    <span class="k">def</span> <span class="nf">set_defaults</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;kwseq&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">cross</span><span class="p">,</span> <span class="n">cross_kwargs</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_crosses</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;kwseq&#39;</span><span class="p">]):</span>
+                <span class="n">cross</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="o">**</span><span class="n">cross_kwargs</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span>
+                    <span class="p">[</span><span class="n">cross</span><span class="o">.</span><span class="n">_get_repr</span><span class="p">()</span> <span class="k">for</span> <span class="n">cross</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_crosses</span><span class="p">]}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">defaults</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;kwseq&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">cross</span><span class="o">.</span><span class="n">defaults</span> <span class="k">for</span> <span class="n">cross</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_crosses</span><span class="p">]}</span>
+
+<div class="viewcode-block" id="Sum.eval"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.cross.Sum.eval">[docs]</a>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kwseq</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compute the sum of the cross-spectra</span>
+
+<span class="sd">        *kwseq:</span>
+<span class="sd">            The length of ``kwseq`` has to be equal to the number of</span>
+<span class="sd">            cross-spectra summed. ``kwseq[i]`` is a dictionary containing the</span>
+<span class="sd">            keyword arguments of the ``i``-th cross-spectrum.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">kwseq</span><span class="p">:</span>
+            <span class="n">crosses</span> <span class="o">=</span> <span class="p">(</span><span class="n">cross</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                       <span class="k">for</span> <span class="n">cross</span><span class="p">,</span> <span class="n">kwargs</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_crosses</span><span class="p">,</span> <span class="n">kwseq</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># Handles the case in which no parameter has to be passed</span>
+            <span class="n">crosses</span> <span class="o">=</span> <span class="p">(</span><span class="n">cross</span><span class="p">()</span> <span class="k">for</span> <span class="n">cross</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_crosses</span><span class="p">)</span>
+
+        <span class="n">res</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">crosses</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">cross_res</span> <span class="ow">in</span> <span class="n">crosses</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">res</span> <span class="o">+</span> <span class="n">cross_res</span>  <span class="c1"># Unnecessary copies can be avoided</span>
+
+        <span class="k">return</span> <span class="n">res</span></div>
+
+<div class="viewcode-block" id="Sum.eval_terms"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.cross.Sum.eval_terms">[docs]</a>    <span class="k">def</span> <span class="nf">eval_terms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kwseq</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compute the sum of the cross-spectra</span>
+
+<span class="sd">        *kwseq:</span>
+<span class="sd">            The length of ``kwseq`` has to be equal to the number of</span>
+<span class="sd">            cross-spectra summed. ``kwseq[i]`` is a dictionary containing the</span>
+<span class="sd">            keyword arguments of the ``i``-th cross-spectrum.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">kwseq</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">cross</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">for</span> <span class="n">cross</span><span class="p">,</span> <span class="n">kwargs</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_crosses</span><span class="p">,</span> <span class="n">kwseq</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="p">[]</span></div></div>
+
+
+<div class="viewcode-block" id="FactorizedCrossSpectrum"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.cross.FactorizedCrossSpectrum">[docs]</a><span class="k">class</span> <span class="nc">FactorizedCrossSpectrum</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Factorized cross-spectrum</span>
+
+<span class="sd">    Cross-spectrum of **one** component for which the scaling in frequency</span>
+<span class="sd">    and in multipoles are factorizable</span>
+
+<span class="sd">    .. math:: xC_{\ell}^{(ij)} = f(\nu_j) f(\nu_i) C_{\ell}</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sed : callable</span>
+<span class="sd">        :math:`f(\nu)`. It returns an array with shape ``(..., freq)``.</span>
+<span class="sd">        It can be :class:`fgspectra.frequency.SED`.</span>
+<span class="sd">    cl_args : callable</span>
+<span class="sd">        :math:`C_\ell`. It returns an array with shape ``(..., ell)``.</span>
+<span class="sd">        It can be :class:`fgspectra.power.PowerSpectrum`</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    The two (optional) sets of extra dimensions ``...`` must be</span>
+<span class="sd">    broadcast-compatible.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sed</span><span class="p">,</span> <span class="n">cl</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sed</span> <span class="o">=</span> <span class="n">sed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cl</span> <span class="o">=</span> <span class="n">cl</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="FactorizedCrossSpectrum.set_defaults"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.cross.FactorizedCrossSpectrum.set_defaults">[docs]</a>    <span class="k">def</span> <span class="nf">set_defaults</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;sed_kwargs&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sed</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;sed_kwargs&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="s1">&#39;cl_kwargs&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cl</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;cl_kwargs&#39;</span><span class="p">])</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">defaults</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;sed_kwargs&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sed</span><span class="o">.</span><span class="n">defaults</span><span class="p">,</span>
+            <span class="s1">&#39;cl_kwargs&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cl</span><span class="o">.</span><span class="n">defaults</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">_get_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">sed_repr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sed</span><span class="o">.</span><span class="n">_get_repr</span><span class="p">()</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">sed_repr</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">sed_repr</span><span class="p">[</span><span class="n">key</span> <span class="o">+</span> <span class="s1">&#39; (SED)&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sed_repr</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+        <span class="n">cl_repr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cl</span><span class="o">.</span><span class="n">_get_repr</span><span class="p">()</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cl_repr</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">cl_repr</span><span class="p">[</span><span class="n">key</span> <span class="o">+</span> <span class="s1">&#39; (Cl)&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cl_repr</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span> <span class="p">[</span><span class="n">sed_repr</span><span class="p">,</span> <span class="n">cl_repr</span><span class="p">]}</span>
+
+<div class="viewcode-block" id="FactorizedCrossSpectrum.eval"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.cross.FactorizedCrossSpectrum.eval">[docs]</a>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sed_kwargs</span><span class="o">=</span><span class="p">{},</span> <span class="n">cl_kwargs</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="sd">&quot;&quot;&quot;Compute the model at frequency and ell combinations.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sed_args : list</span>
+<span class="sd">            Arguments for which the `sed` is evaluated.</span>
+<span class="sd">        cl_args : list</span>
+<span class="sd">            Arguments for which the `cl` is evaluated.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        cross : ndarray</span>
+<span class="sd">            Cross-spectrum. The shape is ``(..., freq, freq, ell)``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">f_nu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sed</span><span class="p">(</span><span class="o">**</span><span class="n">sed_kwargs</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">f_nu</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="n">f_nu</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cl</span><span class="p">(</span><span class="o">**</span><span class="n">cl_kwargs</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="CorrelatedFactorizedCrossSpectrum"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.cross.CorrelatedFactorizedCrossSpectrum">[docs]</a><span class="k">class</span> <span class="nc">CorrelatedFactorizedCrossSpectrum</span><span class="p">(</span><span class="n">FactorizedCrossSpectrum</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Factorized cross-spectrum of correlated components</span>
+
+<span class="sd">    Cross-spectrum of multiple correlated components for which the scaling in</span>
+<span class="sd">    frequency and in multipoles are factorizable.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        xC_\ell^{\nu_i\ \nu_j} = \sum_{kn} f^k(\nu_j) f^n(\nu_i) C^{kn}_\ell</span>
+
+<span class="sd">    where :math:`k` and :math:`n` are component indices.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sed : callable</span>
+<span class="sd">        :math:`f(\nu)`. It returns an array with shape ``(comp, ..., freq)``.</span>
+<span class="sd">        It can be :class:`fgspectra.frequency.SED`.</span>
+<span class="sd">    cl_args : callable</span>
+<span class="sd">        :math:`C_\ell`. It returns an array with shape</span>
+<span class="sd">        ``(..., comp, comp, ell)``.</span>
+<span class="sd">        It can, for example, any of the models in :class:`fgspectra.power`.</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    The two (optional) sets of extra dimensions ``...`` must be</span>
+<span class="sd">    broadcast-compatible.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sed</span><span class="p">,</span> <span class="n">cl</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sed</span> <span class="o">=</span> <span class="n">sed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cl</span> <span class="o">=</span> <span class="n">cl</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CorrelatedFactorizedCrossSpectrum.eval"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.cross.CorrelatedFactorizedCrossSpectrum.eval">[docs]</a>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sed_kwargs</span><span class="o">=</span><span class="p">{},</span> <span class="n">cl_kwargs</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="sd">&quot;&quot;&quot;Compute the model at frequency and ell combinations.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sed_args : list</span>
+<span class="sd">            Arguments for which the `sed` is evaluated.</span>
+<span class="sd">        cl_args : list</span>
+<span class="sd">            Arguments for which the `cl` is evaluated.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        cross : ndarray</span>
+<span class="sd">            Cross-spectrum. The shape is ``(..., freq, freq, ell)``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">f_nu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sed</span><span class="p">(</span><span class="o">**</span><span class="n">sed_kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;k...i,n...j,...knl-&gt;...ijl&#39;</span><span class="p">,</span>
+                         <span class="n">f_nu</span><span class="p">,</span> <span class="n">f_nu</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cl</span><span class="p">(</span><span class="o">**</span><span class="n">cl_kwargs</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="PowerLaw"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.cross.PowerLaw">[docs]</a><span class="k">class</span> <span class="nc">PowerLaw</span><span class="p">(</span><span class="n">FactorizedCrossSpectrum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Single Power law in both fequency and multipoles</span>
+
+<span class="sd">    See :class:`fgspectra.frequency.PowerLaw` for the frequency dependence and</span>
+<span class="sd">    :class:`fgspectra.power.PowerLaw` for the ell-dependence.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">fgf</span><span class="o">.</span><span class="n">PowerLaw</span><span class="p">(),</span> <span class="n">fgp</span><span class="o">.</span><span class="n">PowerLaw</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CorrelatedPowerLaw"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.cross.CorrelatedPowerLaw">[docs]</a><span class="k">class</span> <span class="nc">CorrelatedPowerLaw</span><span class="p">(</span><span class="n">CorrelatedFactorizedCrossSpectrum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Correlated Power law in both fequency and multipoles</span>
+
+<span class="sd">    See :class:`fgspectra.frequency.PowerLaw` for the frequency dependence and</span>
+<span class="sd">    :class:`fgspectra.power.PowerLaw` for the ell-dependence.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">fgf</span><span class="o">.</span><span class="n">PowerLaw</span><span class="p">(),</span> <span class="n">fgp</span><span class="o">.</span><span class="n">CorrelatedPowerLaws</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CorrelatedDustSynchrotron"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.cross.CorrelatedDustSynchrotron">[docs]</a><span class="k">class</span> <span class="nc">CorrelatedDustSynchrotron</span><span class="p">(</span><span class="n">CorrelatedFactorizedCrossSpectrum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; CorrelatedDustSynchrotron</span>
+<span class="sd">    </span>
+<span class="sd">    Correlated power law and modified black body, both with power law amplitude</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">fgf</span><span class="o">.</span><span class="n">Join</span><span class="p">(</span><span class="n">fgf</span><span class="o">.</span><span class="n">ModifiedBlackBody</span><span class="p">(),</span> <span class="n">fgf</span><span class="o">.</span><span class="n">PowerLaw</span><span class="p">()),</span>
+            <span class="n">fgp</span><span class="o">.</span><span class="n">CorrelatedPowerLaws</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SZxCIB"><a class="viewcode-back" href="../../fgspectra.html#fgspectra.cross.SZxCIB">[docs]</a><span class="k">class</span> <span class="nc">SZxCIB</span><span class="p">(</span><span class="n">CorrelatedFactorizedCrossSpectrum</span><span class="p">):</span>
+    
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">sed</span> <span class="o">=</span> <span class="n">fgf</span><span class="o">.</span><span class="n">Join</span><span class="p">(</span><span class="n">fgf</span><span class="o">.</span><span class="n">ThermalSZ</span><span class="p">(),</span> <span class="n">fgf</span><span class="o">.</span><span class="n">CIB</span><span class="p">())</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">sed</span><span class="p">,</span> <span class="n">fgp</span><span class="o">.</span><span class="n">SZxCIB_Addison2012</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2019, Davide Poletti, Max Abitbol, Zack Li
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
