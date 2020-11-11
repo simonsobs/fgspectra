@@ -9,14 +9,79 @@ This package draws inspiration from FGBuster (Davide Poletti and Josquin Errard)
 and BeFoRe (David Alonso and Ben Thorne).
 """
 
+import inspect
+import types
 import numpy as np
 from scipy import constants
 from .model import Model
-from functools import wraps
 
 
 T_CMB = 2.72548
 H_OVER_KT_CMB = constants.h * 1e9 / constants.k / T_CMB
+
+def _bandpass_integration():
+    ''' Bandpass integrated version of the caller
+
+    The caller should have
+
+        if isinstance(nu, list):
+            return _bandpass_integration()
+
+    at the very beginning.
+    This function
+
+    * iterates over the ``nu`` argument of the caller
+      (while keeping all the other arguments fixed)
+    * splits each element of the iteration in ``nu_band, transmittance``
+    * integrates the caller function over the bandpass.
+      ``np.trapz(caller(nu_band) * transmittance, nu_band)``
+      Note that no normalization nor unit conversion is done to the
+      transmittance
+    * stacks the output of the iteration (the frequency dimension is the last)
+      and returns it
+
+    '''
+    # This piece of code is fairly complicated, we did because:
+    # 1) We want to call eval on each element of the nu list (i.e. we iterate
+    #    over the bandpasses) but we don't want to define a new eval_bandpass
+    #    function for every class
+    # 2) We don't want to use a decorator because it breaks the signature
+    #    handling of eval and the modification of its defaults.
+    #    _bandpass_integration does from the insides of eval the same thing that 
+    #    a decorator would do from the outside. This is achieved through the
+    #    following pretty ugly kludge
+    # Simpler code that achieve the same result is welcome
+
+    # You are here because this function was called inside eval before any other
+    # variable was defined.
+    # We now retrieve the keyword arguments that were passed to eval because we
+    # have to use them for the evaluation of eval on each bandpass
+    # It assumes that _bandpass_integration was called inside
+    # f(self, **kw) -- f is typically the eval method.
+    frame = inspect.currentframe().f_back
+    kw = frame.f_locals  
+    self = kw['self']
+    del kw['self']  # self was in the locals but is not a keyword argument
+
+    # We create a copy of eval itself, we'll call it for each bandpass
+    f = types.FunctionType(frame.f_code, frame.f_globals)
+    # Store the nu-transmittance list because the nu keyword argumnt has to be
+    # modified with the frequencies of each bandpass
+    nus_transmittances = kw['nu']
+
+    # Get the shape of the output from the result of the first bandpass
+    kw['nu'] = nus_transmittances[0][0]
+    res = np.trapz(f(self, **kw) * nus_transmittances[0][1], kw['nu'])
+    # Append the frequency dimension and put res in its first entry
+    res = res[..., np.newaxis] * np.array([1.]+[0.]*(len(nus_transmittances)-1))
+    
+    # Fill the remaining entries by iterating over the rest of the bandpasses
+    for i_band, (nu, transmittance) in enumerate(nus_transmittances[1:], 1):
+        kw['nu'] = nu
+        res[..., i_band] = np.trapz(f(self, **kw) * transmittance, nu)
+
+    return res
+
 
 def _rj2cmb(nu):
     x = H_OVER_KT_CMB * nu
@@ -65,6 +130,9 @@ class PowerLaw(Model):
           and `nu_0` are arrays with shape ``(2)``
 
         """
+        if isinstance(nu, list):
+            return _bandpass_integration()
+
         beta = np.array(beta)[..., np.newaxis]
         nu_0 = np.array(nu_0)[..., np.newaxis]
         return (nu / nu_0)**beta * (_rj2cmb(nu) / _rj2cmb(nu_0))
