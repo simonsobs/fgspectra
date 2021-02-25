@@ -172,6 +172,9 @@ class ModifiedBlackBody(Model):
             The leading dimensions are the broadcast between the hypothetic
             dimensions of `beta` and `temp`.
         """
+        if isinstance(nu, list):
+            return _bandpass_integration()
+        
         beta = np.array(beta)[..., np.newaxis]
         temp = np.array(temp)[..., np.newaxis]
         x = 1e+9 * constants.h * nu / (constants.k * temp)
@@ -208,6 +211,9 @@ class ThermalSZ(Model):
             Frequency in GHz.
         T_CMB (optional) : float
         """
+        if isinstance(nu, list):
+            return _bandpass_integration()
+
         return ThermalSZ.f(nu) / ThermalSZ.f(nu_0)
 
 
@@ -248,6 +254,9 @@ class FreeFree(Model):
         - Free-free emission in temperature.
 
         """
+        if isinstance(nu, list):
+            return _bandpass_integration()
+
         EM  = np.array(EM)[..., np.newaxis]
         Te  = np.array(Te)[..., np.newaxis]
         Teff = (Te / 1.e3)**(1.5)
@@ -276,6 +285,9 @@ class ConstantSED(Model):
             If `nu` is scalar, the shape is ``amp.shape + (1)``.
             Note that the last dimension is guaranteed to be the frequency.
         """
+        if isinstance(nu, list):
+            return _bandpass_integration()
+
         amp = np.array(amp)[..., np.newaxis]
         return amp * np.ones_like(np.array(nu))
 
