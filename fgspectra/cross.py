@@ -129,9 +129,9 @@ class FactorizedCrossSpectrum(Model):
 
         Parameters
         ----------
-        sed_args : list
+        sed_kwargs : list
             Arguments for which the `sed` is evaluated.
-        cl_args : list
+        cl_kwargs : list
             Arguments for which the `cl` is evaluated.
 
         Returns
@@ -141,6 +141,45 @@ class FactorizedCrossSpectrum(Model):
         """
         f_nu = self._sed(**sed_kwargs)[..., np.newaxis]
         return f_nu[..., np.newaxis] * f_nu * self._cl(**cl_kwargs)
+
+    def diff(self, sed_kwargs={}, cl_kwargs={}):
+        """Compute the derivative of the model with respect to every
+        parameters.
+
+        Parameters
+        ----------
+        sed_kwargs : dict
+            Arguments for which the `sed` is evaluated.
+        cl_kwargs : dict
+            Arguments for which the `cl` is evaluated.
+
+        Returns
+        -------
+        diff : dict
+            dict with same keys as the parameters passed to diff which stores derivatives with respect to parameters
+        """
+        sed_diff = self._sed.diff(**sed_kwargs)
+        sed = self._sed(**sed_kwargs) #shape of sed is ``(..., freq)``
+        cl_diff = self._cl.diff(**cl_kwargs)
+        cl = self._cl(**cl_kwargs) #shape of cls is ``(..., ell)``
+        tot_diff_sed = {}
+        tot_diff_cl = {}
+        for param in sed_diff.keys():
+            if sed_diff[param] is None:
+                tot_diff_sed[param] = None
+            else:
+                diff = sed_diff[param] #shape of diff is ``(param,...,freq)``
+                tot_diff_sed[param] = np.einsum('...i,p...j,...l->p...ijl', sed, diff, cl) + \
+                                      np.einsum('p...i,...j,...l->p...ijl', diff, sed, cl)
+
+        for param in cl_diff.keys():
+            if cl_diff[param] is None:
+                tot_diff_cl[param] = None
+            else :
+                diff = cl_diff[param]  # shape of diff is ``(param,...,ell)``
+                tot_diff_cl[param] = np.einsum('...i,...j,p...l->p...ijl',sed, sed, diff)
+
+        return {'sed_kwargs':tot_diff_sed, 'cl_kwargs':tot_diff_cl}
 
 
 class CorrelatedFactorizedCrossSpectrum(FactorizedCrossSpectrum):

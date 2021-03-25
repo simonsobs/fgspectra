@@ -6,6 +6,7 @@ import numpy as np
 from copy import deepcopy
 
 class Model(ABC):
+
     """ Abstract class for model definition
 
     A model is a class that has one purpose: evaluating the model. What
@@ -208,3 +209,13 @@ class Model(ABC):
 
     def eval_array(self, x):
         return self.eval(**self.array2kwargs(x))
+
+    def _replace_none_args(self, tuple_func):
+        """Finds in tuple_func the None and replace them with the defaults
+        of the model """
+        tuple_defaults = self.eval.__defaults__
+        res = list(tuple_defaults)
+        for i, val in enumerate(tuple_defaults):
+            if val is None:
+                res[i] = tuple_func[i]
+        return tuple(res)

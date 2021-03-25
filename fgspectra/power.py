@@ -129,6 +129,88 @@ class PowerLaw(Model):
         amp = np.array(amp)[..., np.newaxis]
         return amp * (ell / ell_0)**alpha
 
+    def diff(self, ell=None, alpha=None, ell_0=None, amp=1.0):
+        """
+        Parameters
+        ----------
+        ell: float or array
+            Multipole
+        alpha: float or array
+            Spectral index.
+        ell_0: float
+            Reference ell
+        amp: float or array
+            Amplitude, shape must be compatible with `alpha`.
+
+        Returns
+        -------
+        cl_diff: dict
+            Each key of the dict corresponds to a parameter of the model.
+        """
+        (ell, alpha, ell_0, amp) = self._replace_none_args((ell, alpha, ell_0, amp))
+        alpha = np.array(alpha)[..., np.newaxis]
+        deriv_alpha = alpha*amp*(ell/ell_0)**(alpha-1.)
+        deriv_amp = (ell/ell_0)**alpha
+        return {'ell':None, 'alpha':deriv_alpha[np.newaxis, ...],
+                'ell_0': None, 'amp':deriv_amp[np.newaxis, ...]}
+
+class FreeCls(Model):
+    """
+    Model with free Cls.
+    """
+
+    def eval(self, ell=None, cls=None):
+        """ Evaluation of the model
+
+        Parameters
+        ----------
+        ell : float or array
+            Multipoles at which model will be evaluated. If array, the shape
+            is ``(ells)``.
+        cls : ndarray
+            cls of the component. Shape is ``(ells)``
+        Returns
+        -------
+        res : ndarray
+            Shape is ``(ells)``
+        """
+        if type(ell) in (float, int):
+            ell = [ell]
+        if type(cls) in (float, int):
+            cls = [cls]
+        try:
+            assert len(ell) == len(cls)
+        except AssertionError:
+            print('Cls must have same size as ells')
+        res = cls
+        return res
+
+    def diff(self, ell=None, cls=None):
+        """ Evaluation of the first derivative of the power spectrum.
+
+        Parameters
+        ----------
+        ell : float or array
+            Multipoles at which model will be evaluated. If array, the shape
+            is ``(ells)``.
+        cls : ndarray
+            cls of the component. Shape is ``(ells)``
+        Returns
+        -------
+        cl_diff: dict
+            Each key of the dict corresponds to a parameter of the model.
+        """
+        (ell, cls) = self._replace_none_args((ell, cls))
+        if type(ell) in (float, int):
+            ell = [ell]
+        if type(cls) in (float, int):
+            cls = [cls]
+        try:
+            assert len(ell) == len(cls)
+        except AssertionError:
+            print('Cls must have same size as ells')
+        return {'ell':None, 'cls':np.eye(len(ell))}
+
 
 class CorrelatedPowerLaws(PowerLaw):
     """ As PowerLaw, but requires only the diagonal of the component-component

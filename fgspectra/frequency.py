@@ -69,11 +69,94 @@ class PowerLaw(Model):
         nu_0 = np.array(nu_0)[..., np.newaxis]
         return (nu / nu_0)**beta * (_rj2cmb(nu) / _rj2cmb(nu_0))
 
+    def diff(self, nu=None, beta=None, nu_0=None):
+        """ Evaluation of the first derivative of the SED
+
+        Parameters
+        ----------
+        nu: float or array
+            Frequency in the same units as `nu_0`. If array, the shape is
+            ``(freq)``.
+        beta: float or array
+            Spectral index. If array, the shape is ``(...)``.
+        nu_0: float or array
+            Reference frequency in the same units as `nu`. If array, the shape
+            is ``(...)``.
+
+        Returns
+        -------
+        sed_diff: dict
+            Each key of the dict corresponds to a parameter of the model.
+
+        """
+        (nu, beta, nu_0) = self._replace_none_args((nu, beta, nu_0))
+        beta = np.array(beta)[..., np.newaxis]
+        nu_0 = np.array(nu_0)[..., np.newaxis]
+        sed_diff_beta = beta*(nu / nu_0)**(beta-1.) * (_rj2cmb(nu) / _rj2cmb(nu_0))
+        return {'nu':None, 'beta':sed_diff_beta[np.newaxis, ...], 'nu_0':None}
+
 
 class Synchrotron(PowerLaw):
     """ Alias of :class:`PowerLaw`
     """
     pass
+
+
+class FreeSED(Model):
+    """Completely free SED."""
+
+    def eval(self, nu=None, sed=None):
+        """ Evaluation of the SED
+
+        Parameters
+        ----------
+        nu: float or array
+            Frequencies of the experiment
+        sed: float or array
+            SED at each frequency. Must be same size as nu.
+
+        Returns
+        -------
+        sed: ndarray
+            shape is ``(freqs)``
+        """
+        if type(sed) in (int, float):
+            sed = [sed]
+        if type(nu) in (int, float):
+            nu = [nu]
+        try:
+            assert len(nu) == len(sed)
+        except AssertionError:
+            print('Size of SED must match number of frequencies')
+            return None
+        return np.array(sed)
+
+    def diff(self, nu=None, sed=None):
+        """ Evaluation of the first derivative of the SED.
+
+        Parameters
+        ----------
+        nu: float or array
+            Frequencies of the experiment
+        sed: float or array
+            SED at each frequency. Must be same size as nu.
+
+        Returns
+        -------
+        sed_diff: dict
+            Each key of the dict corresponds to a parameter of the model.
+        """
+        (nu, sed) = self._replace_none_args((nu, sed))
+        if type(sed) in (int, float):
+            sed = [sed]
+        if type(nu) in (int, float):
+            nu = [nu]
+        try:
+            assert len(nu) == len(sed)
+        except AssertionError:
+            print('Size of SED must match number of frequencies')
+            return None
+        return {'nu':None, 'sed':np.eye(len(sed))}
 
 
 class ModifiedBlackBody(Model):
