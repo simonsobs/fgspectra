@@ -356,6 +356,7 @@ class WhiteNoise(Model):
         diff: dict
             Each key corresponds to the the derivative with respect to a parameter.
         """
+        (nu, ell, nwhite) = self._replace_none_args((nu, ell, nwhite))
         if type(nu) in (float, int):
             nu = [nu]
         n_freqs = len(nu)
