@@ -212,10 +212,26 @@ class Model(ABC):
 
     def _replace_none_args(self, tuple_func):
         """Finds in tuple_func the None and replace them with the defaults
-        of the model """
+        of the model. Used to compute derivatives and avoid changing
+        set_defaults. """
         tuple_defaults = self.eval.__defaults__
         res = list(tuple_defaults)
         for i, val in enumerate(tuple_defaults):
             if val is None:
                 res[i] = tuple_func[i]
         return tuple(res)
+
+    def diff_kwargs2array(self, diff_kwargs):
+        """ (Nested) dictionaries of derivatives to float array.
+            The difference with kwargs2array is that the output has a shape:
+            ``(param, ...)``
+        """
+        if not hasattr(self, '_path_nones'):
+            raise RuntimeError("You have to call prepare_for_arrays first")
+        res_list = []
+        for path in self._path_nones:
+            val = diff_kwargs
+            for p in path:
+                val = val[p]
+            res_list.append(np.array(val))
+        return np.concatenate(res_list)

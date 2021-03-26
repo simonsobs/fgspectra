@@ -59,6 +59,24 @@ class Sum(Model):
 
         return res
 
+
+    def diff(self, kwseq=None):
+        """Compute the derivative of the sum of the cross-spectra
+
+        *kwseq:
+            The length of ``kwseq`` has to be equal to the number of
+            cross-spectra summed. ``kwseq[i]`` is a dictionary containing the
+            keyword arguments of the ``i``-th cross-spectrum.
+        """
+        if kwseq:
+            crosses_diff = [cross.diff(**kwargs)
+                            for cross, kwargs in zip(self._crosses, kwseq)]
+        else:  # Handles the case in which no parameter has to be passed
+            crosses_diff = [cross.diff() for cross in self._crosses]
+
+        return {'kwseq':crosses_diff}
+
+
     def eval_terms(self, kwseq=None):
         """Compute the sum of the cross-spectra
 
@@ -280,3 +298,81 @@ class SZxCIB(CorrelatedFactorizedCrossSpectrum):
         sed = fgf.Join(fgf.ThermalSZ(), fgf.CIB())
         super().__init__(sed, fgp.SZxCIB_Addison2012())
         self.set_defaults(**kwargs)
+
+class WhiteNoise(Model):
+    """White noise"""
+
+    def eval(self, nu=None, ell=None, nwhite=None):
+        """ Evaluation of the model
+
+        Parameters
+        ----------
+        nu : float or array
+            Frequency at which model will be evaluated. If array, the shape
+            is ``(freq)``.
+        ell : float or array
+            Multipoles at which model will be evaluated. If array, the shape
+            is ``(ells)``.
+        nwhite : ndarray
+            white noise levels, shape is ``(freqs)``
+        Returns
+        -------
+        cov : ndarray
+            Shape is ``(ells,freqs,freqs)``
+        """
+        if type(nu) in (float, int):
+            nu = [nu]
+        n_freqs = len(nu)
+        if type(ell) in (float, int):
+            ell = [ell]
+        n_ell = len(ell)
+        if type(nwhite) in (float, int):
+            nwhite = [nwhite]
+        if len(nwhite) == 1 and n_freqs > 1:
+            print('Expected {:d} noise levels but got 1. Will use the same '
+                  'at all frequencies'.format(n_freqs))
+            nwhite = np.ones(n_freqs) * nwhite
+        elif len(nwhite) != n_freqs:
+            print('Got {:d} white noise levels, expected {:d}'.format(
+                len(nwhite), n_freqs))
+        res = np.broadcast_to(np.diag(nwhite**2), (n_ell, n_freqs, n_freqs))
+        return np.transpose(res, (1, 2, 0))
+
+    def diff(self, nu=None, ell=None, nwhite=None):
+        """ Evaluation of the derivative of the model
+
+        Parameters
+        ----------
+        nu : float or array
+            Frequency at which model will be evaluated. If array, the shape
+            is ``(freq)``.
+        ell : float or array
+            Multipoles at which model will be evaluated. If array, the shape
+            is ``(ells)``.
+        nwhite : ndarray
+            white noise levels, shape is ``(freqs)``
+        Returns
+        -------
+        diff: dict
+            Each key corresponds to the the derivative with respect to a parameter.
+        """
+        if type(nu) in (float, int):
+            nu = [nu]
+        n_freqs = len(nu)
+        if type(ell) in (float, int):
+            ell = [ell]
+        n_ell = len(ell)
+        if type(nwhite) in (float, int):
+            nwhite = [nwhite]
+        if len(nwhite) == 1 and n_freqs > 1:
+            print('Expected {:d} noise levels but got 1. Will use the same '
+                  'at all frequencies'.format(n_freqs))
+            nwhite = np.ones(n_freqs) * nwhite
+        elif len(nwhite) != n_freqs:
+            print('Got {:d} white noise levels, expected {:d}'.format(
+                len(nwhite), n_freqs))
+        diff_nwhite_ell = np.zeros((n_freqs, n_freqs, n_freqs))
+        np.fill_diagonal(diff_nwhite_ell,2.*nwhite)
+        diff_nwhite = np.broadcast_to(diff_nwhite_ell,
+                                      (n_ell, n_freqs, n_freqs, n_freqs)).T
+        return {'nu':None, 'ell':None, 'nwhite':diff_nwhite}
