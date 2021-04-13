@@ -247,10 +247,10 @@ class SZxCIB_DESCRIPTIVE_NAME(CorrelatedFactorizedCrossSpectrum):
     def __init__(self, **kwargs):
         sed = fgf.Join(fgf.ThermalSZ(), fgf.CIB())
         power_spectra = [
-            fgp.PowerSpectrumFromFile(fgp._get_power_file('PATH_TO_FILE')),
-            fgp.PowerSpectrumFromFile(fgp._get_power_file('PATH_TO_FILE')),
-            lambda xi : xi 
+            fgp.PowerSpectrumFromFile(fgp._get_power_file('tsz_150_bat')),
+            fgp.PowerSpectrumFromFile(fgp._get_power_file('PATH_TO_CIB_TEMPLATE')),
+            fgp.PowerSpectrumFromFile(fgp._get_power_file('sz_x_cib')) 
         ]
-        cl = fgp.PowerSpectraAndCorrelation(*power_spectra)
+        cl = fgp.PowerSpectraAndCovariance(*power_spectra)
         super().__init__(sed, cl)
         self.set_defaults(**kwargs)
