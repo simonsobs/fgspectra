@@ -93,7 +93,7 @@ class PowerLaw(Model):
             raise NotImplementedError(
                 'Derivatives with respect to nu and nu_0 are not implemented')
 
-        defaults = self.defaults()
+        defaults = self.defaults
         if defaults['beta'] is not None:
             return {}
 
@@ -102,7 +102,7 @@ class PowerLaw(Model):
         nu_0 = defaults['nu_0']
         res = np.zeros((beta.size, beta.size, nu.size))
 
-        np.einsum('bbf->bf', res) = (
+        np.einsum('bbf->bf', res)[:] = (
             beta.reshape(-1, 1)
             * (nu / nu_0)**(beta.reshape(-1, 1) - 1.)
             * (_rj2cmb(nu) / _rj2cmb(nu_0))
@@ -145,7 +145,7 @@ class FreeSED(Model):
             return None
         return np.array(sed)
 
-    def diff(self, nu=None, sed=None):
+    def diff(self, **kwargs):
         """ Evaluation of the first derivative of the SED.
 
         Parameters
@@ -164,10 +164,10 @@ class FreeSED(Model):
             raise NotImplementedError(
                 'Derivative with respect to nu does not make sense here')
 
-        defaults = self.defaults()
+        defaults = self.defaults
         if defaults['sed'] is not None:
             return {}
-
+        sed = np.array(kwargs['sed'])
         return {'sed': np.eye(sed.size)}
 
 

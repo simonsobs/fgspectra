@@ -105,7 +105,7 @@ class PowerSpectrumFromFile(Model):
             raise NotImplementedError(
                 'Derivatives with respect to ell and ell_0 are not implemented')
 
-        defaults = self.defaults()
+        defaults = self.defaults
 
         if defaults['amp'] is not None:
             return {}
@@ -115,7 +115,7 @@ class PowerSpectrumFromFile(Model):
         ell_0 = defaults['ell_0']
         res = np.zeros((amp.size, amp.size, ell.size))
 
-        np.einsum('aal->al', res) = (
+        np.einsum('aal->al', res)[:] = (
                 self._cl[..., ell] / self._cl[..., ell_0, np.newaxis]
             )
         res = res.reshape(
@@ -191,7 +191,7 @@ class PowerLaw(Model):
             raise NotImplementedError(
                 'Derivatives with respect to ell and ell_0 are not implemented')
 
-        defaults = self.defaults()
+        defaults = self.defaults
         res = {}
 
         alpha = defaults['alpha']
@@ -202,6 +202,8 @@ class PowerLaw(Model):
         if amp is None:
             amp = np.asarray(kwargs['amp'])
             res['amp'] = self.eval(alpha=alpha, amp=1.0)[None]
+        elif type(amp) in [int,float]:
+            amp = np.array([amp])
 
         if amp.size != 1 or amp.ndim > 1:
             raise NotImplementedError('amp has to be a scalar for now')
@@ -212,7 +214,7 @@ class PowerLaw(Model):
             ell_0 = defaults['ell_0']
             res_alpha = np.zeros((alpha.size, alpha.size, ell.size))
 
-            np.einsum('aal->al', res_alpha) = (
+            np.einsum('aal->al', res_alpha)[:] = (
                 amp * alpha.reshape(-1, 1)
                 * (ell / ell_0)**(alpha.reshape(-1, 1) - 1.)
                 )
@@ -253,7 +255,7 @@ class FreeCls(Model):
         res = cls
         return res
 
-    def diff(self, ell=None, cls=None):
+    def diff(self, **kwargs):
         """ Evaluation of the first derivative of the power spectrum.
 
         Parameters
@@ -272,9 +274,10 @@ class FreeCls(Model):
             raise NotImplementedError(
                 'Derivative with respect to ell does not make sense here')
 
-        defaults = self.defaults()
+        defaults = self.defaults
         if defaults['cls'] is not None:
             return {}
+        cls = np.asarray(kwargs['cls'])
 
         # Convention: avoid using eye (wasteful for large number of multipoles)
         return {'cls': np.ones((cls.size, 1))}
