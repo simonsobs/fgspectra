@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 from . import frequency as fgf
 from . import power as fgp
-from .model import Model
+from .model import Model, _apply
 
 
 class Sum(Model):
@@ -176,28 +176,21 @@ class FactorizedCrossSpectrum(Model):
         diff : dict
             dict with same keys as the parameters passed to diff which stores derivatives with respect to parameters
         """
-        sed_diff = self._sed.diff(**sed_kwargs)
-        sed = self._sed(**sed_kwargs) #shape of sed is ``(..., freq)``
-        cl_diff = self._cl.diff(**cl_kwargs)
-        cl = self._cl(**cl_kwargs) #shape of cls is ``(..., ell)``
-        tot_diff_sed = {}
-        tot_diff_cl = {}
-        for param in sed_diff.keys():
-            if sed_diff[param] is None:
-                tot_diff_sed[param] = None
-            else:
-                diff = sed_diff[param] #shape of diff is ``(param,...,freq)``
-                tot_diff_sed[param] = np.einsum('...i,p...j,...l->p...ijl', sed, diff, cl) + \
-                                      np.einsum('p...i,...j,...l->p...ijl', diff, sed, cl)
+        sed = self._sed(**sed_kwargs)  # shape of sed is (..., freq)
+        cl = self._cl(**cl_kwargs)  # shape of cls is (..., ell)
 
-        for param in cl_diff.keys():
-            if cl_diff[param] is None:
-                tot_diff_cl[param] = None
-            else :
-                diff = cl_diff[param]  # shape of diff is ``(param,...,ell)``
-                tot_diff_cl[param] = np.einsum('...i,...j,p...l->p...ijl',sed, sed, diff)
+        def diff_in_sed(diff):
+            res = np.einsum('...i,p...j->p...ij', sed, diff)
+            res += np.einsum('p...ij->p...ji')
+            return res[..., None] * cl
 
-        return {'sed_kwargs':tot_diff_sed, 'cl_kwargs':tot_diff_cl}
+        def diff_in_cl(diff):
+            return np.einsum('...i,...j,p...l->p...ijl',sed, sed, diff)
+
+        return {
+            'sed_kwargs': _apply(diff_in_sed, self._sed.diff(**sed_kwargs)),
+            'cl_kwargs': _apply(diff_in_cl, self._cl.diff(**cl_kwargs))
+            }
 
 
 class CorrelatedFactorizedCrossSpectrum(FactorizedCrossSpectrum):
@@ -249,9 +242,41 @@ class CorrelatedFactorizedCrossSpectrum(FactorizedCrossSpectrum):
             Cross-spectrum. The shape is ``(..., freq, freq, ell)``.
         """
 
-        f_nu = self._sed(**sed_kwargs)
+        sed = self._sed(**sed_kwargs)  # shape of sed is (comp, ..., freq)
         return np.einsum('k...i,n...j,...knl->...ijl',
-                         f_nu, f_nu, self._cl(**cl_kwargs))
+                         sed, sed, self._cl(**cl_kwargs))
+
+    def diff(self, sed_kwargs={}, cl_kwargs={}):
+        """Compute the derivative of the model with respect to every
+        parameters.
+
+        Parameters
+        ----------
+        sed_kwargs : dict
+            Arguments for which the `sed` is evaluated.
+        cl_kwargs : dict
+            Arguments for which the `cl` is evaluated.
+
+        Returns
+        -------
+        diff : dict
+            dict with same keys as the parameters passed to diff which stores derivatives with respect to parameters
+        """
+        sed = self._sed(**sed_kwargs)  # shape of sed is (comp, ..., freq)
+        cl = self._cl(**cl_kwargs)  # shape of cls is (..., comp, comp, ell)
+
+        def diff_in_sed(diff):
+            res = np.einsum('pk...i,n...j,...knl->...ijl', diff, sed, cl)
+            res += np.einsum('pk...i,n...j,...nkl->...ijl', diff, sed, cl)
+            return res
+
+        def diff_in_cl(diff):
+            return np.einsum('k...i,n...j,p...nkl->...ijl', diff, sed, cl)
+
+        return {
+            'sed_kwargs': _apply(diff_in_sed, self._sed.diff(**sed_kwargs)),
+            'cl_kwargs': _apply(diff_in_cl, self._cl.diff(**cl_kwargs))
+            }
 
 
 class PowerLaw(FactorizedCrossSpectrum):

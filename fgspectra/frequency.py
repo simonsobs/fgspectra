@@ -11,7 +11,7 @@ and BeFoRe (David Alonso and Ben Thorne).
 
 import numpy as np
 from scipy import constants
-from .model import Model
+from .model import Model, _apply
 from functools import wraps
 
 
@@ -69,7 +69,7 @@ class PowerLaw(Model):
         nu_0 = np.array(nu_0)[..., np.newaxis]
         return (nu / nu_0)**beta * (_rj2cmb(nu) / _rj2cmb(nu_0))
 
-    def diff(self, nu=None, beta=None, nu_0=None):
+    def diff(self, **kwargs):
         """ Evaluation of the first derivative of the SED
 
         Parameters
@@ -89,11 +89,25 @@ class PowerLaw(Model):
             Each key of the dict corresponds to a parameter of the model.
 
         """
-        (nu, beta, nu_0) = self._replace_none_args((nu, beta, nu_0))
-        beta = np.array(beta)[..., np.newaxis]
-        nu_0 = np.array(nu_0)[..., np.newaxis]
-        sed_diff_beta = beta*(nu / nu_0)**(beta-1.) * (_rj2cmb(nu) / _rj2cmb(nu_0))
-        return {'nu':None, 'beta':sed_diff_beta[np.newaxis, ...], 'nu_0':None}
+        if 'nu' in kwargs or 'nu_0' in kwargs:
+            raise NotImplementedError(
+                'Derivatives with respect to nu and nu_0 are not implemented')
+
+        defaults = self.defaults()
+        if defaults['beta'] is not None:
+            return {}
+
+        beta = np.array(kwargs['beta'])
+        nu = defaults['nu']
+        nu_0 = defaults['nu_0']
+        res = np.zeros((beta.size, beta.size, nu.size))
+
+        np.einsum('bbf->bf', res) = (
+            beta.reshape(-1, 1)
+            * (nu / nu_0)**(beta.reshape(-1, 1) - 1.)
+            * (_rj2cmb(nu) / _rj2cmb(nu_0))
+            )
+        return {'beta': res.reshape((beta.size,)+beta.shape+nu.shape)}
 
 
 class Synchrotron(PowerLaw):
@@ -146,17 +160,15 @@ class FreeSED(Model):
         sed_diff: dict
             Each key of the dict corresponds to a parameter of the model.
         """
-        (nu, sed) = self._replace_none_args((nu, sed))
-        if type(sed) in (int, float):
-            sed = [sed]
-        if type(nu) in (int, float):
-            nu = [nu]
-        try:
-            assert len(nu) == len(sed)
-        except AssertionError:
-            print('Size of SED must match number of frequencies')
-            return None
-        return {'nu':None, 'sed':np.eye(len(sed))}
+        if 'nu' in kwargs:
+            raise NotImplementedError(
+                'Derivative with respect to nu does not make sense here')
+
+        defaults = self.defaults()
+        if defaults['sed'] is not None:
+            return {}
+
+        return {'sed': np.eye(sed.size)}
 
 
 class ModifiedBlackBody(Model):
@@ -338,3 +350,23 @@ class Join(Model):
         for i in range(len(seds)):
             res[i] = seds[i]
         return res
+
+    def diff(self, kwseq=None):
+        """Compute the SED with the given frequency and parameters.
+
+        *kwseq
+            The length of ``kwseq`` has to be equal to the number of SEDs
+            joined. ``kwseq[i]`` is a dictionary containing the keyword
+            arguments of the ``i``-th SED.
+        """
+        diffs = [s.diff(kw) for kw, s in zip(kwseq, self._seds)]
+        n_comp = len(diffs)
+        for i in range(n_comp):
+            def expand(sed):
+                factor = np.zeros(n_comp)
+                factor[i] = 1.
+                return sed[..., None, :] * factor[..., None]
+
+            diffs[i] = _apply(expand, diffs[i])
+
+        return diffs

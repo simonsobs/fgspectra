@@ -5,6 +5,13 @@ import yaml
 import numpy as np
 from copy import deepcopy
 
+# Conventions
+# * all the Models have an eval method that evaluates the model
+# * a parameters that is defaulted to None means that it is a free parameter
+# * The output fo the diff method ahs the same shape as that of eval but with
+#   one and only one extra dimension (the idea is that you use diff with
+#   minimizers, which work on flat array
+
 class Model(ABC):
 
     """ Abstract class for model definition
@@ -235,3 +242,13 @@ class Model(ABC):
                 val = val[p]
             res_list.append(np.array(val))
         return np.concatenate(res_list)
+
+
+def _apply(func, list_tuple_dict_or_value):
+    if isinstance(list_tuple_dict_or_value, (list, tuple)):
+        res = [_apply(func, v) for v in list_tuple_dict_or_value]
+    elif isinstance(list_tuple_dict_or_value, dict):
+        res = {k: _apply(func, v) for k, v in list_tuple_dict_or_value.items()}
+    else:
+        return func(list_tuple_dict_or_value)
+    return res
