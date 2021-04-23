@@ -280,7 +280,10 @@ class FreeCls(Model):
         cls = np.asarray(kwargs['cls'])
 
         # Convention: avoid using eye (wasteful for large number of multipoles)
-        return {'cls': np.ones((cls.size, 1))}
+        # Reverted to old method for now
+        #return {'cls': np.ones((cls.size, 1))}
+        return {'cls': np.eye(cls.size)}
+
 
 
 class CorrelatedPowerLaws(PowerLaw):

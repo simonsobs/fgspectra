@@ -181,7 +181,7 @@ class FactorizedCrossSpectrum(Model):
 
         def diff_in_sed(diff):
             res = np.einsum('...i,p...j->p...ij', sed, diff)
-            res += np.einsum('p...ij->p...ji')
+            res += np.einsum('p...ij->p...ji', res)
             return res[..., None] * cl
 
         def diff_in_cl(diff):
