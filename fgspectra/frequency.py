@@ -359,7 +359,10 @@ class Join(Model):
             joined. ``kwseq[i]`` is a dictionary containing the keyword
             arguments of the ``i``-th SED.
         """
-        diffs = [s.diff(**kw) for kw, s in zip(kwseq, self._seds)]
+        if kwseq:
+            diffs = [s.diff(**kw) for kw, s in zip(kwseq, self._seds)]
+        else:
+            diffs = [s.diff() for s in self._seds]
         n_comp = len(diffs)
         for i in range(n_comp):
             def expand(sed):

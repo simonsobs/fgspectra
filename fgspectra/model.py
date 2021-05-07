@@ -244,11 +244,11 @@ class Model(ABC):
         return np.concatenate(res_list)
 
 
-def _apply(func, list_tuple_dict_or_value):
+def _apply(func, list_tuple_dict_or_value, **kwargs):
     if isinstance(list_tuple_dict_or_value, (list, tuple)):
-        res = [_apply(func, v) for v in list_tuple_dict_or_value]
+        res = [_apply(func, v,  **kwargs) for v in list_tuple_dict_or_value]
     elif isinstance(list_tuple_dict_or_value, dict):
-        res = {k: _apply(func, v) for k, v in list_tuple_dict_or_value.items()}
+        res = {k: _apply(func, v,  **kwargs) for k, v in list_tuple_dict_or_value.items()}
     else:
-        return func(list_tuple_dict_or_value)
+        return func(list_tuple_dict_or_value,  **kwargs)
     return res

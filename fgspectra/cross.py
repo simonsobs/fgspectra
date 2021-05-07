@@ -266,12 +266,12 @@ class CorrelatedFactorizedCrossSpectrum(FactorizedCrossSpectrum):
         cl = self._cl(**cl_kwargs)  # shape of cls is (..., comp, comp, ell)
 
         def diff_in_sed(diff):
-            res = np.einsum('pk...i,n...j,...knl->...ijl', diff, sed, cl)
-            res += np.einsum('pk...i,n...j,...nkl->...ijl', diff, sed, cl)
+            res = np.einsum('pk...i,n...j,...knl->p...ijl', diff, sed, cl)
+            res += np.einsum('pk...i,n...j,...nkl->p...ijl', diff, sed, cl)
             return res
 
         def diff_in_cl(diff):
-            return np.einsum('k...i,n...j,p...nkl->...ijl', diff, sed, cl)
+            return np.einsum('k...i,n...j,p...nkl->p...ijl', sed, sed, diff)
 
         return {
             'sed_kwargs': _apply(diff_in_sed, self._sed.diff(**sed_kwargs)),

@@ -11,7 +11,7 @@ and BeFoRe (David Alonso and Ben Thorne).
 import os
 import pkg_resources
 import numpy as np
-from .model import Model
+from .model import Model, _apply
 
 
 def _get_power_file(model):
@@ -81,7 +81,8 @@ class PowerSpectrumFromFile(Model):
 
     def eval(self, ell=None, ell_0=None, amp=1.0):
         """Compute the power spectrum with the given ell and parameters."""
-        return amp * self._cl[..., ell] / self._cl[..., ell_0, np.newaxis]
+        return amp * self._cl[..., np.rint(ell).astype('int')] / \
+               self._cl[..., np.rint(ell_0).astype('int'), np.newaxis]
 
     def diff(self, **kwargs):
         """
@@ -92,7 +93,7 @@ class PowerSpectrumFromFile(Model):
         alpha: float or array
             Spectral index.
         ell_0: float
-            Reference ell
+            Reference ells
         amp: float or array
             Amplitude, shape must be compatible with `alpha`.
 
@@ -357,11 +358,11 @@ class PowerSpectraAndCorrelation(Model):
 
     @property
     def defaults(self):
-        return {'kwseq': [ps.defaults for ps in self.power_spectra]}
+        return {'kwseq': [ps.defaults for ps in self._power_spectra]}
 
     def _get_repr(self):
         return {type(self).__name__:
-                    [ps._get_repr() for ps in self.power_spectra]}
+                    [ps._get_repr() for ps in self._power_spectra]}
 
 
     def eval(self, kwseq=None):
@@ -453,8 +454,11 @@ class PowerSpectraAndCovariance(Model):
             The length of `argss` has to be equal to the number of SEDs joined.
             ``kwseq[i]`` is the argument list of the ``i``-th SED.
         """
-        spectra = np.array(
-            [ps(**kwargs) for ps, kwargs in zip(self._power_spectra, kwseq)])
+        if kwseq:
+            spectra = np.array([ps(**kwargs) for ps, kwargs
+                                in zip(self._power_spectra, kwseq)])
+        else:
+            spectra = np.array([ps() for ps in self._power_spectra])
         res = np.empty(  # Shape is (..., comp, comp, ell)
             spectra.shape[1:-1] + (self.n_comp, self.n_comp) + spectra.shape[-1:])
         
@@ -469,6 +473,29 @@ class PowerSpectraAndCovariance(Model):
 
         assert i_corr == len(spectra)
         return res
+
+    def diff(self, kwseq=None):
+        """"Compute the first derivative of the cls."""
+        if kwseq is None:
+            kwseq = self.defaults['kwseq']
+        def diff_in_cls(diff, i, j):
+            shape = diff.shape
+            res = np.zeros((shape[0], self.n_comp, self.n_comp, shape[-1]))
+            res[..., i, j, :] = diff
+            res[..., j, i, :] = res[..., i, j, :]
+            return res
+        diffs = []
+        i_corr = 0
+        for k_off_diag in range(0, self.n_comp):
+            for el_off_diag in range(self.n_comp - k_off_diag):
+                i = el_off_diag
+                j = el_off_diag + k_off_diag
+                diffs.append(_apply(diff_in_cls, self._power_spectra[i_corr].diff(**kwseq[i_corr]), i=i, j=j))
+                i_corr += 1
+        return {'kwseq': diffs}
+
+
+
 
 
 class SZxCIB_Reichardt2012(PowerSpectraAndCorrelation):
