@@ -114,9 +114,7 @@ class PowerSpectrumFromFile(Model):
         ell_0 = defaults['ell_0']
         res = np.zeros((amp.size, amp.size, ell.size))
 
-        np.einsum('aal->al', res)[:] = (
-                self._cl[..., ell] / self._cl[..., ell_0, np.newaxis]
-            )
+        np.einsum('aal->al', res)[:] = self.eval(ell=ell, ell_0=ell_0)
 
         return {'amp': res}
 
