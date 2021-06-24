@@ -122,17 +122,17 @@ class PowerSpectrumFromFile(Model):
 class tSZ_150_bat(PowerSpectrumFromFile):
     """PowerSpectrum for Thermal Sunyaev-Zel'dovich (Dunkley et al. 2013)."""
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         """Intialize object with parameters."""
-        super().__init__(_get_power_file('tsz_150_bat'))
+        super().__init__(_get_power_file('tsz_150_bat'), **kwargs)
 
 
 class kSZ_bat(PowerSpectrumFromFile):
     """PowerSpectrum for Kinematic Sunyaev-Zel'dovich (Dunkley et al. 2013)."""
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         """Intialize object with parameters."""
-        super().__init__(_get_power_file('ksz_bat'))
+        super().__init__(_get_power_file('ksz_bat'), **kwargs)
 
 
 class PowerLaw(Model):
