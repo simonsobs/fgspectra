@@ -72,6 +72,7 @@ class PowerLaw(Model):
     def diff(self, **kwargs):
         """ Evaluation of the first derivative of the SED
 
+
         Parameters
         ----------
         nu: float or array
@@ -103,10 +104,10 @@ class PowerLaw(Model):
         res = np.zeros((beta.size, beta.size, nu.size))
 
         np.einsum('bbf->bf', res)[:] = (
-            beta.reshape(-1, 1)
-            * (nu / nu_0)**(beta.reshape(-1, 1) - 1.)
-            * (_rj2cmb(nu) / _rj2cmb(nu_0))
-            )
+                np.log(nu / nu_0)
+                * (nu / nu_0) ** (beta.reshape(-1, 1))
+                * (_rj2cmb(nu) / _rj2cmb(nu_0))
+        )
         return {'beta': res.reshape((beta.size,)+beta.shape+nu.shape)}
 
 
@@ -203,8 +204,74 @@ class ModifiedBlackBody(Model):
         temp = np.array(temp)[..., np.newaxis]
         x = 1e+9 * constants.h * nu / (constants.k * temp)
         x_0 = 1e+9 * constants.h * nu_0 / (constants.k * temp)
-        res = (nu / nu_0)**(beta + 1.0) * np.expm1(x_0) / np.expm1(x)
+        res = (nu / nu_0) ** (beta + 1.0) * np.expm1(x_0) / np.expm1(x)
         return res * (_rj2cmb(nu) / _rj2cmb(nu_0))
+
+    def diff(self, **kwargs):
+        """ Evaluation of the first derivative of the SED.
+
+        Parameters
+        ----------
+        nu: float or array
+            Frequency in GHz.
+        beta: float or array
+            Spectral index.
+        temp: float or array
+            Dust temperature.
+        nu_0: float
+            Reference frequency in Hz.
+
+        Returns
+        -------
+        sed_diff: dict
+            Each key of the dict corresponds to a parameter of the model.
+        """
+        if 'nu' in kwargs:
+            raise NotImplementedError(
+                'Derivative with respect to nu does not make sense here')
+        if 'nu_0' in kwargs:
+            raise NotImplementedError(
+                'Derivative with respect to nu does not make sense here')
+
+        defaults = self.defaults
+        nu = defaults['nu']
+        nu_0 = defaults['nu_0']
+        res = {}
+
+        beta = defaults['beta']
+        if beta is None:
+            beta = np.asarray(kwargs['beta'])
+            if defaults['temp'] is None:
+                temp = np.asarray(kwargs['temp'])
+            else:
+                temp = defaults['temp']
+            x = 1e+9 * constants.h * nu / (constants.k * temp)
+            x_0 = 1e+9 * constants.h * nu_0 / (constants.k * temp)
+            res_beta = np.zeros((beta.size, beta.size, nu.size))
+            np.einsum('aai->ai', res_beta)[:] = np.log(nu / nu_0) * (
+                    nu / nu_0) ** (beta + 1.0) * np.expm1(
+                x_0) / np.expm1(x) * (_rj2cmb(nu) / _rj2cmb(nu_0))
+            res['beta'] = res_beta.reshape(
+                (beta.size,) + beta.shape + nu.shape)
+
+        temp = defaults['temp']
+        if temp is None:
+            temp = np.asarray(kwargs['temp'])
+            if defaults['beta'] is None:
+                beta = np.asarray(kwargs['beta'])
+            else:
+                beta = defaults['beta']
+            x = 1e+9 * constants.h * nu / (constants.k * temp)
+            x_0 = 1e+9 * constants.h * nu_0 / (constants.k * temp)
+            res_temp = np.zeros((temp.size, temp.size, nu.size))
+            np.einsum('aai->ai', res_temp)[:] = (nu / nu_0) ** (
+                    beta + 1.0) * (x * (np.expm1(x_0) * np.exp(x)) / (
+                    temp * np.expm1(x) ** 2) - x_0 * np.exp(x_0) / (
+                                           temp * np.expm1(x))) * (_rj2cmb(
+                nu) / _rj2cmb(nu_0))
+            res['temp'] = res_temp.reshape(
+                (temp.size,) + temp.shape + nu.shape)
+        return res
 
 
 class CIB(ModifiedBlackBody):
@@ -236,6 +303,9 @@ class ThermalSZ(Model):
         T_CMB (optional) : float
         """
         return ThermalSZ.f(nu) / ThermalSZ.f(nu_0)
+
+    def diff(self, **kwargs):
+        return {}
 
 
 class FreeFree(Model):
@@ -275,13 +345,64 @@ class FreeFree(Model):
         - Free-free emission in temperature.
 
         """
-        EM  = np.array(EM)[..., np.newaxis]
-        Te  = np.array(Te)[..., np.newaxis]
-        Teff = (Te / 1.e3)**(1.5)
+        EM = np.array(EM)[..., np.newaxis]
+        Te = np.array(Te)[..., np.newaxis]
+        Teff = (Te / 1.e3) ** (1.5)
         nuff = 255.33e9 * Teff
-        gff = 1. + np.log(1. + (nuff / nu)**(np.sqrt(3) / np.pi))
+        gff = 1. + np.log(1. + (nuff / nu) ** (np.sqrt(3) / np.pi))
         print("warning: I need to check the units on this")
         return EM * gff
+
+    def diff(self, **kwargs):
+        """ Evaluation of the first derivative of the SED.
+        Parameters
+        ----------
+        nu: float or array
+            Frequency in GHz.
+        EM: float or array
+            Emission measure in cm^-6 pc (usually around 300). If array, the shape is ``(...)``.
+        Te: float or array
+            Electron temperature (typically around 7000). If array, the shape is ``(...)``.
+
+        Returns
+        -------
+        sed_diff: dict
+            Each key of the dict corresponds to a parameter of the model.
+        """
+        if 'nu' in kwargs:
+            raise NotImplementedError(
+                'Derivative with respect to nu does not make sense here')
+
+        defaults = self.defaults
+        nu = defaults['nu']
+        res = {}
+
+        Te = defaults['Te']
+        if Te is None:
+            Te = kwargs['Te']
+
+        EM = defaults['EM']
+        if EM is None:
+            EM = np.asarray(kwargs['EM'])
+            res['EM'] = self.eval(Te=Te, EM=1.0)[None]
+
+        if defaults['Te'] is None:
+            Te = np.asarray(kwargs['Te'])
+            Teff = (Te / 1.e3) ** 1.5
+            nuff = 255.33e9 * Teff
+            nuff_diff = 255.33e9 * 1.5 * (Te / 1.e3) ** 1.5 / Te
+            res_Te = np.zeros((Te.size, Te.size, nu.size))
+
+            np.einsum('aai->ai', res_Te)[:] = EM * nuff_diff * np.sqrt(3) * (
+                        nuff / nu) ** (np.sqrt(3) / np.pi) / (
+                                                          np.pi * nuff * (
+                                                              nuff / nu) ** (
+                                                                      np.sqrt(
+                                                                          3) / np.pi) + np.pi * nuff)
+
+            res['Te'] = res_Te.reshape((Te.size,) + Te.shape + nu.shape)
+
+        return res
 
 class ConstantSED(Model):
     """Frequency-independent component."""

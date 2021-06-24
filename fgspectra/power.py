@@ -90,12 +90,10 @@ class PowerSpectrumFromFile(Model):
         ----------
         ell: float or array
             Multipole
-        alpha: float or array
-            Spectral index.
         ell_0: float
             Reference ells
         amp: float or array
-            Amplitude, shape must be compatible with `alpha`.
+            Amplitude,
 
         Returns
         -------
@@ -119,8 +117,6 @@ class PowerSpectrumFromFile(Model):
         np.einsum('aal->al', res)[:] = (
                 self._cl[..., ell] / self._cl[..., ell_0, np.newaxis]
             )
-        res = res.reshape(
-            (alpha.size,) + alpha.shape + ell.shape)
 
         return {'amp': res}
 
@@ -216,8 +212,8 @@ class PowerLaw(Model):
             res_alpha = np.zeros((alpha.size, alpha.size, ell.size))
 
             np.einsum('aal->al', res_alpha)[:] = (
-                amp * alpha.reshape(-1, 1)
-                * (ell / ell_0)**(alpha.reshape(-1, 1) - 1.)
+                amp * np.log(ell / ell_0)
+                * (ell / ell_0)**(alpha.reshape(-1, 1))
                 )
             res['alpha'] = res_alpha.reshape(
                 (alpha.size,) + alpha.shape + ell.shape)
