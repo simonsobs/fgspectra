@@ -361,7 +361,7 @@ class WhiteNoise(Model):
             print('Got {:d} white noise levels, expected {:d}'.format(
                 len(nwhite), n_freqs))
         res = np.broadcast_to(np.diag(nwhite**2), (n_ell, n_freqs, n_freqs))
-        return np.transpose(res, (1, 2, 0))
+        return np.einsum('lij,l->ijl', res, ell*(ell+1)/2./np.pi)
 
     def diff(self, nu=None, ell=None, nwhite=None):
         """ Evaluation of the derivative of the model
