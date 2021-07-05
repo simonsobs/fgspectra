@@ -11,7 +11,7 @@ and BeFoRe (David Alonso and Ben Thorne).
 import os
 import pkg_resources
 import numpy as np
-from .model import Model
+from .model import Model, _apply
 
 
 def _get_power_file(model):
@@ -81,23 +81,58 @@ class PowerSpectrumFromFile(Model):
 
     def eval(self, ell=None, ell_0=None, amp=1.0):
         """Compute the power spectrum with the given ell and parameters."""
-        return amp * self._cl[..., ell] / self._cl[..., ell_0, np.newaxis]
+        return amp * self._cl[..., np.rint(ell).astype('int')] / \
+               self._cl[..., np.rint(ell_0).astype('int'), np.newaxis]
+
+    def diff(self, **kwargs):
+        """
+        Parameters
+        ----------
+        ell: float or array
+            Multipole
+        ell_0: float
+            Reference ells
+        amp: float or array
+            Amplitude,
+
+        Returns
+        -------
+        cl_diff: dict
+            Each key of the dict corresponds to a parameter of the model.
+        """
+        if 'ell' in kwargs or 'ell_0' in kwargs:
+            raise NotImplementedError(
+                'Derivatives with respect to ell and ell_0 are not implemented')
+
+        defaults = self.defaults
+
+        if defaults['amp'] is not None:
+            return {}
+
+        amp = np.asarray(kwargs['amp'])
+        ell = defaults['ell']
+        ell_0 = defaults['ell_0']
+        res = np.zeros((amp.size, amp.size, ell.size))
+
+        np.einsum('aal->al', res)[:] = self.eval(ell=ell, ell_0=ell_0, amp=1)
+        res_amp = res.reshape((amp.size,) + amp.shape + ell.shape)
+        return {'amp': res_amp}
 
 
 class tSZ_150_bat(PowerSpectrumFromFile):
     """PowerSpectrum for Thermal Sunyaev-Zel'dovich (Dunkley et al. 2013)."""
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         """Intialize object with parameters."""
-        super().__init__(_get_power_file('tsz_150_bat'))
+        super().__init__(_get_power_file('tsz_150_bat'), **kwargs)
 
 
 class kSZ_bat(PowerSpectrumFromFile):
     """PowerSpectrum for Kinematic Sunyaev-Zel'dovich (Dunkley et al. 2013)."""
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         """Intialize object with parameters."""
-        super().__init__(_get_power_file('ksz_bat'))
+        super().__init__(_get_power_file('ksz_bat'), **kwargs)
 
 
 class PowerLaw(Model):
@@ -129,7 +164,7 @@ class PowerLaw(Model):
         amp = np.array(amp)[..., np.newaxis]
         return amp * (ell / ell_0)**alpha
 
-    def diff(self, ell=None, alpha=None, ell_0=None, amp=1.0):
+    def diff(self, **kwargs):
         """
         Parameters
         ----------
@@ -147,12 +182,42 @@ class PowerLaw(Model):
         cl_diff: dict
             Each key of the dict corresponds to a parameter of the model.
         """
-        (ell, alpha, ell_0, amp) = self._replace_none_args((ell, alpha, ell_0, amp))
-        alpha = np.array(alpha)[..., np.newaxis]
-        deriv_alpha = alpha*amp*(ell/ell_0)**(alpha-1.)
-        deriv_amp = (ell/ell_0)**alpha
-        return {'ell':None, 'alpha':deriv_alpha[np.newaxis, ...],
-                'ell_0': None, 'amp':deriv_amp[np.newaxis, ...]}
+        if 'ell' in kwargs or 'ell_0' in kwargs:
+            raise NotImplementedError(
+                'Derivatives with respect to ell and ell_0 are not implemented')
+
+        defaults = self.defaults
+        res = {}
+
+        alpha = defaults['alpha']
+        if alpha is None:
+            alpha = kwargs['alpha']
+
+        amp = defaults['amp']
+        if amp is None:
+            amp = np.asarray(kwargs['amp'])
+            res['amp'] = self.eval(alpha=alpha, amp=1.0)[None]
+        elif type(amp) in [int,float]:
+            amp = np.array([amp])
+
+        if amp.size != 1 or amp.ndim > 1:
+            raise NotImplementedError('amp has to be a scalar for now')
+
+        if defaults['alpha'] is None:
+            alpha = np.asarray(kwargs['alpha'])
+            ell = defaults['ell']
+            ell_0 = defaults['ell_0']
+            res_alpha = np.zeros((alpha.size, alpha.size, ell.size))
+
+            np.einsum('aal->al', res_alpha)[:] = (
+                amp * np.log(ell / ell_0)
+                * (ell / ell_0)**(alpha.reshape(-1, 1))
+                )
+            res['alpha'] = res_alpha.reshape(
+                (alpha.size,) + alpha.shape + ell.shape)
+
+        return res
+
 
 class FreeCls(Model):
     """
@@ -185,7 +250,7 @@ class FreeCls(Model):
         res = cls
         return res
 
-    def diff(self, ell=None, cls=None):
+    def diff(self, **kwargs):
         """ Evaluation of the first derivative of the power spectrum.
 
         Parameters
@@ -200,16 +265,20 @@ class FreeCls(Model):
         cl_diff: dict
             Each key of the dict corresponds to a parameter of the model.
         """
-        (ell, cls) = self._replace_none_args((ell, cls))
-        if type(ell) in (float, int):
-            ell = [ell]
-        if type(cls) in (float, int):
-            cls = [cls]
-        try:
-            assert len(ell) == len(cls)
-        except AssertionError:
-            print('Cls must have same size as ells')
-        return {'ell':None, 'cls':np.eye(len(ell))}
+        if 'ell' in kwargs:
+            raise NotImplementedError(
+                'Derivative with respect to ell does not make sense here')
+
+        defaults = self.defaults
+        if defaults['cls'] is not None:
+            return {}
+        cls = np.asarray(kwargs['cls'])
+
+        # Convention: avoid using eye (wasteful for large number of multipoles)
+        # Reverted to old method for now
+        #return {'cls': np.ones((cls.size, 1))}
+        return {'cls': np.eye(cls.size)}
+
 
 
 class CorrelatedPowerLaws(PowerLaw):
@@ -283,11 +352,11 @@ class PowerSpectraAndCorrelation(Model):
 
     @property
     def defaults(self):
-        return {'kwseq': [ps.defaults for ps in self.power_spectra]}
+        return {'kwseq': [ps.defaults for ps in self._power_spectra]}
 
     def _get_repr(self):
         return {type(self).__name__:
-                    [ps._get_repr() for ps in self.power_spectra]}
+                    [ps._get_repr() for ps in self._power_spectra]}
 
 
     def eval(self, kwseq=None):
@@ -379,8 +448,11 @@ class PowerSpectraAndCovariance(Model):
             The length of `argss` has to be equal to the number of SEDs joined.
             ``kwseq[i]`` is the argument list of the ``i``-th SED.
         """
-        spectra = np.array(
-            [ps(**kwargs) for ps, kwargs in zip(self._power_spectra, kwseq)])
+        if kwseq:
+            spectra = np.array([ps(**kwargs) for ps, kwargs
+                                in zip(self._power_spectra, kwseq)])
+        else:
+            spectra = np.array([ps() for ps in self._power_spectra])
         res = np.empty(  # Shape is (..., comp, comp, ell)
             spectra.shape[1:-1] + (self.n_comp, self.n_comp) + spectra.shape[-1:])
         
@@ -395,6 +467,29 @@ class PowerSpectraAndCovariance(Model):
 
         assert i_corr == len(spectra)
         return res
+
+    def diff(self, kwseq=None):
+        """"Compute the first derivative of the cls."""
+        if kwseq is None:
+            kwseq = self.defaults['kwseq']
+        def diff_in_cls(diff, i, j):
+            shape = diff.shape
+            res = np.zeros((shape[0], self.n_comp, self.n_comp, shape[-1]))
+            res[..., i, j, :] = diff
+            res[..., j, i, :] = res[..., i, j, :]
+            return res
+        diffs = []
+        i_corr = 0
+        for k_off_diag in range(0, self.n_comp):
+            for el_off_diag in range(self.n_comp - k_off_diag):
+                i = el_off_diag
+                j = el_off_diag + k_off_diag
+                diffs.append(_apply(diff_in_cls, self._power_spectra[i_corr].diff(**kwseq[i_corr]), i=i, j=j))
+                i_corr += 1
+        return {'kwseq': diffs}
+
+
+
 
 
 class SZxCIB_Reichardt2012(PowerSpectraAndCorrelation):

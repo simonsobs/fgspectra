@@ -11,7 +11,7 @@ and BeFoRe (David Alonso and Ben Thorne).
 
 import numpy as np
 from scipy import constants
-from .model import Model
+from .model import Model, _apply
 from functools import wraps
 
 
@@ -69,8 +69,9 @@ class PowerLaw(Model):
         nu_0 = np.array(nu_0)[..., np.newaxis]
         return (nu / nu_0)**beta * (_rj2cmb(nu) / _rj2cmb(nu_0))
 
-    def diff(self, nu=None, beta=None, nu_0=None):
+    def diff(self, **kwargs):
         """ Evaluation of the first derivative of the SED
+
 
         Parameters
         ----------
@@ -89,11 +90,25 @@ class PowerLaw(Model):
             Each key of the dict corresponds to a parameter of the model.
 
         """
-        (nu, beta, nu_0) = self._replace_none_args((nu, beta, nu_0))
-        beta = np.array(beta)[..., np.newaxis]
-        nu_0 = np.array(nu_0)[..., np.newaxis]
-        sed_diff_beta = beta*(nu / nu_0)**(beta-1.) * (_rj2cmb(nu) / _rj2cmb(nu_0))
-        return {'nu':None, 'beta':sed_diff_beta[np.newaxis, ...], 'nu_0':None}
+        if 'nu' in kwargs or 'nu_0' in kwargs:
+            raise NotImplementedError(
+                'Derivatives with respect to nu and nu_0 are not implemented')
+
+        defaults = self.defaults
+        if defaults['beta'] is not None:
+            return {}
+
+        beta = np.array(kwargs['beta'])
+        nu = defaults['nu']
+        nu_0 = defaults['nu_0']
+        res = np.zeros((beta.size, beta.size, nu.size))
+
+        np.einsum('bbf->bf', res)[:] = (
+                np.log(nu / nu_0)
+                * (nu / nu_0) ** (beta.reshape(-1, 1))
+                * (_rj2cmb(nu) / _rj2cmb(nu_0))
+        )
+        return {'beta': res.reshape((beta.size,)+beta.shape+nu.shape)}
 
 
 class Synchrotron(PowerLaw):
@@ -131,7 +146,7 @@ class FreeSED(Model):
             return None
         return np.array(sed)
 
-    def diff(self, nu=None, sed=None):
+    def diff(self, **kwargs):
         """ Evaluation of the first derivative of the SED.
 
         Parameters
@@ -146,17 +161,15 @@ class FreeSED(Model):
         sed_diff: dict
             Each key of the dict corresponds to a parameter of the model.
         """
-        (nu, sed) = self._replace_none_args((nu, sed))
-        if type(sed) in (int, float):
-            sed = [sed]
-        if type(nu) in (int, float):
-            nu = [nu]
-        try:
-            assert len(nu) == len(sed)
-        except AssertionError:
-            print('Size of SED must match number of frequencies')
-            return None
-        return {'nu':None, 'sed':np.eye(len(sed))}
+        if 'nu' in kwargs:
+            raise NotImplementedError(
+                'Derivative with respect to nu does not make sense here')
+
+        defaults = self.defaults
+        if defaults['sed'] is not None:
+            return {}
+        sed = np.array(kwargs['sed'])
+        return {'sed': np.eye(sed.size)}
 
 
 class ModifiedBlackBody(Model):
@@ -191,8 +204,74 @@ class ModifiedBlackBody(Model):
         temp = np.array(temp)[..., np.newaxis]
         x = 1e+9 * constants.h * nu / (constants.k * temp)
         x_0 = 1e+9 * constants.h * nu_0 / (constants.k * temp)
-        res = (nu / nu_0)**(beta + 1.0) * np.expm1(x_0) / np.expm1(x)
+        res = (nu / nu_0) ** (beta + 1.0) * np.expm1(x_0) / np.expm1(x)
         return res * (_rj2cmb(nu) / _rj2cmb(nu_0))
+
+    def diff(self, **kwargs):
+        """ Evaluation of the first derivative of the SED.
+
+        Parameters
+        ----------
+        nu: float or array
+            Frequency in GHz.
+        beta: float or array
+            Spectral index.
+        temp: float or array
+            Dust temperature.
+        nu_0: float
+            Reference frequency in Hz.
+
+        Returns
+        -------
+        sed_diff: dict
+            Each key of the dict corresponds to a parameter of the model.
+        """
+        if 'nu' in kwargs:
+            raise NotImplementedError(
+                'Derivative with respect to nu does not make sense here')
+        if 'nu_0' in kwargs:
+            raise NotImplementedError(
+                'Derivative with respect to nu does not make sense here')
+
+        defaults = self.defaults
+        nu = defaults['nu']
+        nu_0 = defaults['nu_0']
+        res = {}
+
+        beta = defaults['beta']
+        if beta is None:
+            beta = np.asarray(kwargs['beta'])
+            if defaults['temp'] is None:
+                temp = np.asarray(kwargs['temp'])
+            else:
+                temp = defaults['temp']
+            x = 1e+9 * constants.h * nu / (constants.k * temp)
+            x_0 = 1e+9 * constants.h * nu_0 / (constants.k * temp)
+            res_beta = np.zeros((beta.size, beta.size, nu.size))
+            np.einsum('aai->ai', res_beta)[:] = np.log(nu / nu_0) * (
+                    nu / nu_0) ** (beta + 1.0) * np.expm1(
+                x_0) / np.expm1(x) * (_rj2cmb(nu) / _rj2cmb(nu_0))
+            res['beta'] = res_beta.reshape(
+                (beta.size,) + beta.shape + nu.shape)
+
+        temp = defaults['temp']
+        if temp is None:
+            temp = np.asarray(kwargs['temp'])
+            if defaults['beta'] is None:
+                beta = np.asarray(kwargs['beta'])
+            else:
+                beta = defaults['beta']
+            x = 1e+9 * constants.h * nu / (constants.k * temp)
+            x_0 = 1e+9 * constants.h * nu_0 / (constants.k * temp)
+            res_temp = np.zeros((temp.size, temp.size, nu.size))
+            np.einsum('aai->ai', res_temp)[:] = (nu / nu_0) ** (
+                    beta + 1.0) * (x * (np.expm1(x_0) * np.exp(x)) / (
+                    temp * np.expm1(x) ** 2) - x_0 * np.exp(x_0) / (
+                                           temp * np.expm1(x))) * (_rj2cmb(
+                nu) / _rj2cmb(nu_0))
+            res['temp'] = res_temp.reshape(
+                (temp.size,) + temp.shape + nu.shape)
+        return res
 
 
 class CIB(ModifiedBlackBody):
@@ -224,6 +303,9 @@ class ThermalSZ(Model):
         T_CMB (optional) : float
         """
         return ThermalSZ.f(nu) / ThermalSZ.f(nu_0)
+
+    def diff(self, **kwargs):
+        return {}
 
 
 class FreeFree(Model):
@@ -263,13 +345,64 @@ class FreeFree(Model):
         - Free-free emission in temperature.
 
         """
-        EM  = np.array(EM)[..., np.newaxis]
-        Te  = np.array(Te)[..., np.newaxis]
-        Teff = (Te / 1.e3)**(1.5)
+        EM = np.array(EM)[..., np.newaxis]
+        Te = np.array(Te)[..., np.newaxis]
+        Teff = (Te / 1.e3) ** (1.5)
         nuff = 255.33e9 * Teff
-        gff = 1. + np.log(1. + (nuff / nu)**(np.sqrt(3) / np.pi))
+        gff = 1. + np.log(1. + (nuff / nu) ** (np.sqrt(3) / np.pi))
         print("warning: I need to check the units on this")
         return EM * gff
+
+    def diff(self, **kwargs):
+        """ Evaluation of the first derivative of the SED.
+        Parameters
+        ----------
+        nu: float or array
+            Frequency in GHz.
+        EM: float or array
+            Emission measure in cm^-6 pc (usually around 300). If array, the shape is ``(...)``.
+        Te: float or array
+            Electron temperature (typically around 7000). If array, the shape is ``(...)``.
+
+        Returns
+        -------
+        sed_diff: dict
+            Each key of the dict corresponds to a parameter of the model.
+        """
+        if 'nu' in kwargs:
+            raise NotImplementedError(
+                'Derivative with respect to nu does not make sense here')
+
+        defaults = self.defaults
+        nu = defaults['nu']
+        res = {}
+
+        Te = defaults['Te']
+        if Te is None:
+            Te = kwargs['Te']
+
+        EM = defaults['EM']
+        if EM is None:
+            EM = np.asarray(kwargs['EM'])
+            res['EM'] = self.eval(Te=Te, EM=1.0)[None]
+
+        if defaults['Te'] is None:
+            Te = np.asarray(kwargs['Te'])
+            Teff = (Te / 1.e3) ** 1.5
+            nuff = 255.33e9 * Teff
+            nuff_diff = 255.33e9 * 1.5 * (Te / 1.e3) ** 1.5 / Te
+            res_Te = np.zeros((Te.size, Te.size, nu.size))
+
+            np.einsum('aai->ai', res_Te)[:] = EM * nuff_diff * np.sqrt(3) * (
+                        nuff / nu) ** (np.sqrt(3) / np.pi) / (
+                                                          np.pi * nuff * (
+                                                              nuff / nu) ** (
+                                                                      np.sqrt(
+                                                                          3) / np.pi) + np.pi * nuff)
+
+            res['Te'] = res_Te.reshape((Te.size,) + Te.shape + nu.shape)
+
+        return res
 
 class ConstantSED(Model):
     """Frequency-independent component."""
@@ -338,3 +471,26 @@ class Join(Model):
         for i in range(len(seds)):
             res[i] = seds[i]
         return res
+
+    def diff(self, kwseq=None):
+        """Compute the SED with the given frequency and parameters.
+
+        *kwseq
+            The length of ``kwseq`` has to be equal to the number of SEDs
+            joined. ``kwseq[i]`` is a dictionary containing the keyword
+            arguments of the ``i``-th SED.
+        """
+        if kwseq:
+            diffs = [s.diff(**kw) for kw, s in zip(kwseq, self._seds)]
+        else:
+            diffs = [s.diff() for s in self._seds]
+        n_comp = len(diffs)
+        for i in range(n_comp):
+            def expand(sed):
+                factor = np.zeros(n_comp)
+                factor[i] = 1.
+                return sed[..., None, :] * factor[..., None]
+
+            diffs[i] = _apply(expand, diffs[i])
+
+        return {'kwseq':diffs}
