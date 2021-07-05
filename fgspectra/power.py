@@ -115,8 +115,8 @@ class PowerSpectrumFromFile(Model):
         res = np.zeros((amp.size, amp.size, ell.size))
 
         np.einsum('aal->al', res)[:] = self.eval(ell=ell, ell_0=ell_0, amp=1)
-
-        return {'amp': res}
+        res_amp = res.reshape((amp.size,) + amp.shape + ell.shape)
+        return {'amp': res_amp}
 
 
 class tSZ_150_bat(PowerSpectrumFromFile):
