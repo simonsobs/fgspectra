@@ -139,7 +139,11 @@ class FactorizedCrossSpectrum(Model):
             Cross-spectrum. The shape is ``(..., freq, freq, ell)``.
         """
         f_nu = self._sed(**sed_kwargs)[..., np.newaxis]
-        return f_nu[..., np.newaxis] * f_nu * self._cl(**cl_kwargs)
+        if np.shape(f_nu) != (2,1):
+            f_nu = self._sed(**sed_kwargs).swapaxes(0,1)
+            return f_nu[..., np.newaxis,:] * f_nu * self._cl(**cl_kwargs)
+        else:
+            return f_nu[..., np.newaxis] * f_nu * self._cl(**cl_kwargs)
 
 
 class CorrelatedFactorizedCrossSpectrum(FactorizedCrossSpectrum):
@@ -192,7 +196,11 @@ class CorrelatedFactorizedCrossSpectrum(FactorizedCrossSpectrum):
         """
 
         f_nu = self._sed(**sed_kwargs)
-        return np.einsum('k...i,n...j,...knl->...ijl',
+        if np.shape(f_nu) != (2,2):
+            return np.einsum('kl...i,nl...j,...knl->...ijl',
+                         f_nu, f_nu, self._cl(**cl_kwargs))
+        else:
+            return np.einsum('k...i,n...j,...knl->...ijl',
                          f_nu, f_nu, self._cl(**cl_kwargs))
 
 
