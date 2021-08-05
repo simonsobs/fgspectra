@@ -140,8 +140,7 @@ class FactorizedCrossSpectrum(Model):
         """
         f_nu = self._sed(**sed_kwargs)[..., np.newaxis]
         if np.shape(f_nu) != (2,1):
-            f_nu = self._sed(**sed_kwargs).swapaxes(0,1)
-            return f_nu[..., np.newaxis,:] * f_nu * self._cl(**cl_kwargs)
+            return np.einsum('lik,ljn,l->ijl',f_nu,f_nu,self._cl(**cl_kwargs))
         else:
             return f_nu[..., np.newaxis] * f_nu * self._cl(**cl_kwargs)
 
