@@ -138,12 +138,13 @@ class FactorizedCrossSpectrum(Model):
         cross : ndarray
             Cross-spectrum. The shape is ``(..., freq, freq, ell)``.
         """
-        f_nu = self._sed(**sed_kwargs)[..., np.newaxis]
-        if np.shape(f_nu[:,0]) == (len(self._cl(**cl_kwargs)),1):
-            return np.einsum('lik,ljn,l->ijl',f_nu,f_nu,self._cl(**cl_kwargs))
-        else:
-            return f_nu[..., np.newaxis] * f_nu * self._cl(**cl_kwargs)
-
+        f_nu = self._sed(**sed_kwargs)
+        cl = self._cl(**cl_kwargs)
+        if f_nu.shape[0] != cl.shape[-1]:
+            f_nu = f_nu[np.newaxis]
+        
+        return np.einsum('l...i,l...j,...l->...ijl', f_nu, f_nu, cl)
+    
 
 class CorrelatedFactorizedCrossSpectrum(FactorizedCrossSpectrum):
     r"""Factorized cross-spectrum of correlated components
@@ -195,12 +196,12 @@ class CorrelatedFactorizedCrossSpectrum(FactorizedCrossSpectrum):
         """
 
         f_nu = self._sed(**sed_kwargs)
-        if np.shape(f_nu[:,0]) != (2,):
-            return np.einsum('kl...i,nl...j,...knl->...ijl',
-                         f_nu, f_nu, self._cl(**cl_kwargs))
-        else:
-            return np.einsum('k...i,n...j,...knl->...ijl',
-                         f_nu, f_nu, self._cl(**cl_kwargs))
+        cl = self._cl(**cl_kwargs)
+        if f_nu.shape[0] != cl.shape[-1]:
+            f_nu = f_nu[:, np.newaxis]
+  
+        return np.einsum('kl...i,nl...j,...knl->...ijl',
+                         f_nu, f_nu, cl)
 
 
 class PowerLaw(FactorizedCrossSpectrum):
