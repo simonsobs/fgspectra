@@ -5,8 +5,9 @@ import yaml
 import numpy as np
 from copy import deepcopy
 
+
 class Model(ABC):
-    """ Abstract class for model definition
+    """Abstract class for model definition
 
     A model is a class that has one purpose: evaluating the model. What
     evaluation means is defined by the `eval` method that any child class has to
@@ -18,11 +19,11 @@ class Model(ABC):
     """
 
     def __init__(self, **kwargs):
-        """ You can set defaults at construction time """
+        """You can set defaults at construction time"""
         self.set_defaults(**kwargs)
 
     def set_defaults(self, **kwargs):
-        """ Change the defaults of the evaluation
+        """Change the defaults of the evaluation
 
         Call ``set_defaults`` with the same arguments (or a subset) of ``eval``
         (or ``__call__``).
@@ -61,8 +62,12 @@ class Model(ABC):
         func = self.eval.__func__
 
         new_func = types.FunctionType(
-            func.__code__, func.__globals__, name=func.__name__,
-            argdefs=func.__defaults__, closure=func.__closure__)
+            func.__code__,
+            func.__globals__,
+            name=func.__name__,
+            argdefs=func.__defaults__,
+            closure=func.__closure__,
+        )
 
         # Build the defaults from scratch, assuming no positional argument
         # Update the defaults that have a corresponding key in kwargs
@@ -71,7 +76,7 @@ class Model(ABC):
         fas = inspect.getfullargspec(new_func)
         defaults = []
         for arg, default in zip(fas.args[1:], fas.defaults):
-            #[1:] skips self, the only positional argument
+            # [1:] skips self, the only positional argument
             if arg in kwargs:
                 defaults.append(kwargs[arg])
             else:
@@ -84,7 +89,7 @@ class Model(ABC):
 
     @property
     def defaults(self):
-        """ The current defaults
+        """The current defaults
 
         The current defaults as you would pass them to the eval method.
 
@@ -96,8 +101,10 @@ class Model(ABC):
         True
 
         """
-        return {name: par.default
-                for name, par in inspect.signature(self.eval).parameters.items()}
+        return {
+            name: par.default
+            for name, par in inspect.signature(self.eval).parameters.items()
+        }
 
     def __call__(self, *args, **kwargs):
         # __call__ can't be rebound, that's why we use eval
@@ -105,7 +112,7 @@ class Model(ABC):
 
     @abstractmethod
     def eval(self, **kwargs):
-        """ Evaluation of the model
+        """Evaluation of the model
 
         Note
         ----
@@ -122,7 +129,7 @@ class Model(ABC):
         pass
 
     def _get_repr(self):
-        """ Readable version of defaults
+        """Readable version of defaults
 
         In particular, it is also a nested set of dictionaries with a key for
         each argument of the `eval` methods in the model.
@@ -149,15 +156,17 @@ class Model(ABC):
 
     def _update_path_nones(self):
         self._path_nones = []
+
         def search_for_none(kwargs, base=[]):
             for key, val in self._key_value_iteration(kwargs):
                 if val is None:
-                    self._path_nones.append(base+[key])
+                    self._path_nones.append(base + [key])
                 else:
                     try:
-                        search_for_none(val, base+[key])
+                        search_for_none(val, base + [key])
                     except TypeError:
                         pass
+
         search_for_none(self.defaults)
 
     def prepare_for_arrays(self, template_kwargs):
@@ -172,9 +181,8 @@ class Model(ABC):
         self._update_path_nones()
 
     def kwargs2array(self, kwargs):
-        """ (Nested) dictionaries to float array
-        """
-        if not hasattr(self, '_path_nones'):
+        """(Nested) dictionaries to float array"""
+        if not hasattr(self, "_path_nones"):
             raise RuntimeError("You have to call prepare_for_arrays first")
         res_list = []
         for path in self._path_nones:
@@ -186,7 +194,7 @@ class Model(ABC):
         return np.concatenate(res_list)
 
     def array2kwargs(self, x):
-        if not hasattr(self, '_path_nones'):
+        if not hasattr(self, "_path_nones"):
             raise RuntimeError("You have to call prepare_for_arrays first")
         for path in self._path_nones:
             inner_path = path
@@ -198,8 +206,8 @@ class Model(ABC):
             ref_val = inner_kwargs[inner_path[0]]
             try:
                 # It's an array
-                inner_kwargs[inner_path[0]] = x[:ref_val.size].reshape(ref_val.shape)
-                x = x[ref_val.size:]
+                inner_kwargs[inner_path[0]] = x[: ref_val.size].reshape(ref_val.shape)
+                x = x[ref_val.size :]
             except AttributeError:
                 # It's a float
                 inner_kwargs[inner_path[0]] = x[0]
