@@ -218,7 +218,8 @@ class PowerSpectraAndCorrelation(Model):
             ``argss[i]`` is the argument list of the ``i``-th SED.
         
         """
-        spectra = [ps(*args) for ps, args in zip(self._power_spectra, argss)]
+        spectra = np.array(
+            [ps(**kwargs) for ps, kwargs in zip(self._power_spectra, kwseq)])
         corrs = spectra[self.n_comp:]
         cls = spectra[:self.n_comp]
         sqrt_cls = [np.sqrt(cl) for cl in cls]
