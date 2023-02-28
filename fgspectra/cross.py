@@ -132,8 +132,12 @@ class FactorizedCrossSpectrum(Model):
         cross : ndarray
             Cross-spectrum. The shape is ``(..., freq, freq, ell)``.
         """
-        f_nu = self._sed(**sed_kwargs)[..., np.newaxis]
-        return f_nu[..., np.newaxis] * f_nu * self._cl(**cl_kwargs)
+        f_nu = self._sed(**sed_kwargs)
+        cl = self._cl(**cl_kwargs)
+        if f_nu.shape[0] != cl.shape[-1]:
+            f_nu = f_nu[np.newaxis]
+
+        return np.einsum("l...i,l...j,...l->...ijl", f_nu, f_nu, cl)
 
 
 class CorrelatedFactorizedCrossSpectrum(FactorizedCrossSpectrum):
@@ -186,9 +190,11 @@ class CorrelatedFactorizedCrossSpectrum(FactorizedCrossSpectrum):
         """
 
         f_nu = self._sed(**sed_kwargs)
-        return np.einsum(
-            "k...i,n...j,...knl->...ijl", f_nu, f_nu, self._cl(**cl_kwargs)
-        )
+        cl = self._cl(**cl_kwargs)
+        if f_nu.shape[0] != cl.shape[-1]:
+            f_nu = f_nu[:, np.newaxis]
+
+        return np.einsum("kl...i,nl...j,...knl->...ijl", f_nu, f_nu, cl)
 
 
 class PowerLaw(FactorizedCrossSpectrum):
@@ -232,4 +238,17 @@ class SZxCIB(CorrelatedFactorizedCrossSpectrum):
     def __init__(self, **kwargs):
         sed = fgf.Join(fgf.ThermalSZ(), fgf.CIB())
         super().__init__(sed, fgp.SZxCIB_Addison2012())
+        self.set_defaults(**kwargs)
+
+
+class SZxCIB_Choi2020(CorrelatedFactorizedCrossSpectrum):
+    def __init__(self, **kwargs):
+        sed = fgf.Join(fgf.ThermalSZ(), fgf.CIB())
+        power_spectra = [
+            fgp.PowerSpectrumFromFile(fgp._get_power_file("tsz_150_bat")),
+            fgp.PowerSpectrumFromFile(fgp._get_power_file("cib_Choi2020")),
+            fgp.PowerSpectrumFromFile(fgp._get_power_file("sz_x_cib")),
+        ]
+        cl = fgp.PowerSpectraAndCovariance(*power_spectra)
+        super().__init__(sed, cl)
         self.set_defaults(**kwargs)
