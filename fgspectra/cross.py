@@ -136,9 +136,9 @@ class FactorizedCrossSpectrum(Model):
         cl = self._cl(**cl_kwargs)
         if f_nu.shape[0] != cl.shape[-1]:
             f_nu = f_nu[np.newaxis]
-        
-        return np.einsum('l...i,l...j,...l->...ijl', f_nu, f_nu, cl)
-    
+
+        return np.einsum("l...i,l...j,...l->...ijl", f_nu, f_nu, cl)
+
 
 class CorrelatedFactorizedCrossSpectrum(FactorizedCrossSpectrum):
     r"""Factorized cross-spectrum of correlated components
@@ -193,9 +193,8 @@ class CorrelatedFactorizedCrossSpectrum(FactorizedCrossSpectrum):
         cl = self._cl(**cl_kwargs)
         if f_nu.shape[0] != cl.shape[-1]:
             f_nu = f_nu[:, np.newaxis]
-  
-        return np.einsum('kl...i,nl...j,...knl->...ijl',
-                         f_nu, f_nu, cl)
+
+        return np.einsum("kl...i,nl...j,...knl->...ijl", f_nu, f_nu, cl)
 
 
 class PowerLaw(FactorizedCrossSpectrum):
@@ -243,13 +242,12 @@ class SZxCIB(CorrelatedFactorizedCrossSpectrum):
 
 
 class SZxCIB_Choi2020(CorrelatedFactorizedCrossSpectrum):
-    
     def __init__(self, **kwargs):
         sed = fgf.Join(fgf.ThermalSZ(), fgf.CIB())
         power_spectra = [
-            fgp.PowerSpectrumFromFile(fgp._get_power_file('tsz_150_bat')),
-            fgp.PowerSpectrumFromFile(fgp._get_power_file('cib_Choi2020')),
-            fgp.PowerSpectrumFromFile(fgp._get_power_file('sz_x_cib')) 
+            fgp.PowerSpectrumFromFile(fgp._get_power_file("tsz_150_bat")),
+            fgp.PowerSpectrumFromFile(fgp._get_power_file("cib_Choi2020")),
+            fgp.PowerSpectrumFromFile(fgp._get_power_file("sz_x_cib")),
         ]
         cl = fgp.PowerSpectraAndCovariance(*power_spectra)
         super().__init__(sed, cl)

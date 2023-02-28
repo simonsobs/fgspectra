@@ -28,9 +28,11 @@ def test_ACT_models():
     tsz = fgc.FactorizedCrossSpectrum(fgf.ThermalSZ(), fgp.tSZ_150_bat())
     cibc = fgc.FactorizedCrossSpectrum(fgf.CIB(), fgp.PowerLaw())
 
-    template_path = os.path.join(os.path.dirname(os.path.abspath(fgp.__file__)),'data')
-    cibc_file = os.path.join(template_path,'cl_cib_Choi2020.dat')
-    cibc_Choi2020 = fgc.FactorizedCrossSpectrum(fgf.CIB(), fgp.PowerSpectrumFromFile(cibc_file))
+    template_path = os.path.join(os.path.dirname(os.path.abspath(fgp.__file__)), "data")
+    cibc_file = os.path.join(template_path, "cl_cib_Choi2020.dat")
+    cibc_Choi2020 = fgc.FactorizedCrossSpectrum(
+        fgf.CIB(), fgp.PowerSpectrumFromFile(cibc_file)
+    )
     tSZ_and_CIB_Choi2020 = fgc.SZxCIB_Choi2020()
 
     ells = np.array([2000])
@@ -55,9 +57,9 @@ def test_ACT_models():
         "f0_dust": 149.7,
     }
 
-    fsz = np.array([par['f0_sz'], par['f0_sz']])
-    fsynch = np.array([par['f0_synch'], par['f0_synch']])
-    fdust = np.array([par['f0_dust'], par['f0_dust']])
+    fsz = np.array([par["f0_sz"], par["f0_sz"]])
+    fsynch = np.array([par["f0_synch"], par["f0_synch"]])
+    fdust = np.array([par["f0_dust"], par["f0_dust"]])
 
     result = (
         par["a_tSZ"]
