@@ -15,13 +15,12 @@ from .model import Model
 
 
 def _get_power_file(model):
-    """ File path for the named model
-    """
-    data_path = pkg_resources.resource_filename('fgspectra', 'data/')
-    filename = os.path.join(data_path, 'cl_%s.dat'%model)
+    """File path for the named model"""
+    data_path = pkg_resources.resource_filename("fgspectra", "data/")
+    filename = os.path.join(data_path, "cl_%s.dat" % model)
     if os.path.exists(filename):
         return filename
-    raise ValueError('No template for model '+model)
+    raise ValueError("No template for model " + model)
 
 
 class PowerSpectrumFromFile(Model):
@@ -63,7 +62,7 @@ class PowerSpectrumFromFile(Model):
         The file format should be two columns, ell and the spectrum.
         """
         filenames = np.array(filenames)
-        self._cl = np.empty(filenames.shape+(0,))
+        self._cl = np.empty(filenames.shape + (0,))
 
         for i, filename in np.ndenumerate(filenames):
             ell, spec = np.genfromtxt(filename, unpack=True)
@@ -73,10 +72,11 @@ class PowerSpectrumFromFile(Model):
             if n_missing_ells > 0:
                 pad_width = [(0, 0)] * self._cl.ndim
                 pad_width[-1] = (0, n_missing_ells)
-                self._cl = np.pad(self._cl, pad_width,
-                                  mode='constant', constant_values=0)
+                self._cl = np.pad(
+                    self._cl, pad_width, mode="constant", constant_values=0
+                )
 
-            self._cl[i+(ell,)] = spec
+            self._cl[i + (ell,)] = spec
         self.set_defaults(**kwargs)
 
     def eval(self, ell=None, ell_0=None, amp=1.0):
@@ -89,7 +89,7 @@ class tSZ_150_bat(PowerSpectrumFromFile):
 
     def __init__(self):
         """Intialize object with parameters."""
-        super().__init__(_get_power_file('tsz_150_bat'))
+        super().__init__(_get_power_file("tsz_150_bat"))
 
 
 class kSZ_bat(PowerSpectrumFromFile):
@@ -97,14 +97,15 @@ class kSZ_bat(PowerSpectrumFromFile):
 
     def __init__(self):
         """Intialize object with parameters."""
-        super().__init__(_get_power_file('ksz_bat'))
+        super().__init__(_get_power_file("ksz_bat"))
 
 
 class PowerLaw(Model):
-    r""" Power law
+    r"""Power law
 
     .. math:: C_\ell = (\ell / \ell_0)^\alpha
     """
+
     def eval(self, ell=None, alpha=None, ell_0=None, amp=1.0):
         """
 
@@ -127,13 +128,14 @@ class PowerLaw(Model):
         """
         alpha = np.array(alpha)[..., np.newaxis]
         amp = np.array(amp)[..., np.newaxis]
-        return amp * (ell / ell_0)**alpha
+        return amp * (ell / ell_0) ** alpha
 
 
 class CorrelatedPowerLaws(PowerLaw):
-    """ As PowerLaw, but requires only the diagonal of the component-component
+    """As PowerLaw, but requires only the diagonal of the component-component
     dimensions and the correlation coefficient between TWO PL
     """
+
     def eval(self, ell=None, alpha=None, ell_0=None, amp=None, rho=None):
         """
         Parameters
@@ -159,13 +161,11 @@ class CorrelatedPowerLaws(PowerLaw):
         amp = np.array(amp)
 
         alpha = (alpha[..., np.newaxis, :] + alpha[..., np.newaxis]) / 2
-        amp = (amp[..., np.newaxis, :]
-               * amp[..., np.newaxis])**0.5
+        amp = (amp[..., np.newaxis, :] * amp[..., np.newaxis]) ** 0.5
         amp[..., 1, 0] *= rho
         amp[..., 0, 1] *= rho
 
         return super().eval(ell=ell, alpha=alpha, ell_0=ell_0, amp=amp)
-
 
 
 class PowerSpectraAndCorrelation(Model):
@@ -186,7 +186,6 @@ class PowerSpectraAndCorrelation(Model):
         The ordering is similar to the one returned by `healpy.anafast`.
     """
 
-
     def __init__(self, *power_spectra, **kwargs):
         self._power_spectra = power_spectra
         self.n_comp = np.rint(-1 + np.sqrt(1 + 8 * len(power_spectra))) // 2
@@ -195,38 +194,38 @@ class PowerSpectraAndCorrelation(Model):
         self.set_defaults(**kwargs)
 
     def set_defaults(self, **kwargs):
-        if 'kwseq' in kwargs:
-            for i, cl_kwargs in enumerate(kwargs['kwseq']):
+        if "kwseq" in kwargs:
+            for i, cl_kwargs in enumerate(kwargs["kwseq"]):
                 self._power_spectra[i].set_defaults(**cl_kwargs)
 
     @property
     def defaults(self):
-        return {'kwseq': [ps.defaults for ps in self.power_spectra]}
+        return {"kwseq": [ps.defaults for ps in self.power_spectra]}
 
     def _get_repr(self):
-        return {type(self).__name__:
-                    [ps._get_repr() for ps in self.power_spectra]}
-
+        return {type(self).__name__: [ps._get_repr() for ps in self.power_spectra]}
 
     def eval(self, kwseq=None):
         """Compute the SED with the given frequency and parameters.
-        
+
         Parameters
         ----------
         *argss
             The length of `argss` has to be equal to the number of SEDs joined.
             ``argss[i]`` is the argument list of the ``i``-th SED.
-        
+
         """
         spectra = np.array(
-            [ps(**kwargs) for ps, kwargs in zip(self._power_spectra, kwseq)])
-        corrs = spectra[self.n_comp:]
-        cls = spectra[:self.n_comp]
+            [ps(**kwargs) for ps, kwargs in zip(self._power_spectra, kwseq)]
+        )
+        corrs = spectra[self.n_comp :]
+        cls = spectra[: self.n_comp]
         sqrt_cls = [np.sqrt(cl) for cl in cls]
         cls_shape = np.broadcast(*cls).shape
 
         res = np.empty(  # Shape is (..., comp, comp, ell)
-            cls_shape[1:-1] + (self.n_comp, self.n_comp) + cls_shape[-1:])
+            cls_shape[1:-1] + (self.n_comp, self.n_comp) + cls_shape[-1:]
+        )
 
         for i in range(self.n_comp):
             res[..., i, i, :] = cls[i]
@@ -240,7 +239,7 @@ class PowerSpectraAndCorrelation(Model):
                 res[..., j, i, :] = res[..., i, j, :]
                 i_corr += 1
 
-        '''
+        """
         i_corr = 0
         for i in range(self.n_comp):
             res[..., i, i, :] = cls[i]
@@ -248,10 +247,11 @@ class PowerSpectraAndCorrelation(Model):
                 res[..., i, j, :] = sqrt_cls[i] * sqrt_cls[j] * corrs[i_corr]
                 res[..., j, i, :] = res[..., i, j, :]
                 i_corr += 1
-        '''
+        """
 
         assert i_corr == len(corrs)
         return res
+
 
 class PowerSpectraAndCovariance(Model):
     r"""Components' spectra and their covariance
@@ -279,17 +279,16 @@ class PowerSpectraAndCovariance(Model):
         self.set_defaults(**kwargs)
 
     def set_defaults(self, **kwargs):
-        if 'kwseq' in kwargs:
-            for i, cl_kwargs in enumerate(kwargs['kwseq']):
+        if "kwseq" in kwargs:
+            for i, cl_kwargs in enumerate(kwargs["kwseq"]):
                 self._power_spectra[i].set_defaults(**cl_kwargs)
 
     @property
     def defaults(self):
-        return {'kwseq': [ps.defaults for ps in self._power_spectra]}
+        return {"kwseq": [ps.defaults for ps in self._power_spectra]}
 
     def _get_repr(self):
-        return {type(self).__name__:
-                    [ps._get_repr() for ps in self._power_spectra]}
+        return {type(self).__name__: [ps._get_repr() for ps in self._power_spectra]}
 
     def eval(self, kwseq=None):
         """Compute the Cl with the given frequency and parameters.
@@ -299,10 +298,12 @@ class PowerSpectraAndCovariance(Model):
             ``kwseq[i]`` is the argument list of the ``i``-th SED.
         """
         spectra = np.array(
-            [ps(**kwargs) for ps, kwargs in zip(self._power_spectra, kwseq)])
+            [ps(**kwargs) for ps, kwargs in zip(self._power_spectra, kwseq)]
+        )
         res = np.empty(  # Shape is (..., comp, comp, ell)
-            spectra.shape[1:-1] + (self.n_comp, self.n_comp) + spectra.shape[-1:])
-        
+            spectra.shape[1:-1] + (self.n_comp, self.n_comp) + spectra.shape[-1:]
+        )
+
         i_corr = 0
         for k_off_diag in range(0, self.n_comp):
             for el_off_diag in range(self.n_comp - k_off_diag):
@@ -322,22 +323,22 @@ class SZxCIB_Reichardt2012(PowerSpectraAndCorrelation):
     def __init__(self, **kwargs):
         """Intialize object with parameters."""
         power_spectra = [
-            PowerSpectrumFromFile(_get_power_file('tsz_150_bat')),
+            PowerSpectrumFromFile(_get_power_file("tsz_150_bat")),
             PowerLaw(),
-            lambda xi : xi 
+            lambda xi: xi,
         ]
         super().__init__(*power_spectra)
-        
-        
+
+
 class SZxCIB_Addison2012(PowerSpectraAndCovariance):
     """PowerSpectrum for SZxCIB (Dunkley et al. 2013)."""
 
     def __init__(self, **kwargs):
         """Intialize object with parameters."""
         power_spectra = [
-            PowerSpectrumFromFile(_get_power_file('tsz_150_bat')),
+            PowerSpectrumFromFile(_get_power_file("tsz_150_bat")),
             PowerLaw(),
-            PowerSpectrumFromFile(_get_power_file('sz_x_cib'))
+            PowerSpectrumFromFile(_get_power_file("sz_x_cib")),
         ]
         super().__init__(*power_spectra, **kwargs)
 

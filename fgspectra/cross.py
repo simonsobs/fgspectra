@@ -11,8 +11,7 @@ from .model import Model
 
 
 class Sum(Model):
-    """ Sum the cross-spectra of uncorrelated components
-    """
+    """Sum the cross-spectra of uncorrelated components"""
 
     def __init__(self, *crosses, **kwargs):
         """
@@ -26,17 +25,16 @@ class Sum(Model):
         self.set_defaults(**kwargs)
 
     def set_defaults(self, **kwargs):
-        if 'kwseq' in kwargs:
-            for cross, cross_kwargs in zip(self._crosses, kwargs['kwseq']):
+        if "kwseq" in kwargs:
+            for cross, cross_kwargs in zip(self._crosses, kwargs["kwseq"]):
                 cross.set_defaults(**cross_kwargs)
 
     def _get_repr(self):
-        return {type(self).__name__:
-                    [cross._get_repr() for cross in self._crosses]}
+        return {type(self).__name__: [cross._get_repr() for cross in self._crosses]}
 
     @property
     def defaults(self):
-        return {'kwseq': [cross.defaults for cross in self._crosses]}
+        return {"kwseq": [cross.defaults for cross in self._crosses]}
 
     def eval(self, kwseq=None):
         """Compute the sum of the cross-spectra
@@ -47,8 +45,7 @@ class Sum(Model):
             keyword arguments of the ``i``-th cross-spectrum.
         """
         if kwseq:
-            crosses = (cross(**kwargs)
-                       for cross, kwargs in zip(self._crosses, kwseq))
+            crosses = (cross(**kwargs) for cross, kwargs in zip(self._crosses, kwseq))
         else:  # Handles the case in which no parameter has to be passed
             crosses = (cross() for cross in self._crosses)
 
@@ -100,26 +97,23 @@ class FactorizedCrossSpectrum(Model):
         self.set_defaults(**kwargs)
 
     def set_defaults(self, **kwargs):
-        if 'sed_kwargs' in kwargs:
-            self._sed.set_defaults(**kwargs['sed_kwargs'])
-        if 'cl_kwargs' in kwargs:
-            self._cl.set_defaults(**kwargs['cl_kwargs'])
+        if "sed_kwargs" in kwargs:
+            self._sed.set_defaults(**kwargs["sed_kwargs"])
+        if "cl_kwargs" in kwargs:
+            self._cl.set_defaults(**kwargs["cl_kwargs"])
 
     @property
     def defaults(self):
-        return {
-            'sed_kwargs': self._sed.defaults,
-            'cl_kwargs': self._cl.defaults
-        }
+        return {"sed_kwargs": self._sed.defaults, "cl_kwargs": self._cl.defaults}
 
     def _get_repr(self):
         sed_repr = self._sed._get_repr()
         key = list(sed_repr.keys())[0]
-        sed_repr[key + ' (SED)'] = sed_repr.pop(key)
+        sed_repr[key + " (SED)"] = sed_repr.pop(key)
 
         cl_repr = self._cl._get_repr()
         key = list(cl_repr.keys())[0]
-        cl_repr[key + ' (Cl)'] = cl_repr.pop(key)
+        cl_repr[key + " (Cl)"] = cl_repr.pop(key)
 
         return {type(self).__name__: [sed_repr, cl_repr]}
 
@@ -192,12 +186,13 @@ class CorrelatedFactorizedCrossSpectrum(FactorizedCrossSpectrum):
         """
 
         f_nu = self._sed(**sed_kwargs)
-        return np.einsum('k...i,n...j,...knl->...ijl',
-                         f_nu, f_nu, self._cl(**cl_kwargs))
+        return np.einsum(
+            "k...i,n...j,...knl->...ijl", f_nu, f_nu, self._cl(**cl_kwargs)
+        )
 
 
 class PowerLaw(FactorizedCrossSpectrum):
-    """ Single Power law in both fequency and multipoles
+    """Single Power law in both fequency and multipoles
 
     See :class:`fgspectra.frequency.PowerLaw` for the frequency dependence and
     :class:`fgspectra.power.PowerLaw` for the ell-dependence.
@@ -209,7 +204,7 @@ class PowerLaw(FactorizedCrossSpectrum):
 
 
 class CorrelatedPowerLaw(CorrelatedFactorizedCrossSpectrum):
-    """ Correlated Power law in both fequency and multipoles
+    """Correlated Power law in both fequency and multipoles
 
     See :class:`fgspectra.frequency.PowerLaw` for the frequency dependence and
     :class:`fgspectra.power.PowerLaw` for the ell-dependence.
@@ -221,21 +216,19 @@ class CorrelatedPowerLaw(CorrelatedFactorizedCrossSpectrum):
 
 
 class CorrelatedDustSynchrotron(CorrelatedFactorizedCrossSpectrum):
-    """ CorrelatedDustSynchrotron
-    
+    """CorrelatedDustSynchrotron
+
     Correlated power law and modified black body, both with power law amplitude
     """
 
     def __init__(self, **kwargs):
         super().__init__(
-            fgf.Join(fgf.ModifiedBlackBody(), fgf.PowerLaw()),
-            fgp.CorrelatedPowerLaws()
+            fgf.Join(fgf.ModifiedBlackBody(), fgf.PowerLaw()), fgp.CorrelatedPowerLaws()
         )
         self.set_defaults(**kwargs)
 
 
 class SZxCIB(CorrelatedFactorizedCrossSpectrum):
-    
     def __init__(self, **kwargs):
         sed = fgf.Join(fgf.ThermalSZ(), fgf.CIB())
         super().__init__(sed, fgp.SZxCIB_Addison2012())
