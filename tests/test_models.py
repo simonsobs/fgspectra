@@ -58,9 +58,9 @@ def test_ACT_models():
         'f0_dust'   :149.7
     }
 
-    fsz = np.array([par['f0_sz']])
-    fsynch = np.array([par['f0_synch']])
-    fdust = np.array([par['f0_dust']])
+    fsz = np.array([par['f0_sz'], par['f0_sz']])
+    fsynch = np.array([par['f0_synch'], par['f0_synch']])
+    fdust = np.array([par['f0_dust'], par['f0_dust']])
 
     result = (
 
