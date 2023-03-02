@@ -132,7 +132,7 @@ class FactorizedCrossSpectrum(Model):
         cross : ndarray
             Cross-spectrum. The shape is ``(..., freq, freq, ell)``.
         """
-        f_nu = self._sed(**sed_kwargs) 
+        f_nu = self._sed(**sed_kwargs)
         cl = self._cl(**cl_kwargs)
         if f_nu.shape[0] != cl.shape[-1] or (f_nu.shape[0] == 1 and cl.shape[-1] == 1):
             f_nu = f_nu[np.newaxis]
