@@ -6,7 +6,7 @@ from setuptools import setup
 
 setup(
     name="fgspectra",
-    version="1.0.0",
+    version="1.1.0",
     description="Foreground SED and power spectrum library",
     author="Simons Observatory fgspectra crew",
     author_email="",
