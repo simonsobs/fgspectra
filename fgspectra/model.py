@@ -194,7 +194,6 @@ class Model(ABC):
             while len(inner_path) > 1:
                 inner_kwargs = inner_kwargs[inner_path[0]]
                 inner_path = inner_path[1:]
-
             ref_val = inner_kwargs[inner_path[0]]
             try:
                 # It's an array

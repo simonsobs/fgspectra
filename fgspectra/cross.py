@@ -240,3 +240,69 @@ class SZxCIB(CorrelatedFactorizedCrossSpectrum):
         sed = fgf.Join(fgf.ThermalSZ(), fgf.CIB())
         super().__init__(sed, fgp.SZxCIB_Addison2012())
         self.set_defaults(**kwargs)
+
+
+class SZxCIB_SPT(CorrelatedFactorizedCrossSpectrum):
+    """Specific cross term for tSZxCIB as implemented in Reichardt (2020) for SPT.
+    NOT TESTED EXTENSIVELY.
+
+    Computes only the cross term by computing the total power of tSZ and CIB (clustered 1H+2H)
+    and poisson terms. This power is used to rescale an \ell dependent template:
+
+    .. math:: xC_{\ell}^{(ij)} = amp * C_{\ell}^{template} (\sqrt{C_{\ell}^{tSZ)(\nu_i)C_{\ell}^{CIB}(\nu_j)} +
+    \sqrt{C_{\ell}^{tSZ)(\nu_j)C_{\ell}^{CIB}(\nu_i)})
+
+    Parameters
+    ----------
+    tsz : callable
+        tsz fgspectra FactorizedPowerSpectrum model
+    cib : callable
+        cib fgspectra FactorizedPowerSpectrum model (or sum of models)
+    cross :  callable
+        cross fgspectra PowerFromFile model (no frequency dependency implemented yet ...)
+    """
+
+    def __init__(self, tsz, cib, cross):
+        self._tsz = tsz
+        self._cib = cib
+        self._cross = cross
+
+    def eval(self, tsz_kwargs={}, cib_kwargs={}, cross_kwargs={}):
+        """Compute the model at frequency and ell combinations.
+
+        Parameters
+        ----------
+        tsz_kwargs : dict
+            Arguments for which the `tsz` model is evaluated.
+        cib_kwargs : dict
+            Arguments for which the `cib` model is evaluated.
+        cross_kwargs : dict
+            Arguments for which the `cross` model is evaluated.
+
+        Returns
+        -------
+        res : ndarray
+            Cross-spectrum. The shape is ``(freq, freq, ell)``.
+        """
+        tsz = np.einsum('iij->ij', self._tsz.eval(**tsz_kwargs))
+        cib = np.einsum('iij->ij', self._cib.eval(**cib_kwargs))
+        cross = self._cross.eval(**cross_kwargs)
+        res = np.einsum('l,il,jl-> ijl', cross, np.sqrt(tsz), np.sqrt(cib)) + np.einsum('l,jl,il-> ijl', cross,
+                                                                                        np.sqrt(tsz), np.sqrt(cib))
+        return res
+
+    @property
+    def defaults(self):
+        return {
+            'tsz_kwargs': self._tsz.defaults,
+            'cib_kwargs': self._cib.defaults,
+            'cross_kwargs': self._cross.defaults,
+        }
+
+    def set_defaults(self, **kwargs):
+        if 'tsz_kwargs' in kwargs:
+            self._tsz.set_defaults(**kwargs['tsz_kwargs'])
+        if 'cib_kwargs' in kwargs:
+            self._cib.set_defaults(**kwargs['cib_kwargs'])
+        if 'cross_kwargs' in kwargs:
+            self._cross.set_defaults(**kwargs['cross_kwargs'])
