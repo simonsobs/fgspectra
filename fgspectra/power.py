@@ -84,6 +84,15 @@ class PowerSpectrumFromFile(Model):
         amp = np.array(amp)[..., np.newaxis]
         return amp * self._cl[..., ell] / self._cl[..., ell_0]
 
+class PowerSpectrumFromFile_PowerLaw(PowerSpectrumFromFile):
+
+    def eval(self, ell=None, ell_0=None, alpha=None, amp=1.0):
+        amp = np.array(amp)[..., np.newaxis]
+        alpha = np.array(alpha)[..., np.newaxis]
+        res = self._cl[..., ell] / self._cl[..., ell_0]
+        res[..., ell > ell_0] = (ell[ell > ell_0]/ell_0)**alpha
+        return amp*res
+
 
 class tSZ_150_bat(PowerSpectrumFromFile):
     """PowerSpectrum for Thermal Sunyaev-Zel'dovich (Dunkley et al. 2013)."""
