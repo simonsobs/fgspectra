@@ -82,7 +82,13 @@ class PowerSpectrumFromFile(Model):
     def eval(self, ell=None, ell_0=None, amp=1.0):
         """Compute the power spectrum with the given ell and parameters."""
         amp = np.array(amp)[..., np.newaxis]
-        return amp * self._cl[..., ell] / self._cl[..., ell_0]
+        res = np.zeros(amp.shape[:-1]+ell.shape) ##TODO: dodgy, simply set power sepctrum to 0 where file not available.
+        if ell[-1] > self._cl.shape[-1]:
+            lmax = self._cl.shape[-1] - 1
+        else:
+            lmax = ell[-1]
+        res[..., ell[ell < lmax-1]] = amp * self._cl[..., ell[ell < lmax-1]] / self._cl[..., ell_0]
+        return res
 
 class PowerSpectrumFromFile_PowerLaw(PowerSpectrumFromFile):
 
@@ -109,6 +115,17 @@ class kSZ_bat(PowerSpectrumFromFile):
         """Intialize object with parameters."""
         super().__init__(_get_power_file('ksz_bat'))
 
+class tSZ_planck_highL(PowerSpectrumFromFile):
+    """PowerSpectrum for Thermal Sunyaev Zel'dovich (from Planck analysis) extended to higher \ell"""
+    def __init__(self):
+        """Initialize object with parameters."""
+        super().__init__(_get_power_file('tsz_planck_highL'))
+
+class kSZ_planck_highL(PowerSpectrumFromFile):
+    """PowerSpectrum for Kinematic Sunyaev Zel'dovich (from Planck analysis) extended to higher \ell"""
+    def __init__(self):
+        """Initialize object with parameters."""
+        super().__init__(_get_power_file('ksz_planck_highL'))
 
 class PowerLaw(Model):
     r""" Power law
@@ -350,26 +367,24 @@ class SZxCIB_Addison2012(PowerSpectraAndCovariance):
         ]
         super().__init__(*power_spectra, **kwargs)
 
-class SquarePowerLaw(Model):
-    def eval(self, ell=None, ell_0=None, amp=1.0):
-        """
-        Parameters
-        ----------
-        ell: float or array
-            Multipole
-        ell_0: float
-            Reference ell
-        amp: float or array
-            Amplitude, shape must be compatible with `ell`.
+class SZxCIB_planck_highL(PowerSpectraAndCovariance):
+    """PowerSpectrum for SZxCIB (from Planck), extended to higher \ell"""
 
-        Returns
-        -------
-        cl: ndarray
-            Has same shape as ell.
-        """
-        amp = np.array(amp)[..., np.newaxis]
-        return amp * (ell * (ell + 1.0)) / (ell_0 * (ell_0 + 1.0))
+    def __init__(self, **kwargs):
+        """Intialize object with parameters."""
+        power_spectra = [
+            PowerSpectrumFromFile(_get_power_file('tsz_planck_highL')),
+            PowerSpectrumFromFile(_get_power_file('cib_planck_highL')),
+            PowerSpectrumFromFile(_get_power_file('tszxcib_planck_highL'))
+        ]
+        super().__init__(*power_spectra, **kwargs)
 
+
+class CIB_planck_highL(PowerSpectrumFromFile):
+    """PowerSpectrum for CIB from Planck analysis) extended to higher \ell"""
+    def __init__(self):
+        """Initialize object with parameters."""
+        super().__init__(_get_power_file('cib_planck_highL'))
 
 
 class CIB_Planck(Model):
@@ -378,27 +393,6 @@ class CIB_Planck(Model):
 
       Do not use this. It is hacked together because the Planck template is
       not really designed to work well within fgspectra."""
-
-    # def __init__(self, **kwargs):
-    #     #     spec = np.genfromtxt(_get_power_file('cib_planck'), unpack=False, dtype=np.float)
-    #     #     ell = spec[:, 0].astype(int)
-    #     #     self._cl = np.zeros((max(ell) + 1, 4))
-    #     #     self._cl[ell, 0] = spec[:, 1] * (4096.68168783 / 1e6) ** 2.0
-    #     #     self._cl[ell, 1] = spec[:, 7] * (2690.05218701 / 1e6) ** 2.0
-    #     #     self._cl[ell, 2] = spec[:, 8] * (2690.05218701 / 1e6) * (2067.43988919 / 1e6)
-    #     #     self._cl[ell, 3] = spec[:, 12] * (2067.43988919 / 1e6) ** 2.0
-    #     #
-    #     #     ls = np.arange(self._cl.shape[0])[..., np.newaxis]
-    #     #     norm = self._cl[3000, 3]
-    #     #     self._cl = (self._cl / norm) * ls * (ls + 1.0) / (3000.0 * 3001.0)
-    #     #
-    #     #     self.set_defaults(**kwargs)
-    #     #
-    #     # def eval(self, ell=None, ell_0=None, n_cib=None, amp=1.0):
-    #     #     """Compute the power spectrum with the given ell and parameters."""
-    #     #     if np.isscalar(ell): ell = np.array(ell)[..., np.newaxis]
-    #     #
-    #     #     return amp * self._cl[ell, :] * (ell[:, np.newaxis] / ell_0) ** (n_cib + 1.3
 
     def __init__(self, **kwargs):
         spec = np.genfromtxt(_get_power_file('cib_planck'), unpack=False, dtype=float)
@@ -422,31 +416,7 @@ class CIB_Planck(Model):
         return amp * self._cl[..., ell] * (ell / ell_0) ** (n_cib + 1.3)
 
 
-# class gal_Planck(Model):
-#     """Planck gal template.
-#        HTJ - after plik_v22 FORTRAN
-#
-#       Do not use this. It is hacked together because the Planck template is
-#       not really designed to work well within fgspectra."""
-#
-#     def __init__(self, **kwargs):
-#         self._cl = np.zeros((2601, 4))
-#         for i, filename in enumerate(['gal_planck_100', 'gal_planck_143', 'gal_planck_143x217', 'gal_planck_217']):
-#             ell, spec, _ = np.genfromtxt(_get_power_file(filename), unpack=True)
-#
-#             self._cl[ell.astype(int), i] = spec * ell * (ell + 1.0) / (2.0 * np.pi)
-#             self._cl[:, i] /= self._cl[200, i]
-#
-#         self.set_defaults(**kwargs)
-#
-#     def eval(self, ell=None):
-#         """Compute the power spectrum with the given ell and parameters."""
-#         if np.isscalar(ell):
-#             ell = np.array(ell)[..., np.newaxis]
-#
-#         res = np.tile(np.nan, ell.shape + (4,))
-#         res[ell <= 2600] = self._cl[ell[ell <= 2600], :]
-#         return res
+
 class gal_Planck(Model):
     def __init__(self, **kwargs):
         self._cl = np.zeros((3,3,2601))

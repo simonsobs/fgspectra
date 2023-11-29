@@ -242,6 +242,14 @@ class SZxCIB(CorrelatedFactorizedCrossSpectrum):
         self.set_defaults(**kwargs)
 
 
+class SZxCIB_planck_highL(CorrelatedFactorizedCrossSpectrum):
+
+    def __init__(self, **kwargs):
+        sed = fgf.Join(fgf.ThermalSZ(), fgf.CIB())
+        super().__init__(sed, SZxCIB_planck_highL())
+        self.set_defaults(**kwargs)
+
+
 class SZxCIB_SPT(CorrelatedFactorizedCrossSpectrum):
     """Specific cross term for tSZxCIB as implemented in Reichardt (2020) for SPT.
     NOT TESTED EXTENSIVELY.
