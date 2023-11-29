@@ -291,33 +291,6 @@ class ConstantSED(Model):
         amp = np.array(amp)[..., np.newaxis]
         return amp * np.ones_like(np.array(nu))
 
-class FreeSED(Model):
-    """Completely free SED."""
-
-    def eval(self, nu=None, sed=None):
-        """ Evaluation of the SED
-        Parameters
-        ----------
-        nu: float or array
-            Frequencies of the experiment
-        sed: float or array
-            SED at each frequency. Must be same size as nu.
-        Returns
-        -------
-        sed: ndarray
-            shape is ``(freqs)``
-        """
-        if type(sed) in (int, float):
-            sed = [sed]
-        if type(nu) in (int, float):
-            nu = [nu]
-        try:
-            assert len(nu) == len(sed)
-        except AssertionError:
-            print('Size of SED must match number of frequencies')
-            return None
-        return np.array(sed)
-
 
 class Join(Model):
     """ Join several SED models together
