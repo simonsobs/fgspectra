@@ -79,9 +79,25 @@ class PowerSpectrumFromFile(Model):
             self._cl[i + (ell,)] = spec
         self.set_defaults(**kwargs)
 
-    def eval(self, ell=None, ell_0=None, amp=1.0):
-        """Compute the power spectrum with the given ell and parameters."""
-        return amp * self._cl[..., ell] / self._cl[..., ell_0, np.newaxis]
+    def eval(self, ell=None, amp=1.0):
+        """
+
+        Parameters
+        ----------
+        ell: float or array
+            Multipoles
+        amp: float or array
+            Multiply the templates contructed from the files with this
+            amplitude (its shape must be compatible with them, 
+            ell-dimension excluded).
+
+        Returns
+        -------
+        cl: ndarray
+            The last dimension is ell.
+        """
+        amp = np.array(amp)[..., np.newaxis]
+        return amp * self._cl[..., ell]
 
 
 class tSZ_150_bat(PowerSpectrumFromFile):
