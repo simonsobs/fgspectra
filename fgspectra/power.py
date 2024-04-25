@@ -11,9 +11,9 @@ and BeFoRe (David Alonso and Ben Thorne).
 import os
 
 try:
-    import importlib.resources as ilr
+    from importlib.resources import files as ilr
 except ImportError:
-    import importlib_resources as ilr
+    from importlib_resources import files as ilr
 
 
 import numpy as np
