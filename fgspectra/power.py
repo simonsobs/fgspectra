@@ -11,10 +11,10 @@ and BeFoRe (David Alonso and Ben Thorne).
 import os
 
 try:
-    # Python < 3.9
-    import importlib_resources as ilr
-except ImportError:
     import importlib.resources as ilr
+except ImportError:
+    import importlib_resources as ilr
+
 
 import numpy as np
 from .model import Model
