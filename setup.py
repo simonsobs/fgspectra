@@ -15,7 +15,7 @@ setup(
     install_requires=[
         "scipy",
         "pyyaml",
-        "importlib>3.7",
+        "importlib-resources==3.0.0;python_version<'3.9'",
     ],
     include_package_data=True,
 )
