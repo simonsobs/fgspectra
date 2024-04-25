@@ -84,20 +84,55 @@ class PowerSpectrumFromFile(Model):
         return amp * self._cl[..., ell] / self._cl[..., ell_0, np.newaxis]
 
 
+class PowerLawExtendedTemplate(PowerSpectrumFromFile):
+    """ " Power Spectrum from a file, extended by a power law on small scales."""
+
+    def eval(self, ell=None, ell_0=None, alpha=None, amp=1.0):
+        """Compute the power spectrum with the given ell and parameters."""
+        # TODO : the switch from template to power law is at ell_0 for now !
+        res = amp * self._cl[..., ell] / self._cl[..., ell_0, np.newaxis]
+        res[..., ell > ell_0] = amp * (ell[ell > ell_0] / ell_0) ** alpha
+        return res
+
+
+class PowerLawRescaledTemplate(PowerSpectrumFromFile):
+    """Power Spectrum from a file, rescaled by a power law."""
+
+    def eval(self, ell=None, ell_0=None, alpha=None, amp=1.0):
+        """Compute the power spectrum with the given ell and parameters."""
+        return (
+            amp
+            * self._cl[..., ell]
+            / self._cl[..., ell_0, np.newaxis]
+            * (ell / ell_0) ** alpha
+        )
+
+
 class tSZ_150_bat(PowerSpectrumFromFile):
     """PowerSpectrum for Thermal Sunyaev-Zel'dovich (Dunkley et al. 2013)."""
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         """Intialize object with parameters."""
-        super().__init__(_get_power_file("tsz_150_bat"))
+        super().__init__(_get_power_file("tsz_150_bat"), **kwargs)
+
+
+class kSZ_bat_full(PowerSpectrumFromFile):
+    """
+    PowerSpectrum for Kinematic Sunyaev-Zel'dovich (Dunkley et al. 2013).
+    Contains both contributions from late-time kSZ and reionization kSZ.
+    """
+
+    def __init__(self, **kwargs):
+        """Intialize object with parameters."""
+        super().__init__(_get_power_file("ksz_bat_full"), **kwargs)
 
 
 class kSZ_bat(PowerSpectrumFromFile):
     """PowerSpectrum for Kinematic Sunyaev-Zel'dovich (Dunkley et al. 2013)."""
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         """Intialize object with parameters."""
-        super().__init__(_get_power_file("ksz_bat"))
+        super().__init__(_get_power_file("ksz_bat"), **kwargs)
 
 
 class PowerLaw(Model):

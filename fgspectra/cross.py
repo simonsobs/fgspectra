@@ -4,6 +4,7 @@ Models of cross-spectra
 This module draws inspiration from FGBuster (Davide Poletti and Josquin Errard)
 and BeFoRe (David Alonso and Ben Thorne).
 """
+
 import numpy as np
 from . import frequency as fgf
 from . import power as fgp
