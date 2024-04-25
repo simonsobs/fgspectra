@@ -9,14 +9,15 @@ and BeFoRe (David Alonso and Ben Thorne).
 """
 
 import os
-import pkg_resources
+import importlib.resources as ilr
+
 import numpy as np
 from .model import Model
 
 
 def _get_power_file(model):
     """File path for the named model"""
-    data_path = pkg_resources.resource_filename("fgspectra", "data/")
+    data_path = ilr.files("fgspectra") / "data"
     filename = os.path.join(data_path, "cl_%s.dat" % model)
     if os.path.exists(filename):
         return filename
