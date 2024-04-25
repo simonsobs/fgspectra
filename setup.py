@@ -11,11 +11,10 @@ setup(
     author="Simons Observatory fgspectra crew",
     author_email="",
     packages=["fgspectra"],
-    python_requires=">3.5",
+    python_requires=">3.9",
     install_requires=[
         "scipy",
         "pyyaml",
-        "importlib-resources;python_version<'3.9'",
     ],
     include_package_data=True,
 )

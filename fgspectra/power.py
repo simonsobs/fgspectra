@@ -9,12 +9,7 @@ and BeFoRe (David Alonso and Ben Thorne).
 """
 
 import os
-
-try:
-    from importlib.resources import files as ilr
-except ImportError:
-    from importlib_resources import files as ilr
-
+import importlib.resources as ilr
 
 import numpy as np
 from .model import Model
@@ -22,7 +17,7 @@ from .model import Model
 
 def _get_power_file(model):
     """File path for the named model"""
-    data_path = ilr("fgspectra") / "data"
+    data_path = ilr.files("fgspectra") / "data"
     filename = os.path.join(data_path, "cl_%s.dat" % model)
     if os.path.exists(filename):
         return filename
