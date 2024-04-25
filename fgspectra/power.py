@@ -22,7 +22,7 @@ from .model import Model
 
 def _get_power_file(model):
     """File path for the named model"""
-    data_path = ilr.files("fgspectra") / "data"
+    data_path = ilr("fgspectra") / "data"
     filename = os.path.join(data_path, "cl_%s.dat" % model)
     if os.path.exists(filename):
         return filename
