@@ -79,8 +79,10 @@ def _bandpass_integration():
     else:
         # In case transmittance has shape [freq, ell], the SED f has to be trasposed
         # to perform the integration in frequency
-        res = np.trapz(f(self, **kw)[..., np.newaxis] * nus_transmittances[0][1], kw["nu"], axis = 0)
-    
+        res = np.trapz(
+            f(self, **kw)[..., np.newaxis] * nus_transmittances[0][1], kw["nu"], axis=0
+        )
+
     # Append the frequency dimension and put res in its first entry
     res = res[..., np.newaxis] * np.array([1.0] + [0.0] * (len(nus_transmittances) - 1))
 
@@ -91,8 +93,9 @@ def _bandpass_integration():
         if len(transmittance.shape) == 1:
             res[..., i_band] = np.trapz(f(self, **kw) * transmittance, nu)
         else:
-            res[..., i_band] = np.trapz(f(self, **kw)[..., np.newaxis] * transmittance, nu, axis = 0)
-
+            res[..., i_band] = np.trapz(
+                f(self, **kw)[..., np.newaxis] * transmittance, nu, axis=0
+            )
 
     return res
 
