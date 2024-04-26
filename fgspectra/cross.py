@@ -193,7 +193,8 @@ class CorrelatedFactorizedCrossSpectrum(FactorizedCrossSpectrum):
 
         f_nu = self._sed(**sed_kwargs)
         cl = self._cl(**cl_kwargs)
-        # verifying that sed.shape[1] is ell, otherwise adding newaxis 
+        # verifying that sed.shape[1] is ell, otherwise adding newaxis
+        print('shapes: ',f_nu.shape, cl.shape)
         if f_nu.shape[1] != cl.shape[-1]:
             f_nu = f_nu[:, np.newaxis]
 
