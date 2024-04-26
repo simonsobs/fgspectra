@@ -135,6 +135,7 @@ class FactorizedCrossSpectrum(Model):
         """
         f_nu = self._sed(**sed_kwargs)
         cl = self._cl(**cl_kwargs)
+        # f_nu.shape can be either [freq] or [ell, freq]
         if f_nu.shape[0] != cl.shape[-1] or (f_nu.shape[0] == 1 and cl.shape[-1] == 1):
             f_nu = f_nu[np.newaxis]
 
@@ -192,7 +193,8 @@ class CorrelatedFactorizedCrossSpectrum(FactorizedCrossSpectrum):
 
         f_nu = self._sed(**sed_kwargs)
         cl = self._cl(**cl_kwargs)
-        if f_nu.shape[0] != cl.shape[-1]:
+        # verifying that sed.shape[1] is ell, otherwise adding newaxis 
+        if f_nu.shape[1] != cl.shape[-1]:
             f_nu = f_nu[:, np.newaxis]
 
         return np.einsum("kl...i,nl...j,...knl->...ijl", f_nu, f_nu, cl)
