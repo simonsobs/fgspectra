@@ -19,6 +19,17 @@ from .model import Model
 T_CMB = 2.72548
 H_OVER_KT_CMB = constants.h * 1e9 / constants.k / T_CMB
 
+def _flux2cmb(nu):
+    """Converts flux to thermodynamics units"""
+    x = H_OVER_KT_CMB * nu
+    g2_min1 =  2. * constants.k**3 * T_CMB**2 * x**4 * np.exp(x) / (constants.h * constants.c * np.expm1(x))**2
+    return 1./g2_min1
+
+
+def _rj2cmb(nu):
+    x = H_OVER_KT_CMB * nu
+    return (np.expm1(x) / x) ** 2 / np.exp(x)
+
 
 def _bandpass_integration():
     """Bandpass integrated version of the caller
@@ -82,11 +93,6 @@ def _bandpass_integration():
         res[..., i_band] = np.trapz(f(self, **kw) * transmittance, nu)
 
     return res
-
-
-def _rj2cmb(nu):
-    x = H_OVER_KT_CMB * nu
-    return (np.expm1(x) / x) ** 2 / np.exp(x)
 
 
 class PowerLaw(Model):
