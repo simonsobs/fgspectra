@@ -155,11 +155,11 @@ class FactorizedCrossSpectrumTE(Model):
     Parameters
     ----------
     sedT : callable
-        The temperature SED :math:`f^T(\nu)`. 
+        The temperature SED :math:`f^T(\nu)`.
         It returns an array with shape ``(..., freq)``.
         It can be :class:`fgspectra.frequency.SED`.
     sedE : callable
-        The E mode SED :math:`f^E(\nu)`. 
+        The E mode SED :math:`f^E(\nu)`.
         It returns an array with shape ``(..., freq)``.
         It can be :class:`fgspectra.frequency.SED`.
     cl_args : callable
@@ -188,9 +188,11 @@ class FactorizedCrossSpectrumTE(Model):
 
     @property
     def defaults(self):
-        return {"sedT_kwargs": self._sedT.defaults, 
-                "sedE_kwargs": self._sedE.defaults,
-                "cl_kwargs": self._cl.defaults}
+        return {
+            "sedT_kwargs": self._sedT.defaults,
+            "sedE_kwargs": self._sedE.defaults,
+            "cl_kwargs": self._cl.defaults,
+        }
 
     def _get_repr(self):
         sedT_repr = self._sedT._get_repr()
@@ -228,14 +230,16 @@ class FactorizedCrossSpectrumTE(Model):
         fE_nu = self._sedE(**sedE_kwargs)
         cl = self._cl(**cl_kwargs)
         # f_nu.shape can be either [freq] or [ell, freq]
-        if fT_nu.shape[0] != cl.shape[-1] or (fT_nu.shape[0] == 1 and cl.shape[-1] == 1):
+        if fT_nu.shape[0] != cl.shape[-1] or (
+            fT_nu.shape[0] == 1 and cl.shape[-1] == 1
+        ):
             fT_nu = fT_nu[np.newaxis]
-        if fE_nu.shape[0] != cl.shape[-1] or (fE_nu.shape[0] == 1 and cl.shape[-1] == 1):
+        if fE_nu.shape[0] != cl.shape[-1] or (
+            fE_nu.shape[0] == 1 and cl.shape[-1] == 1
+        ):
             fE_nu = fE_nu[np.newaxis]
 
-
         return np.einsum("l...i,l...j,...l->...ijl", fT_nu, fE_nu, cl)
-
 
 
 class CorrelatedFactorizedCrossSpectrum(FactorizedCrossSpectrum):
