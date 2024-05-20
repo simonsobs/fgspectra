@@ -137,9 +137,9 @@ class FactorizedCrossSpectrum(Model):
         cl = self._cl(**cl_kwargs)
         if f_nu.shape[0] != cl.shape[-1] or (f_nu.shape[0] == 1 and cl.shape[-1] == 1):
             f_nu = f_nu[np.newaxis]
-        
+
         return np.einsum("l...i,l...j,...l->...ijl", f_nu, f_nu, cl)
-    
+
 
 class DecorrelatedFactorizedCrossSpectrum(Model):
     r""" Decorrelated factorized cross spectrum
@@ -175,6 +175,7 @@ class DecorrelatedFactorizedCrossSpectrum(Model):
     broadcast-compatible.
         
     """
+
     def __init__(self, sed, cl, **kwargs):
         self._sed = sed
         self._cl = cl
@@ -185,18 +186,34 @@ class DecorrelatedFactorizedCrossSpectrum(Model):
             self._sed.set_defaults(**kwargs["sed_kwargs"])
         if "cl_kwargs" in kwargs:
             self._cl.set_defaults(**kwargs["cl_kwargs"])
-        kw_decor = {key:kwargs[key] for key in kwargs.keys() if key not in ["sed_kwargs", "cl_kwargs"]}
+        kw_decor = {
+            key: kwargs[key]
+            for key in kwargs.keys()
+            if key not in ["sed_kwargs", "cl_kwargs"]
+        }
         super().set_defaults(**kw_decor)
 
     @property
     def defaults(self):
-        kw_decor = {key:super().defaults[key] for key in super().defaults.keys() if key not in ["kwargs"]}
-        return {**kw_decor, "sed_kwargs": self._sed.defaults, "cl_kwargs": self._cl.defaults}
+        kw_decor = {
+            key: super().defaults[key]
+            for key in super().defaults.keys()
+            if key not in ["kwargs"]
+        }
+        return {
+            **kw_decor,
+            "sed_kwargs": self._sed.defaults,
+            "cl_kwargs": self._cl.defaults,
+        }
 
     def _get_repr(self):
         decor_repr = super()._get_repr()
         key = list(decor_repr.keys())[0]
-        decor_repr[key] = {k:decor_repr[key][k] for k in decor_repr[key].keys() if k not in ["sed_kwargs", "cl_kwargs"]}
+        decor_repr[key] = {
+            k: decor_repr[key][k]
+            for k in decor_repr[key].keys()
+            if k not in ["sed_kwargs", "cl_kwargs"]
+        }
         decor_repr["Decorrelation"] = decor_repr.pop(key)
 
         sed_repr = self._sed._get_repr()
@@ -208,7 +225,7 @@ class DecorrelatedFactorizedCrossSpectrum(Model):
         cl_repr[key + " (Cl)"] = cl_repr.pop(key)
 
         return {type(self).__name__: [decor_repr, sed_repr, cl_repr]}
-    
+
     def eval(self, decor=None, f_decor=None, sed_kwargs={}, cl_kwargs={}):
         """Compute the model at frequency and ell combinations.
 
@@ -221,7 +238,7 @@ class DecorrelatedFactorizedCrossSpectrum(Model):
         decor : float
             Decorelation facot, by which f_decor is rescaled
         f_decor : ndarray
-            Array of the decorelation scaling in frequency. 
+            Array of the decorelation scaling in frequency.
             Shape is ``(freq, freq)``.
         Returns
         -------
@@ -229,7 +246,7 @@ class DecorrelatedFactorizedCrossSpectrum(Model):
             Cross-spectrum. The shape is ``(..., freq, freq, ell)``.
         """
 
-        decorrelation = np.eye(f_decor.shape[0]) +decor*f_decor
+        decorrelation = np.eye(f_decor.shape[0]) + decor * f_decor
 
         f_nu = self._sed(**sed_kwargs)
         cl = self._cl(**cl_kwargs)
@@ -239,7 +256,8 @@ class DecorrelatedFactorizedCrossSpectrum(Model):
         res = np.einsum("ij,l...i,l...j,...l->...ijl", decorrelation, f_nu, f_nu, cl)
 
         return res
-    
+
+
 class CorrelatedFactorizedCrossSpectrum(FactorizedCrossSpectrum):
     r"""Factorized cross-spectrum of correlated components
 

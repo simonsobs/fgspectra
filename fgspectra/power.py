@@ -85,7 +85,7 @@ class PowerSpectrumFromFile(Model):
         #### TEMPORARY ####
         if ell_0 is None:
             print("NO NORMALISATION")
-            return  amp * self._cl[..., ell]
+            return amp * self._cl[..., ell]
         else:
             return amp * self._cl[..., ell] / self._cl[..., ell_0, np.newaxis]
 

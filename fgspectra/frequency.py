@@ -19,11 +19,19 @@ from .model import Model
 T_CMB = 2.72548
 H_OVER_KT_CMB = constants.h * 1e9 / constants.k / T_CMB
 
+
 def _flux2cmb(nu):
     """Converts flux to thermodynamics units"""
     x = H_OVER_KT_CMB * nu
-    g2_min1 =  2. * constants.k**3 * T_CMB**2 * x**4 * np.exp(x) / (constants.h * constants.c * np.expm1(x))**2
-    return 1./g2_min1
+    g2_min1 = (
+        2.0
+        * constants.k**3
+        * T_CMB**2
+        * x**4
+        * np.exp(x)
+        / (constants.h * constants.c * np.expm1(x)) ** 2
+    )
+    return 1.0 / g2_min1
 
 
 def _rj2cmb(nu):
@@ -301,8 +309,8 @@ class ConstantSED(Model):
 
         amp = np.array(amp)[..., np.newaxis]
         return amp * np.ones_like(np.array(nu))
-    
-    
+
+
 class FreeSED(Model):
     """Frequency-dependent component for which every entries of the SED are specifified."""
 
@@ -314,8 +322,8 @@ class FreeSED(Model):
         nu: float or array
             It just determines the shape of the output.
         sed: float or array
-            Values of the SED. Must be the same shape as nu. 
-            There is no normalisation, entries are used as is. 
+            Values of the SED. Must be the same shape as nu.
+            There is no normalisation, entries are used as is.
 
         Returns
         -------
@@ -326,13 +334,13 @@ class FreeSED(Model):
         """
         if isinstance(nu, (list, np.ndarray)):
             try:
-                assert(len(nu) == len(sed[...,:]))
+                assert len(nu) == len(sed[..., :])
             except:
                 print("SED and nu must have the same shape.")
         if isinstance(nu, list):
             return _bandpass_integration()
         return np.asarray(sed)
-    
+
 
 class Join(Model):
     """Join several SED models together"""
