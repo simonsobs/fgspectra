@@ -82,7 +82,12 @@ class PowerSpectrumFromFile(Model):
 
     def eval(self, ell=None, ell_0=None, amp=1.0):
         """Compute the power spectrum with the given ell and parameters."""
-        return amp * self._cl[..., ell] / self._cl[..., ell_0, np.newaxis]
+        #### TEMPORARY ####
+        if ell_0 is None:
+            print("NO NORMALISATION")
+            return amp * self._cl[..., ell]
+        else:
+            return amp * self._cl[..., ell] / self._cl[..., ell_0, np.newaxis]
 
 
 class PowerLawExtendedTemplate(PowerSpectrumFromFile):

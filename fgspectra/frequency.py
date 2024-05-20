@@ -20,6 +20,25 @@ T_CMB = 2.72548
 H_OVER_KT_CMB = constants.h * 1e9 / constants.k / T_CMB
 
 
+def _flux2cmb(nu):
+    """Converts flux to thermodynamics units"""
+    x = H_OVER_KT_CMB * nu
+    g2_min1 = (
+        2.0
+        * constants.k**3
+        * T_CMB**2
+        * x**4
+        * np.exp(x)
+        / (constants.h * constants.c * np.expm1(x)) ** 2
+    )
+    return 1.0 / g2_min1
+
+
+def _rj2cmb(nu):
+    x = H_OVER_KT_CMB * nu
+    return (np.expm1(x) / x) ** 2 / np.exp(x)
+
+
 def _bandpass_integration():
     """Bandpass integrated version of the caller
 
@@ -82,11 +101,6 @@ def _bandpass_integration():
         res[..., i_band] = np.trapz(f(self, **kw) * transmittance, nu)
 
     return res
-
-
-def _rj2cmb(nu):
-    x = H_OVER_KT_CMB * nu
-    return (np.expm1(x) / x) ** 2 / np.exp(x)
 
 
 class PowerLaw(Model):
@@ -295,6 +309,37 @@ class ConstantSED(Model):
 
         amp = np.array(amp)[..., np.newaxis]
         return amp * np.ones_like(np.array(nu))
+
+
+class FreeSED(Model):
+    """Frequency-dependent component for which every entries of the SED are specifified."""
+
+    def eval(self, nu=None, sed=None):
+        """Evaluation of the SED
+
+        Parameters
+        ----------
+        nu: float or array
+            It just determines the shape of the output.
+        sed: float or array
+            Values of the SED. Must be the same shape as nu.
+            There is no normalisation, entries are used as is.
+
+        Returns
+        -------
+        sed: ndarray
+            If `nu` is an array, the shape is ``amp.shape + (freq)``.
+            If `nu` is scalar, the shape is ``amp.shape + (1)``.
+            Note that the last dimension is guaranteed to be the frequency.
+        """
+        if isinstance(nu, (list, np.ndarray)):
+            try:
+                assert len(nu) == len(sed[..., :])
+            except:
+                print("SED and nu must have the same shape.")
+        if isinstance(nu, list):
+            return _bandpass_integration()
+        return np.asarray(sed)
 
 
 class Join(Model):
