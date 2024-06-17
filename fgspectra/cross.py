@@ -243,23 +243,23 @@ class FactorizedCrossSpectrumTE(Model):
 
 
 class DecorrelatedFactorizedCrossSpectrum(Model):
-    r""" Decorrelated factorized cross spectrum
+    r"""Decorrelated factorized cross spectrum
 
     Cross-spectrum of **one** component for which the scaling in frequency
-    and in multipoles are factorizable. The scaling in frequency is not exact 
+    and in multipoles are factorizable. The scaling in frequency is not exact
     and some decorrelation is specified.
 
     .. math:: xC_{\ell}^{(ij)} = f_{decor}(\nu_i, \nu_j) f(\nu_j) f(\nu_i) C_{\ell}
-    
-    This model implements a decorrelation by rigidely rescalling a decorelation ratio 
+
+    This model implements a decorrelation by rigidely rescalling a decorelation ratio
     with respect to a reference cross-term. For example, for 3 frequencies, with the
-    reference taken at $\nu_1\times\nu_3$: 
-         
-    .. math::  f_{decor} = I(3) + \Delta_{decor} \begin{pmatrix} 
-        0 & r_{12} & 1 \\         
-        r_{12} & 0 & r_{23} \\              
-        1 & r_{23} & 0 
-        \end{pmatrix} 
+    reference taken at $\nu_1\times\nu_3$:
+
+    .. math::  f_{decor} = I(3) + \Delta_{decor} \begin{pmatrix}
+        0 & r_{12} & 1 \\
+        r_{12} & 0 & r_{23} \\
+        1 & r_{23} & 0
+        \end{pmatrix}
 
     Parameters
     ----------
@@ -273,7 +273,7 @@ class DecorrelatedFactorizedCrossSpectrum(Model):
     Note
     ----
     The two (optional) sets of extra dimensions ``...`` must be
-    broadcast-compatible.        
+    broadcast-compatible.
     """
 
     def __init__(self, sed, cl, **kwargs):
@@ -356,6 +356,7 @@ class DecorrelatedFactorizedCrossSpectrum(Model):
         res = np.einsum("ij,l...i,l...j,...l->...ijl", decorrelation, f_nu, f_nu, cl)
 
         return res
+
 
 class CorrelatedFactorizedCrossSpectrum(FactorizedCrossSpectrum):
     r"""Factorized cross-spectrum of correlated components
