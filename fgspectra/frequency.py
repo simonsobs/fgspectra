@@ -76,7 +76,7 @@ class FreqModel(Model):
         for i_band, (nu, transmittance) in enumerate(nus_transmittances):
             integral = np.trapz(self.eval(nu=nu, **kw) * transmittance, nu)
             if res is None:
-                 res = np.empty(integral.shape +(len(nus_transmittances),))
+                res = np.empty(integral.shape + (len(nus_transmittances),))
             res[..., i_band] = integral
 
         return res
