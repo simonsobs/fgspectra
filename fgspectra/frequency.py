@@ -9,12 +9,9 @@ This package draws inspiration from FGBuster (Davide Poletti and Josquin Errard)
 and BeFoRe (David Alonso and Ben Thorne).
 """
 
-import inspect
-import types
 import numpy as np
 from scipy import constants
 from .model import Model
-
 
 T_CMB = 2.72548
 H_OVER_KT_CMB = constants.h * 1e9 / constants.k / T_CMB
@@ -24,12 +21,12 @@ def _flux2cmb(nu):
     """Converts flux to thermodynamics units"""
     x = H_OVER_KT_CMB * nu
     g2_min1 = (
-        2.0
-        * constants.k**3
-        * T_CMB**2
-        * x**4
-        * np.exp(x)
-        / (constants.h * constants.c * np.expm1(x)) ** 2
+            2.0
+            * constants.k ** 3
+            * T_CMB ** 2
+            * x ** 4
+            * np.exp(x)
+            / (constants.h * constants.c * np.expm1(x)) ** 2
     )
     return 1.0 / g2_min1
 
@@ -39,71 +36,53 @@ def _rj2cmb(nu):
     return (np.expm1(x) / x) ** 2 / np.exp(x)
 
 
-def _bandpass_integration():
-    """Bandpass integrated version of the caller
+class FreqModel(Model):
+    def eval_bandpass(self, **kw):
+        """Bandpass integrated version of eval()
 
-    The caller should have
+        The inheriting class's eval() function should have
 
-        if isinstance(nu, list):
-            return _bandpass_integration()
+            if isinstance(nu, list):
+                return self.eval_bandpass(**kw)
 
-    at the very beginning.
-    This function
+        - to pass integrated list frequencies back to eval() one by one
 
-    * iterates over the ``nu`` argument of the caller
-      (while keeping all the other arguments fixed)
-    * splits each element of the iteration in ``nu_band, transmittance``
-    * integrates the caller function over the bandpass.
-      ``np.trapz(caller(nu_band) * transmittance, nu_band)``
-      Note that no normalization nor unit conversion is done to the
-      transmittance
-    * stacks the output of the iteration (the frequency dimension is the last)
-      and returns it
+        * iterates over the ``nu`` argument of the caller
+          (while keeping all the other arguments fixed)
+        * splits each element of the iteration in ``nu_band, transmittance``
+        * integrates the caller function over the bandpass.
+          ``np.trapz(self.eval(nu_band) * transmittance, nu_band)``
+          Note that no normalization nor unit conversion is done to the
+          transmittance
+        * stacks the output of the iteration (the frequency dimension is the last)
+          and returns it
 
-    """
-    # This piece of code is fairly complicated, we did because:
-    # 1) We want to call eval on each element of the nu list (i.e. we iterate
-    #    over the bandpasses) but we don't want to define a new eval_bandpass
-    #    function for every class
-    # 2) We don't want to use a decorator because it breaks the signature
-    #    handling of eval and the modification of its defaults.
-    #    _bandpass_integration does from the insides of eval the same thing that
-    #    a decorator would do from the outside. This is achieved through the
-    #    following pretty ugly kludge
-    # Simpler code that achieve the same result is welcome
+        """
+        # This piece of code is fairly complicated, we did because:
+        # 1) We want to call eval on each element of the nu list (i.e. we iterate
+        #    over the bandpasses) but we don't want to define a new eval_bandpass
+        #    function for every class
+        # 2) We don't want to use a decorator because it breaks the signature
+        #    handling of eval and the modification of its defaults.
 
-    # You are here because this function was called inside eval before any other
-    # variable was defined.
-    # We now retrieve the keyword arguments that were passed to eval because we
-    # have to use them for the evaluation of eval on each bandpass
-    # It assumes that _bandpass_integration was called inside
-    # f(self, **kw) -- f is typically the eval method.
-    frame = inspect.currentframe().f_back
-    kw = frame.f_locals
-    self = kw["self"]
-    del kw["self"]  # self was in the locals but is not a keyword argument
+        # You are here because this function was called inside eval before any other
+        # variable was defined.
 
-    # We create a copy of eval itself, we'll call it for each bandpass
-    f = types.FunctionType(frame.f_code, frame.f_globals)
-    # Store the nu-transmittance list because the nu keyword argumnt has to be
-    # modified with the frequencies of each bandpass
-    nus_transmittances = kw["nu"]
+        # Store the nu-transmittance list because the nu keyword argument has to be
+        # modified with the frequencies of each bandpass
+        nus_transmittances = kw.pop("nu")
+        res = None
+        # Fill the entries by iterating over the bandpasses
+        for i_band, (nu, transmittance) in enumerate(nus_transmittances):
+            integral = np.trapz(self.eval(nu=nu, **kw) * transmittance, nu)
+            if res is None:
+                 res = np.empty(integral.shape +(len(nus_transmittances),))
+            res[..., i_band] = integral
 
-    # Get the shape of the output from the result of the first bandpass
-    kw["nu"] = nus_transmittances[0][0]
-    res = np.trapz(f(self, **kw) * nus_transmittances[0][1], kw["nu"])
-    # Append the frequency dimension and put res in its first entry
-    res = res[..., np.newaxis] * np.array([1.0] + [0.0] * (len(nus_transmittances) - 1))
-
-    # Fill the remaining entries by iterating over the rest of the bandpasses
-    for i_band, (nu, transmittance) in enumerate(nus_transmittances[1:], 1):
-        kw["nu"] = nu
-        res[..., i_band] = np.trapz(f(self, **kw) * transmittance, nu)
-
-    return res
+        return res
 
 
-class PowerLaw(Model):
+class PowerLaw(FreqModel):
     r"""Power Law
 
     .. math:: f(\nu) = (\nu / \nu_0)^{\beta}
@@ -147,7 +126,7 @@ class PowerLaw(Model):
 
         """
         if isinstance(nu, list):
-            return _bandpass_integration()
+            return self.eval_bandpass(nu=nu, beta=beta, nu_0=nu_0)
 
         beta = np.array(beta)[..., np.newaxis]
         nu_0 = np.array(nu_0)[..., np.newaxis]
@@ -160,7 +139,7 @@ class Synchrotron(PowerLaw):
     pass
 
 
-class ModifiedBlackBody(Model):
+class ModifiedBlackBody(FreqModel):
     r"""Modified black body in K_RJ
 
     .. math:: f(\nu) = (\nu / \nu_0)^{\beta + 1} / (e^x - 1)
@@ -190,7 +169,7 @@ class ModifiedBlackBody(Model):
             dimensions of `beta` and `temp`.
         """
         if isinstance(nu, list):
-            return _bandpass_integration()
+            return self.eval_bandpass(nu=nu, nu_0=nu_0, temp=temp, beta=beta)
 
         beta = np.array(beta)[..., np.newaxis]
         temp = np.array(temp)[..., np.newaxis]
@@ -206,7 +185,7 @@ class CIB(ModifiedBlackBody):
     pass
 
 
-class ThermalSZ(Model):
+class ThermalSZ(FreqModel):
     r"""Thermal Sunyaev-Zel'dovich in K_CMB
 
     This class implements the
@@ -229,12 +208,12 @@ class ThermalSZ(Model):
         T_CMB (optional) : float
         """
         if isinstance(nu, list):
-            return _bandpass_integration()
+            return self.eval_bandpass(nu=nu, nu_0=nu_0)
 
         return ThermalSZ.f(nu) / ThermalSZ.f(nu_0)
 
 
-class FreeFree(Model):
+class FreeFree(FreqModel):
     r"""Free-free
 
     .. math:: f(\nu) = EM * ( 1 + log( 1 + (\nu_{ff} / \nu)^{3/\pi} ) )
@@ -273,7 +252,7 @@ class FreeFree(Model):
 
         """
         if isinstance(nu, list):
-            return _bandpass_integration()
+            return self.eval_bandpass(nu=nu, EM=EM, Te=Te)
 
         EM = np.array(EM)[..., np.newaxis]
         Te = np.array(Te)[..., np.newaxis]
@@ -284,7 +263,7 @@ class FreeFree(Model):
         return EM * gff
 
 
-class ConstantSED(Model):
+class ConstantSED(FreqModel):
     """Frequency-independent component."""
 
     def eval(self, nu=None, amp=1.0):
@@ -305,14 +284,14 @@ class ConstantSED(Model):
             Note that the last dimension is guaranteed to be the frequency.
         """
         if isinstance(nu, list):
-            return _bandpass_integration()
+            return self.eval_bandpass(nu=nu, amp=amp)
 
         amp = np.array(amp)[..., np.newaxis]
         return amp * np.ones_like(np.array(nu))
 
 
-class FreeSED(Model):
-    """Frequency-dependent component for which every entries of the SED are specifified."""
+class FreeSED(FreqModel):
+    """Frequency-dependent component for which every entry of the SED is specified."""
 
     def eval(self, nu=None, sed=None):
         """Evaluation of the SED
@@ -338,11 +317,11 @@ class FreeSED(Model):
             except:
                 print("SED and nu must have the same shape.")
         if isinstance(nu, list):
-            return _bandpass_integration()
+            return self.eval_bandpass(nu=nu, sed=sed)
         return np.asarray(sed)
 
 
-class Join(Model):
+class Join(FreqModel):
     """Join several SED models together"""
 
     def __init__(self, *seds, **kwargs):
