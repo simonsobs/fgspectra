@@ -20,8 +20,14 @@ H_OVER_KT_CMB = constants.h * 1e9 / constants.k / T_CMB
 def _flux2cmb(nu):
     """Converts flux to thermodynamics units"""
     x = H_OVER_KT_CMB * nu
-    g2_min1 = (2.0 * constants.k ** 3 * T_CMB ** 2 * x ** 4 * np.exp(x)
-               / (constants.h * constants.c * np.expm1(x)) ** 2)
+    g2_min1 = (
+        2.0
+        * constants.k**3
+        * T_CMB**2
+        * x**4
+        * np.exp(x)
+        / (constants.h * constants.c * np.expm1(x)) ** 2
+    )
     return 1.0 / g2_min1
 
 
