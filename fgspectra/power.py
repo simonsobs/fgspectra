@@ -251,9 +251,9 @@ class PowerSpectraAndCorrelation(Model):
 
         Parameters
         ----------
-        *argss
-            The length of `argss` has to be equal to the number of SEDs joined.
-            ``argss[i]`` is the argument list of the ``i``-th SED.
+        kwseq
+            The length of `kwseq` has to be equal to the number of ps joined.
+            ``kwseq[i]`` is the argument list of the ``i``-th ps.
 
         """
         spectra = np.array(

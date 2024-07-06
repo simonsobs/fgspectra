@@ -11,6 +11,7 @@ and BeFoRe (David Alonso and Ben Thorne).
 
 import numpy as np
 from scipy import constants
+from abc import abstractmethod
 from .model import Model
 
 T_CMB = 2.72548
@@ -80,6 +81,10 @@ class FreqModel(Model):
             res[..., i_band] = integral
 
         return res
+
+    @abstractmethod
+    def eval(self, **kwargs):
+        pass
 
 
 class PowerLaw(FreqModel):
@@ -180,7 +185,7 @@ class ModifiedBlackBody(FreqModel):
 
 
 class CIB(ModifiedBlackBody):
-    """Alias of :class:`ModifiedBlackBOdy`"""
+    """Alias of :class:`ModifiedBlackBody`"""
 
     pass
 
@@ -256,7 +261,7 @@ class FreeFree(FreqModel):
 
         EM = np.array(EM)[..., np.newaxis]
         Te = np.array(Te)[..., np.newaxis]
-        Teff = (Te / 1.0e3) ** (1.5)
+        Teff = (Te / 1.0e3) ** 1.5
         nuff = 255.33e9 * Teff
         gff = 1.0 + np.log(1.0 + (nuff / nu) ** (np.sqrt(3) / np.pi))
         print("warning: I need to check the units on this")
