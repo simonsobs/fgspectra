@@ -171,6 +171,48 @@ class PowerLaw(Model):
         amp = np.array(amp)[..., np.newaxis]
         return amp * (ell / ell_0) ** alpha
 
+class PowerLawWithSmallScales(Model):
+    r"""Power law with additional parameters to handle pysm3 d9, s4 models, which implement a double power law for EE, BB
+
+        For ell<ell_pivot:
+    .. math:: C_\ell = amp*(\ell / \ell_0)^\alpha
+
+        For ell>ell_pivot:
+    .. math:: C_\ell = amp_ss*(\ell/\ell_0)^\alpha_ss
+    """
+
+    def eval(self, ell=None, alpha=None, ell_0=None, amp=1.0, ell_pivot=None, alpha_ss=None, amp_ss=None):
+        """
+        Parameters
+        ----------
+        ell: float or array
+            Multipole
+        alpha: float or array
+            Spectral index.
+        ell_0: float
+            Reference ell
+        amp: float or array
+            Amplitude, shape must be compatible with `alpha`.
+        ell_pivot: float
+            Pivot multipole where spectral index changes to ``small scales`` model
+        alpha_smallscales: float or array
+            Spectral index beyond ell_pivot, used for pysm3 small scale models
+        Returns
+        -------
+        cl: ndarray
+            The last dimension is ell.
+            The leading dimensions are the hypothetic dimensions of `alpha`
+        """
+        alpha = np.array(alpha)[..., np.newaxis]
+        amp = np.array(amp)[..., np.newaxis]
+        alpha_ss = np.array(alpha_ss)[..., np.newaxis]
+        amp_ss = np.array(amp_ss)[..., np.newaxis]
+
+        cell = np.empty(len(ell))
+        cell[:ell_pivot] = amp*(ell[:ell_pivot]/ell_0)**alpha
+        cell[ell_pivot:] = amp_ss*(ell[ell_pivot:]/ell_0)**alpha_ss
+
+        return cell
 
 class CorrelatedPowerLaws(PowerLaw):
     """As PowerLaw, but requires only the diagonal of the component-component
