@@ -362,7 +362,7 @@ class SZxCIB_Reichardt2012(PowerSpectraAndCorrelation):
     """PowerSpectrum for SZxCIB (Dunkley et al. 2013)."""
 
     def __init__(self, **kwargs):
-        """Intialize object with parameters."""
+        """Initialize object with parameters."""
         power_spectra = [
             PowerSpectrumFromFile(_get_power_file("tsz_150_bat")),
             PowerLaw(),

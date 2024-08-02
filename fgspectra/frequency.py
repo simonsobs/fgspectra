@@ -14,6 +14,11 @@ from scipy import constants
 from abc import abstractmethod
 from .model import Model
 
+try:
+    from numpy import trapezoid
+except ImportError:
+    from numpy import trapz as trapezoid
+
 T_CMB = 2.72548
 H_OVER_KT_CMB = constants.h * 1e9 / constants.k / T_CMB
 
@@ -23,9 +28,9 @@ def _flux2cmb(nu):
     x = H_OVER_KT_CMB * nu
     g2_min1 = (
         2.0
-        * constants.k**3
-        * T_CMB**2
-        * x**4
+        * constants.k ** 3
+        * T_CMB ** 2
+        * x ** 4
         * np.exp(x)
         / (constants.h * constants.c * np.expm1(x)) ** 2
     )
@@ -52,7 +57,7 @@ class FreqModel(Model):
           (while keeping all the other arguments fixed)
         * splits each element of the iteration in ``nu_band, transmittance``
         * integrates the caller function over the bandpass.
-          ``np.trapz(self.eval(nu_band) * transmittance, nu_band)``
+          ``np.trapezoid(self.eval(nu_band) * transmittance, nu_band)``
           Note that no normalization nor unit conversion is done to the
           transmittance
         * stacks the output of the iteration (the frequency dimension is the last)
@@ -75,7 +80,7 @@ class FreqModel(Model):
         res = None
         # Fill the entries by iterating over the bandpasses
         for i_band, (nu, transmittance) in enumerate(nus_transmittances):
-            integral = np.trapz(self.eval(nu=nu, **kw) * transmittance, nu)
+            integral = trapezoid(self.eval(nu=nu, **kw) * transmittance, nu)
             if res is None:
                 res = np.empty(integral.shape + (len(nus_transmittances),))
             res[..., i_band] = integral
