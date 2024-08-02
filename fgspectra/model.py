@@ -13,7 +13,7 @@ class Model(ABC):
     evaluation means is defined by the `eval` method that any child class has to
     override.
 
-    If the `eval` method of a hypotetical ``Child`` class calls the `eval`
+    If the `eval` method of a hypothetical ``Child`` class calls the `eval`
     method of other `Model`s, it is likely that ``Child`` has also to override
     `set_defaults`, `defaults` and `_get_repr`
     """

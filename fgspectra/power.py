@@ -251,9 +251,9 @@ class PowerSpectraAndCorrelation(Model):
 
         Parameters
         ----------
-        *argss
-            The length of `argss` has to be equal to the number of SEDs joined.
-            ``argss[i]`` is the argument list of the ``i``-th SED.
+        kwseq
+            The length of `kwseq` has to be equal to the number of ps joined.
+            ``kwseq[i]`` is the argument list of the ``i``-th ps.
 
         """
         spectra = np.array(
@@ -362,7 +362,7 @@ class SZxCIB_Reichardt2012(PowerSpectraAndCorrelation):
     """PowerSpectrum for SZxCIB (Dunkley et al. 2013)."""
 
     def __init__(self, **kwargs):
-        """Intialize object with parameters."""
+        """Initialize object with parameters."""
         power_spectra = [
             PowerSpectrumFromFile(_get_power_file("tsz_150_bat")),
             PowerLaw(),

@@ -1,5 +1,4 @@
-import fgspectra.frequency as fgf
-from fgspectra.model import Model
+from fgspectra.frequency import FreqModel
 import numpy as np
 from numpy.testing import assert_allclose as aac
 
@@ -9,10 +8,10 @@ def test_bandpass_integration():
 
     transmittance = np.array([[1.0, 2.0, 4.0], [1.0, 3.0, 1.0]])
 
-    class Mock(Model):
+    class Mock(FreqModel):
         def eval(self, nu=None, par=None):
             if isinstance(nu, list):
-                return fgf._bandpass_integration()
+                return self.eval_bandpass(nu=nu, par=par)
             return np.ones_like(nu) * np.array(par)[..., np.newaxis]
 
     mock = Mock()
