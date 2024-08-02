@@ -28,9 +28,9 @@ def _flux2cmb(nu):
     x = H_OVER_KT_CMB * nu
     g2_min1 = (
         2.0
-        * constants.k ** 3
-        * T_CMB ** 2
-        * x ** 4
+        * constants.k**3
+        * T_CMB**2
+        * x**4
         * np.exp(x)
         / (constants.h * constants.c * np.expm1(x)) ** 2
     )
