@@ -90,7 +90,6 @@ def _bandpass_integration():
     # Get the shape of the output from the result of the first bandpass
     kw["nu"] = nus_transmittances[0][0]
 
-    
     # Allowing dimension of transmittance to be [freq, ell] instead of just [freq]
     if len(nus_transmittances[0][1].shape) == 1:
         res = np.trapz(f(**kw) * nus_transmittances[0][1], kw["nu"])
