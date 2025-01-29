@@ -80,8 +80,6 @@ def _bandpass_integration():
     # f(self, **kw) -- f is typically the eval method.
     frame = inspect.currentframe().f_back
     kw = frame.f_locals
-    self = kw["self"]
-    del kw["self"]  # self was in the locals but is not a keyword argument
 
     # We create a copy of eval itself, we'll call it for each bandpass
     f = types.FunctionType(frame.f_code, frame.f_globals)
@@ -92,14 +90,15 @@ def _bandpass_integration():
     # Get the shape of the output from the result of the first bandpass
     kw["nu"] = nus_transmittances[0][0]
 
+    
     # Allowing dimension of transmittance to be [freq, ell] instead of just [freq]
     if len(nus_transmittances[0][1].shape) == 1:
-        res = np.trapz(f(self, **kw) * nus_transmittances[0][1], kw["nu"])
+        res = np.trapz(f(**kw) * nus_transmittances[0][1], kw["nu"])
     else:
         # In case transmittance has shape [freq, ell], the SED f has to be trasposed
         # to perform the integration in frequency
         res = np.trapz(
-            f(self, **kw)[..., np.newaxis] * nus_transmittances[0][1], kw["nu"], axis=0
+            f(**kw)[..., np.newaxis] * nus_transmittances[0][1], kw["nu"], axis=0
         )
 
     # Append the frequency dimension and put res in its first entry
@@ -110,10 +109,10 @@ def _bandpass_integration():
         kw["nu"] = nu
         # Repeating the band integration as before also for other channels
         if len(transmittance.shape) == 1:
-            res[..., i_band] = np.trapz(f(self, **kw) * transmittance, nu)
+            res[..., i_band] = np.trapz(f(**kw) * transmittance, nu)
         else:
             res[..., i_band] = np.trapz(
-                f(self, **kw)[..., np.newaxis] * transmittance, nu, axis=0
+                f(**kw)[..., np.newaxis] * transmittance, nu, axis=0
             )
 
     return res
