@@ -79,7 +79,7 @@ def _bandpass_integration():
     # It assumes that _bandpass_integration was called inside
     # f(self, **kw) -- f is typically the eval method.
     frame = inspect.currentframe().f_back
-    kw = frame.f_locals
+    kw = frame.f_locals.copy()
     self = kw["self"]
     del kw["self"]  # self was in the locals but is not a keyword argument
 
