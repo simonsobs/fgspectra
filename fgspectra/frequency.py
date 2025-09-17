@@ -79,9 +79,17 @@ class FreqModel(Model):
         res = None
         # Fill the entries by iterating over the bandpasses
         for i_band, (nu, transmittance) in enumerate(nus_transmittances):
-            integral = trapezoid(self.eval(nu=nu, **kw) * transmittance, nu)
+            # Allowing dimension of transmittance to be [freq, ell] instead of just [freq]
+            if len(transmittance.shape) == 1:
+                integral = trapezoid(self.eval(nu=nu, **kw) * transmittance, nu)
+            else:
+                # In case transmittance has shape [freq, ell], the SED f has to be trasposed
+￼               # to perform the integration in frequency
+                integral = trapezoid(self.eval(nu=nu, **kw)[..., np.newaxis] * transmittance, nu, axis = 0)
+
             if res is None:
                 res = np.empty(integral.shape + (len(nus_transmittances),))
+
             res[..., i_band] = integral
 
         return res
