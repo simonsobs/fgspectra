@@ -84,8 +84,10 @@ class FreqModel(Model):
                 integral = trapezoid(self.eval(nu=nu, **kw) * transmittance, nu)
             else:
                 # In case transmittance has shape [freq, ell], the SED f has to be trasposed
-￼               # to perform the integration in frequency
-                integral = trapezoid(self.eval(nu=nu, **kw)[..., np.newaxis] * transmittance, nu, axis = 0)
+                # to perform the integration in frequency
+                integral = trapezoid(
+                    self.eval(nu=nu, **kw)[..., np.newaxis] * transmittance, nu, axis=0
+                )
 
             if res is None:
                 res = np.empty(integral.shape + (len(nus_transmittances),))
