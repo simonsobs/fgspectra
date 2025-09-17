@@ -137,30 +137,131 @@ class FactorizedCrossSpectrum(Model):
         cl = self._cl(**cl_kwargs)
         if len(f_nu.shape) == len(cl.shape) == 1:
             return np.outer(f_nu, f_nu)[:, :, np.newaxis] * cl
+        # f_nu.shape can be either [freq] or [ell, freq]
         if f_nu.shape[0] != cl.shape[-1] or (f_nu.shape[0] == 1 and cl.shape[-1] == 1):
             f_nu = f_nu[np.newaxis]
 
         return np.einsum("l...i,l...j,...l->...ijl", f_nu, f_nu, cl)
 
 
+class FactorizedCrossSpectrumTE(Model):
+    r"""Factorized cross-spectrum
+
+    TE Cross-spectrum of **one** component for which the scaling in frequency
+    and in multipoles are factorizable. It is useful to distinguish the T and E
+    SEDs since they could be computed by integrating them with different
+    beams and/or transmissions.
+
+    .. math:: xC^TE_{\ell}^{(ij)} = f^T(\nu_j) f^E(\nu_i) C_{\ell}
+
+    Parameters
+    ----------
+    sedT : callable
+        The temperature SED :math:`f^T(\nu)`.
+        It returns an array with shape ``(..., freq)``.
+        It can be :class:`fgspectra.frequency.SED`.
+    sedE : callable
+        The E mode SED :math:`f^E(\nu)`.
+        It returns an array with shape ``(..., freq)``.
+        It can be :class:`fgspectra.frequency.SED`.
+    cl_args : callable
+        :math:`C_\ell`. It returns an array with shape ``(..., ell)``.
+        It can be :class:`fgspectra.power.PowerSpectrum`
+
+    Note
+    ----
+    The two (optional) sets of extra dimensions ``...`` must be
+    broadcast-compatible.
+    """
+
+    def __init__(self, sedT, sedE, cl, **kwargs):
+        self._sedT = sedT
+        self._sedE = sedE
+        self._cl = cl
+        self.set_defaults(**kwargs)
+
+    def set_defaults(self, **kwargs):
+        if "sedT_kwargs" in kwargs:
+            self._sedT.set_defaults(**kwargs["sedT_kwargs"])
+        if "sedE_kwargs" in kwargs:
+            self._sedE.set_defaults(**kwargs["sedE_kwargs"])
+        if "cl_kwargs" in kwargs:
+            self._cl.set_defaults(**kwargs["cl_kwargs"])
+
+    @property
+    def defaults(self):
+        return {
+            "sedT_kwargs": self._sedT.defaults,
+            "sedE_kwargs": self._sedE.defaults,
+            "cl_kwargs": self._cl.defaults,
+        }
+
+    def _get_repr(self):
+        sedT_repr = self._sedT._get_repr()
+        key = list(sedT_repr.keys())[0]
+        sedT_repr[key + " (SED T)"] = sedT_repr.pop(key)
+
+        sedE_repr = self._sedE._get_repr()
+        key = list(sedE_repr.keys())[0]
+        sedE_repr[key + " (SED E)"] = sedE_repr.pop(key)
+
+        cl_repr = self._cl._get_repr()
+        key = list(cl_repr.keys())[0]
+        cl_repr[key + " (Cl)"] = cl_repr.pop(key)
+
+        return {type(self).__name__: [sedT_repr, sedE_repr, cl_repr]}
+
+    def eval(self, sedT_kwargs={}, sedE_kwargs={}, cl_kwargs={}):
+        """Compute the model at frequency and ell combinations.
+
+        Parameters
+        ----------
+        sedT_args : list
+            Arguments for which the temperature `sed` is evaluated.
+        sedE_args : list
+            Arguments for which the E pol `sed` is evaluated.
+        cl_args : list
+            Arguments for which the `cl` is evaluated.
+
+        Returns
+        -------
+        cross : ndarray
+            Cross-spectrum. The shape is ``(..., freq, freq, ell)``.
+        """
+        fT_nu = self._sedT(**sedT_kwargs)
+        fE_nu = self._sedE(**sedE_kwargs)
+        cl = self._cl(**cl_kwargs)
+        # f_nu.shape can be either [freq] or [ell, freq]
+        if fT_nu.shape[0] != cl.shape[-1] or (
+            fT_nu.shape[0] == 1 and cl.shape[-1] == 1
+        ):
+            fT_nu = fT_nu[np.newaxis]
+        if fE_nu.shape[0] != cl.shape[-1] or (
+            fE_nu.shape[0] == 1 and cl.shape[-1] == 1
+        ):
+            fE_nu = fE_nu[np.newaxis]
+
+        return np.einsum("l...i,l...j,...l->...ijl", fT_nu, fE_nu, cl)
+
+
 class DecorrelatedFactorizedCrossSpectrum(Model):
-    r""" Decorrelated factorized cross spectrum
+    r"""Decorrelated factorized cross spectrum
 
     Cross-spectrum of **one** component for which the scaling in frequency
-    and in multipoles are factorizable. The scaling in frequency is not exact 
+    and in multipoles are factorizable. The scaling in frequency is not exact
     and some decorrelation is specified.
 
     .. math:: xC_{\ell}^{(ij)} = f_{decor}(\nu_i, \nu_j) f(\nu_j) f(\nu_i) C_{\ell}
-    
-    This model implements a decorrelation by rigidely rescalling a decorelation ratio 
+
+    This model implements a decorrelation by rigidely rescalling a decorelation ratio
     with respect to a reference cross-term. For example, for 3 frequencies, with the
-    reference taken at $\nu_1\times\nu_3$: 
-         
-    .. math::  f_{decor} = I(3) + \Delta_{decor} \begin{pmatrix} 
-        0 & r_{12} & 1 \\         
-        r_{12} & 0 & r_{23} \\              
-        1 & r_{23} & 0 
-        \end{pmatrix} 
+    reference taken at $\nu_1\times\nu_3$:
+
+    .. math::  f_{decor} = I(3) + \Delta_{decor} \begin{pmatrix}
+        0 & r_{12} & 1 \\
+        r_{12} & 0 & r_{23} \\
+        1 & r_{23} & 0
+        \end{pmatrix}
 
     Parameters
     ----------
@@ -175,7 +276,6 @@ class DecorrelatedFactorizedCrossSpectrum(Model):
     ----
     The two (optional) sets of extra dimensions ``...`` must be
     broadcast-compatible.
-        
     """
 
     def __init__(self, sed, cl, **kwargs):
@@ -311,7 +411,8 @@ class CorrelatedFactorizedCrossSpectrum(FactorizedCrossSpectrum):
 
         f_nu = self._sed(**sed_kwargs)
         cl = self._cl(**cl_kwargs)
-        if f_nu.shape[0] != cl.shape[-1]:
+        # verifying that sed.shape[1] is ell, otherwise adding newaxis
+        if f_nu.shape[1] != cl.shape[-1] or (f_nu.shape[1] == 1 and cl.shape[-1] == 1):
             f_nu = f_nu[:, np.newaxis]
 
         return np.einsum("kl...i,nl...j,...knl->...ijl", f_nu, f_nu, cl)

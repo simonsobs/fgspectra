@@ -62,7 +62,6 @@ class FreqModel(Model):
           transmittance
         * stacks the output of the iteration (the frequency dimension is the last)
           and returns it
-
         """
         # This piece of code is fairly complicated, we did because:
         # 1) We want to call eval on each element of the nu list (i.e. we iterate

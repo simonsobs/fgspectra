@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fgspectra"
-version = "1.2.1"
+version = "1.3.0"
 description = "Foreground SED and power spectrum library for building cross frequency power spectrum models"
 readme = "README.md"
 authors = [
