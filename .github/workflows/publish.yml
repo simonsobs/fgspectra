@@ -96,7 +96,7 @@ jobs:
     if: github.event_name == 'release' && github.event.action == 'published'
     
     environment:
-      name: pypi
+      name: publish_pypi
       url: https://pypi.org/p/fgspectra
     
     permissions:
