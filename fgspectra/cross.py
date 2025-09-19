@@ -135,6 +135,8 @@ class FactorizedCrossSpectrum(Model):
         """
         f_nu = self._sed(**sed_kwargs)
         cl = self._cl(**cl_kwargs)
+        if len(f_nu.shape) == len(cl.shape) == 1:
+            return np.outer(f_nu, f_nu)[:, :, np.newaxis] * cl
         # f_nu.shape can be either [freq] or [ell, freq]
         if f_nu.shape[0] != cl.shape[-1] or (f_nu.shape[0] == 1 and cl.shape[-1] == 1):
             f_nu = f_nu[np.newaxis]
@@ -229,6 +231,10 @@ class FactorizedCrossSpectrumTE(Model):
         fT_nu = self._sedT(**sedT_kwargs)
         fE_nu = self._sedE(**sedE_kwargs)
         cl = self._cl(**cl_kwargs)
+
+        if len(fT_nu.shape) == len(fE_nu.shape) == len(cl.shape) == 1:
+            return np.outer(fT_nu, fE_nu)[:, :, np.newaxis] * cl
+
         # f_nu.shape can be either [freq] or [ell, freq]
         if fT_nu.shape[0] != cl.shape[-1] or (
             fT_nu.shape[0] == 1 and cl.shape[-1] == 1
