@@ -1,8 +1,0 @@
-numpy>=1.13
-scipy>=1.0
-codecov
-pytest>=3.6
-pytest-cov>=2.6
-pyyaml
-sphinx
-sphinx_rtd_theme

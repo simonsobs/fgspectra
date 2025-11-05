@@ -1,0 +1,116 @@
+name: Publish Python 🐍 distribution 📦 to PyPI and TestPyPI
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build distribution 📦
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # IMPORTANT: Fetch all history for setuptools-scm
+          fetch-depth: 0
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+          cache: 'pip'
+      
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build setuptools-scm[toml]
+      
+      - name: Verify version from git tags
+        run: |
+          echo "Version detected by setuptools-scm:"
+          python -m setuptools_scm
+          echo "Release tag: ${{ github.event.release.tag_name }}"
+      
+      - name: Build distribution packages
+        run: python -m build
+      
+      - name: Verify built packages
+        run: |
+          python -m pip install twine
+          python -m twine check dist/*
+          echo "=== Built packages ==="
+          ls -la dist/
+          
+          # Show version in built wheel
+          echo "=== Version in built packages ==="
+          python -c "
+          import glob
+          import re
+          wheels = glob.glob('dist/*.whl')
+          for wheel in wheels:
+              match = re.search(r'-([0-9]+(?:\.[0-9]+)*(?:\.dev[0-9]+)?(?:\+.*?)?)-', wheel)
+              if match:
+                  print(f'Wheel {wheel}: version {match.group(1)}')
+          "
+      
+      - name: Store the distribution packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+          retention-days: 30
+
+  # Rest of your publish jobs remain the same...
+  testpypi-publish:
+    name: Upload release to Test-PyPI 🧪
+    needs: [build]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release' && github.event.action == 'published'
+    
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/fgspectra
+    
+    permissions:
+      id-token: write
+      contents: read
+    
+    steps:
+      - name: Download all the dists
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+      
+      - name: Publish package distributions to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          print-hash: true
+
+  pypi-publish:
+    name: Upload release to PyPI 🚀
+    needs: [build, testpypi-publish]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release' && github.event.action == 'published'
+    
+    environment:
+      name: publish_pypi
+      url: https://pypi.org/p/fgspectra
+    
+    permissions:
+      id-token: write
+      contents: read
+    
+    steps:
+      - name: Download all the dists
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+      
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          print-hash: true

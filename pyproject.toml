@@ -1,0 +1,38 @@
+[build-system]
+requires      = ["setuptools>=61.0.0", "wheel", "setuptools-scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fgspectra"
+description = "Foreground SED and power spectrum library for building cross frequency power spectrum models"
+readme = "README.md"
+dynamic = ["version"]  # Tell setuptools that version is dynamic
+authors = [
+  { name="Zack Li", email="xzackli@gmail.com" },
+  { name="Benjamin Beringue", email="beringueb@gmail.com"}
+]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+]
+keywords = ["astrophysics", "foregrounds", "cmb"]
+dependencies = [
+    "scipy",
+    "pyyaml",
+]
+requires-python = ">=3.9"
+
+[project.optional-dependencies]
+dev = ["black", "bumpver", "isort", "pip-tools", "pytest"]
+
+[project.urls]
+"Homepage" = "https://github.com/simonsobs/fgspectra"
+
+[tool.setuptools_scm]
+# Write version to a file that your package can import
+write_to = "fgspectra/_version.py"
+
+[tool.setuptools.packages.find]
+# If your package is in the root directory
+include = ["fgspectra*"]
