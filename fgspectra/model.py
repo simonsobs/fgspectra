@@ -170,7 +170,7 @@ class Model(ABC):
         search_for_none(self.defaults)
 
     def prepare_for_arrays(self, template_kwargs):
-        """Preapre for using arrays
+        """Prepare for using arrays
 
         reference_kwargs are necessary to define the shape you expect for each
         argument, which are necessary to convert from array to nested
@@ -216,3 +216,17 @@ class Model(ABC):
 
     def eval_array(self, x):
         return self.eval(**self.array2kwargs(x))
+
+    @property
+    @abstractmethod
+    def n(self):
+        """Function to identify the number of leading differentiable parameters
+        in this model's `eval()` function.
+        """
+        ...
+
+    def amp(self, *theta):
+        """A function to extract the amplitude of this model at the pivot scale
+        given the parameter vector `theta`.
+        """
+        return 1.0
