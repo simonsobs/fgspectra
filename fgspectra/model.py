@@ -58,9 +58,18 @@ class Model(ABC):
         if not kwargs:  # No default to be replaced
             return
 
-        # Make a deep copy of the eval function, assuming no variadic arguments
+        # Inspect the function signature.
         func = self.eval.__func__
+        sig = inspect.signature(func)
+        parameters = []
 
+        # First get the default values from the function signature.
+        for name, param in sig.parameters.items():
+            if name in kwargs:
+                param = param.replace(default=kwargs[name])
+            parameters.append(param)
+
+        # Build the function type.
         new_func = types.FunctionType(
             func.__code__,
             func.__globals__,
@@ -69,20 +78,24 @@ class Model(ABC):
             closure=func.__closure__,
         )
 
-        # Build the defaults from scratch, assuming no positional argument
-        # Update the defaults that have a corresponding key in kwargs
-        # Note that if kwargs has keys that are not in the arguments,
-        # these keys are ignored
-        fas = inspect.getfullargspec(new_func)
-        defaults = []
-        for arg, default in zip(fas.args[1:], fas.defaults):
-            # [1:] skips self, the only positional argument
-            if arg in kwargs:
-                defaults.append(kwargs[arg])
-            else:
-                defaults.append(default)
+        new_func.__kwdefaults__ = (
+            func.__kwdefaults__.copy()
+            if func.__kwdefaults__ else None
+        )
 
-        new_func.__defaults__ = tuple(defaults)
+        # Assign default values to the function.
+        new_func.__defaults__ = tuple(
+            par.default for par in parameters
+            if par.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD
+            and par.default is not inspect.Parameter.empty
+        )
+
+        # Include keyword-only default values in the defaults.
+        for par in parameters:
+            if (par.kind == inspect.Parameter.KEYWORD_ONLY
+                and par.default is not inspect.Parameter.empty):
+                if par.name in kwargs:
+                    new_func.__kwdefaults__[par.name] = par.default
 
         # Bind the new method to the instance
         self.eval = types.MethodType(new_func, self)
