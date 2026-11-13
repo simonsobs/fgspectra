@@ -79,21 +79,23 @@ class Model(ABC):
         )
 
         new_func.__kwdefaults__ = (
-            func.__kwdefaults__.copy()
-            if func.__kwdefaults__ else None
+            func.__kwdefaults__.copy() if func.__kwdefaults__ else None
         )
 
         # Assign default values to the function.
         new_func.__defaults__ = tuple(
-            par.default for par in parameters
+            par.default
+            for par in parameters
             if par.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD
             and par.default is not inspect.Parameter.empty
         )
 
         # Include keyword-only default values in the defaults.
         for par in parameters:
-            if (par.kind == inspect.Parameter.KEYWORD_ONLY
-                and par.default is not inspect.Parameter.empty):
+            if (
+                par.kind == inspect.Parameter.KEYWORD_ONLY
+                and par.default is not inspect.Parameter.empty
+            ):
                 if par.name in kwargs:
                     new_func.__kwdefaults__[par.name] = par.default
 
