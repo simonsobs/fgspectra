@@ -111,9 +111,11 @@ class PowerLawExtendedTemplate(PowerSpectrumFromFile):
         if ell_0 is None:
             ell_0 = self.ell_0
 
-        res = amp * np.where(ell > ell_0,
-                             (ell / ell_0) ** (alpha - alpha_0),
-                             self._cl[..., ell] / self._cl[..., ell_0, np.newaxis])
+        res = amp * np.where(
+            ell > ell_0,
+            (ell / ell_0) ** (alpha - alpha_0),
+            self._cl[..., ell] / self._cl[..., ell_0, np.newaxis],
+        )
         return res
 
     @property
@@ -254,7 +256,7 @@ class Poisson(PowerLaw):
             alpha_0 = self.alpha_0
         alpha = np.array(alpha)[..., np.newaxis]
         amp = np.array(amp)[..., np.newaxis]
-        return amp * (ell * (ell + 1.) / (ell_0 * (ell_0 + 1.))) ** (alpha - alpha_0)
+        return amp * (ell * (ell + 1.0) / (ell_0 * (ell_0 + 1.0))) ** (alpha - alpha_0)
 
 
 class CorrelatedPowerLaws(PowerLaw):
@@ -453,7 +455,7 @@ class PowerSpectraAndCovariance(Model):
 
     @property
     def n(self):
-        return sum([ cl.n for cl in self._power_spectra ])
+        return sum([cl.n for cl in self._power_spectra])
 
 
 class SZxCIB_Reichardt2012(PowerSpectraAndCorrelation):

@@ -8,15 +8,16 @@ def _bp_int(nu, f, bp):
 
 class FactorizedCrossSpectrum:
     """
-       C_ell^(nu1xnu2) = A * C_ell * f(nu1) * f(nu2)
+    C_ell^(nu1xnu2) = A * C_ell * f(nu1) * f(nu2)
     """
+
     def __init__(self, power, sed):
         self.power = power
         self.sed = sed
 
     def __call__(self, ell, nus, bps, theta):
-        theta_cl = theta[:self.power.n]
-        theta_sed = theta[self.power.n:]
+        theta_cl = theta[: self.power.n]
+        theta_sed = theta[self.power.n :]
 
         cl = self.power(ell, *theta_cl)
 
@@ -33,17 +34,18 @@ class FactorizedCrossSpectrum:
 
 class FactorizedCrossSpectrumTE:
     """
-       C_ell^(nu1xnu2) = A * C_ell * f^T(nu1) * f^E(nu2)
+    C_ell^(nu1xnu2) = A * C_ell * f^T(nu1) * f^E(nu2)
     """
+
     def __init__(self, power, sedT, sedE):
         self.power = power
         self.sedT = sedT
         self.sedE = sedE
 
     def __call__(self, ell, nus, bps, theta):
-        theta_cl = theta[:self.power.n]
-        theta_sedT = theta[self.power.n:self.power.n+self.sedT.n]
-        theta_sedE = theta[self.power.n+self.sedT.n:]
+        theta_cl = theta[: self.power.n]
+        theta_sedT = theta[self.power.n : self.power.n + self.sedT.n]
+        theta_sedE = theta[self.power.n + self.sedT.n :]
 
         cl = self.power(ell, *theta_cl)
 
@@ -66,27 +68,34 @@ class FactorizedCrossSpectrumTE:
 
 class CorrelatedCrossSpectrum:
     """
-        For two components, A and B, which are correlated:
-        C_ell^(nu1xnu2) =
-            a_A * C_ell^A f^A(nu1) f^A(nu2)
-            + a_B * C_ell^B f^B(nu1) f^B(nu2)
-            - a_(AxB) sqrt(a_A a_B) C_ell^(AxB) (
-                  f^A(nu1) f^B(nu2) + f^A(nu2) f^B(nu1)
-              )
+    For two components, A and B, which are correlated:
+    C_ell^(nu1xnu2) =
+        a_A * C_ell^A f^A(nu1) f^A(nu2)
+        + a_B * C_ell^B f^B(nu1) f^B(nu2)
+        - a_(AxB) sqrt(a_A a_B) C_ell^(AxB) (
+              f^A(nu1) f^B(nu2) + f^A(nu2) f^B(nu1)
+          )
     """
+
     def __init__(self, power1, power2, powerx, sed1, sed2):
         self.power1 = power1
         self.power2 = power2
         self.powerx = powerx
         self.sed1 = sed1
         self.sed2 = sed2
-        self.n_p1 = (jnp.arange(self.power1.n))
-        self.n_p2 = (jnp.arange(self.power2.n) + self.power1.n)
-        self.n_px = (jnp.arange(self.powerx.n) + self.power1.n + self.power2.n)
-        self.n_s1 = (jnp.arange(self.sed1.n) + self.power1.n + self.power2.n
-                     + self.powerx.n)
-        self.n_s2 = (jnp.arange(self.sed2.n) + self.power1.n + self.power2.n
-                     + self.powerx.n + self.sed1.n)
+        self.n_p1 = jnp.arange(self.power1.n)
+        self.n_p2 = jnp.arange(self.power2.n) + self.power1.n
+        self.n_px = jnp.arange(self.powerx.n) + self.power1.n + self.power2.n
+        self.n_s1 = (
+            jnp.arange(self.sed1.n) + self.power1.n + self.power2.n + self.powerx.n
+        )
+        self.n_s2 = (
+            jnp.arange(self.sed2.n)
+            + self.power1.n
+            + self.power2.n
+            + self.powerx.n
+            + self.sed1.n
+        )
 
     def __call__(self, ell, nus, bps, theta):
         theta_cl1 = theta[self.n_p1]
@@ -110,14 +119,17 @@ class CorrelatedCrossSpectrum:
 
         comp1 = jnp.einsum("...i,...ij,...il->...ijl", cl1, f_nus1, f_nus1)
         comp2 = jnp.einsum("...i,...ij,...il->...ijl", cl2, f_nus2, f_nus2)
-        compx = (clx[:, None, None] * jnp.sqrt(self.power1.amp(*theta_cl1)
-                 * self.power2.amp(*theta_cl2))
-                 * (f_nus1[:, :, None] * f_nus2[:, None, :]
-                    + f_nus1[:, None, :] * f_nus2[:, :, None]))
+        compx = (
+            clx[:, None, None]
+            * jnp.sqrt(self.power1.amp(*theta_cl1) * self.power2.amp(*theta_cl2))
+            * (
+                f_nus1[:, :, None] * f_nus2[:, None, :]
+                + f_nus1[:, None, :] * f_nus2[:, :, None]
+            )
+        )
 
         return comp1 + comp2 - compx
 
     @property
     def n(self):
-        return (self.power1.n + self.power2.n + self.powerx.n + self.sed1.n
-                + self.sed2.n)
+        return self.power1.n + self.power2.n + self.powerx.n + self.sed1.n + self.sed2.n

@@ -43,10 +43,10 @@ def _rj2cmb(nu):
 
 
 class FreqModel(Model):
-    def __init__(self, nu_0=150., **kwargs):
+    def __init__(self, nu_0=150.0, **kwargs):
         super().__init__(**kwargs)
         self.nu_0 = nu_0
-    
+
     def eval_bandpass(self, **kw):
         """Bandpass integrated version of eval()
 
@@ -110,7 +110,8 @@ class PowerLawSED(FreqModel):
 
     .. math:: f(\nu) = (\nu / \nu_0)^{\beta}
     """
-    def __init__(self, nu_0=150., beta_0=0.0, **kwargs):
+
+    def __init__(self, nu_0=150.0, beta_0=0.0, **kwargs):
         super().__init__(nu_0, **kwargs)
         self.beta_0 = beta_0
 
