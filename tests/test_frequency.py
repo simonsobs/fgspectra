@@ -14,6 +14,10 @@ def test_bandpass_integration():
                 return self.eval_bandpass(nu=nu, par=par)
             return np.ones_like(nu) * np.array(par)[..., np.newaxis]
 
+        @property
+        def n(self):
+            return 0
+
     mock = Mock()
     nus = list(zip(frequency, transmittance))
 

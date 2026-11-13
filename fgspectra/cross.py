@@ -143,6 +143,10 @@ class FactorizedCrossSpectrum(Model):
 
         return np.einsum("l...i,l...j,...l->...ijl", f_nu, f_nu, cl)
 
+    @property
+    def n(self):
+        return self._sed.n + self._cl.n
+
 
 class FactorizedCrossSpectrumTE(Model):
     r"""Factorized cross-spectrum
@@ -246,6 +250,10 @@ class FactorizedCrossSpectrumTE(Model):
             fE_nu = fE_nu[np.newaxis]
 
         return np.einsum("l...i,l...j,...l->...ijl", fT_nu, fE_nu, cl)
+
+    @property
+    def n(self):
+        return self._sedT.n + self._sedE.n + self._cl.n
 
 
 class DecorrelatedFactorizedCrossSpectrum(Model):

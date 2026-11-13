@@ -57,15 +57,18 @@ class PowerSpectrumFromFile(Model):
 
     """
 
-    def __init__(self, filenames, **kwargs):
+    def __init__(self, filenames, ell_0=3000, **kwargs):
         """
 
         The file format should be two columns, ell and the spectrum.
         """
         filenames = np.array(filenames)
         self._cl = np.empty(filenames.shape + (0,))
+        self.ell_0 = ell_0
 
         for i, filename in np.ndenumerate(filenames):
+            if not os.path.exists(filename):
+                filename = _get_power_file(filename)
             ell, spec = np.genfromtxt(filename, unpack=True)
             ell = ell.astype(int)
             # Make sure that the new spectrum fits self._cl
@@ -80,38 +83,70 @@ class PowerSpectrumFromFile(Model):
             self._cl[i + (ell,)] = spec
         self.set_defaults(**kwargs)
 
-    def eval(self, ell=None, ell_0=None, amp=1.0):
+    def eval(self, ell, amp, ell_0=None):
         """Compute the power spectrum with the given ell and parameters."""
-        #### TEMPORARY ####
         if ell_0 is None:
-            print("NO NORMALISATION")
-            return amp * self._cl[..., ell]
-        else:
-            return amp * self._cl[..., ell] / self._cl[..., ell_0, np.newaxis]
+            ell_0 = self.ell_0
+        return amp * self._cl[..., ell] / self._cl[..., ell_0, np.newaxis]
+
+    @property
+    def n(self):
+        return 1
+
+    def amp(self, *theta):
+        return theta[0]
 
 
 class PowerLawExtendedTemplate(PowerSpectrumFromFile):
     """ " Power Spectrum from a file, extended by a power law on small scales."""
 
-    def eval(self, ell=None, ell_0=None, alpha=None, amp=1.0):
+    def __init__(self, filenames, ell_0=3000, alpha_0=0.0, **kwargs):
+        super().__init__(filenames, ell_0=ell_0, **kwargs)
+        self.alpha_0 = alpha_0
+
+    def eval(self, ell=None, amp=None, alpha=None, ell_0=None, alpha_0=None):
         """Compute the power spectrum with the given ell and parameters."""
-        # TODO : the switch from template to power law is at ell_0 for now !
-        res = amp * self._cl[..., ell] / self._cl[..., ell_0, np.newaxis]
-        res[..., ell > ell_0] = amp * (ell[ell > ell_0] / ell_0) ** alpha
+        if alpha_0 is None:
+            alpha_0 = self.alpha_0
+        if ell_0 is None:
+            ell_0 = self.ell_0
+
+        res = amp * np.where(
+            ell > ell_0,
+            (ell / ell_0) ** (alpha - alpha_0),
+            self._cl[..., ell] / self._cl[..., ell_0, np.newaxis],
+        )
         return res
+
+    @property
+    def n(self):
+        return 2
 
 
 class PowerLawRescaledTemplate(PowerSpectrumFromFile):
     """Power Spectrum from a file, rescaled by a power law."""
 
-    def eval(self, ell=None, ell_0=None, alpha=None, amp=1.0):
+    def __init__(self, filenames, ell_0=3000, alpha_0=0.0, **kwargs):
+        super().__init__(filenames, ell_0=ell_0, **kwargs)
+        self.alpha_0 = alpha_0
+
+    def eval(self, ell=None, amp=None, alpha=None, ell_0=None, alpha_0=None):
         """Compute the power spectrum with the given ell and parameters."""
+        if alpha_0 is None:
+            alpha_0 = self.alpha_0
+        if ell_0 is None:
+            ell_0 = self.ell_0
+
         return (
             amp
             * self._cl[..., ell]
             / self._cl[..., ell_0, np.newaxis]
-            * (ell / ell_0) ** alpha
+            * (ell / ell_0) ** (alpha - alpha_0)
         )
+
+    @property
+    def n(self):
+        return 2
 
 
 class tSZ_150_bat(PowerSpectrumFromFile):
@@ -144,10 +179,15 @@ class kSZ_bat(PowerSpectrumFromFile):
 class PowerLaw(Model):
     r"""Power law
 
-    .. math:: C_\ell = (\ell / \ell_0)^\alpha
+    .. math:: C_\ell = (\ell / \ell_0)^(\alpha - \alpha_0)
     """
 
-    def eval(self, ell=None, alpha=None, ell_0=None, amp=1.0):
+    def __init__(self, alpha_0=0.0, ell_0=3000, **kwargs):
+        super().__init__(**kwargs)
+        self.alpha_0 = alpha_0
+        self.ell_0 = ell_0
+
+    def eval(self, ell, amp, alpha, ell_0=None, alpha_0=None):
         """
 
         Parameters
@@ -167,9 +207,56 @@ class PowerLaw(Model):
             The last dimension is ell.
             The leading dimensions are the hypothetic dimensions of `alpha`
         """
+        if ell_0 is None:
+            ell_0 = self.ell_0
+        if alpha_0 is None:
+            alpha_0 = self.alpha_0
+
         alpha = np.array(alpha)[..., np.newaxis]
         amp = np.array(amp)[..., np.newaxis]
-        return amp * (ell / ell_0) ** alpha
+        return amp * (ell / ell_0) ** (alpha - alpha_0)
+
+    @property
+    def n(self):
+        return 2
+
+    def amp(self, *theta):
+        return theta[0]
+
+
+class Poisson(PowerLaw):
+    r"""Poisson power law
+
+    .. math:: C_\ell = (\ell (\ell + 1) / (\ell_0 (\ell_0 + 1)))^(\alpha - \alpha_0)
+    """
+
+    def eval(self, ell, amp, alpha, ell_0=None, alpha_0=None):
+        """
+
+        Parameters
+        ----------
+        ell: float or array
+            Multipole
+        alpha: float or array
+            Spectral index.
+        ell_0: float
+            Reference ell
+        amp: float or array
+            Amplitude, shape must be compatible with `alpha`.
+
+        Returns
+        -------
+        cl: ndarray
+            The last dimension is ell.
+            The leading dimensions are the hypothetic dimensions of `alpha`
+        """
+        if ell_0 is None:
+            ell_0 = self.ell_0
+        if alpha_0 is None:
+            alpha_0 = self.alpha_0
+        alpha = np.array(alpha)[..., np.newaxis]
+        amp = np.array(amp)[..., np.newaxis]
+        return amp * (ell * (ell + 1.0) / (ell_0 * (ell_0 + 1.0))) ** (alpha - alpha_0)
 
 
 class CorrelatedPowerLaws(PowerLaw):
@@ -177,7 +264,7 @@ class CorrelatedPowerLaws(PowerLaw):
     dimensions and the correlation coefficient between TWO PL
     """
 
-    def eval(self, ell=None, alpha=None, ell_0=None, amp=None, rho=None):
+    def eval(self, ell, amp, rho, alpha, ell_0=None, alpha_0=None):
         """
         Parameters
         ----------
@@ -198,6 +285,11 @@ class CorrelatedPowerLaws(PowerLaw):
             The leading dimensions are the hypothetic dimensions of `alpha` and
             `amp`.
         """
+        if ell_0 is None:
+            ell_0 = self.ell_0
+        if alpha_0 is None:
+            alpha_0 = self.alpha_0
+
         alpha = np.array(alpha)
         amp = np.array(amp)
 
@@ -207,6 +299,10 @@ class CorrelatedPowerLaws(PowerLaw):
         amp[..., 0, 1] *= rho
 
         return super().eval(ell=ell, alpha=alpha, ell_0=ell_0, amp=amp)
+
+    @property
+    def n(self):
+        return 3
 
 
 class PowerSpectraAndCorrelation(Model):
@@ -356,6 +452,10 @@ class PowerSpectraAndCovariance(Model):
 
         assert i_corr == len(spectra)
         return res
+
+    @property
+    def n(self):
+        return sum([cl.n for cl in self._power_spectra])
 
 
 class SZxCIB_Reichardt2012(PowerSpectraAndCorrelation):

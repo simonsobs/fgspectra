@@ -43,6 +43,10 @@ def _rj2cmb(nu):
 
 
 class FreqModel(Model):
+    def __init__(self, nu_0=150.0, **kwargs):
+        super().__init__(**kwargs)
+        self.nu_0 = nu_0
+
     def eval_bandpass(self, **kw):
         """Bandpass integrated version of eval()
 
@@ -101,13 +105,17 @@ class FreqModel(Model):
         pass
 
 
-class PowerLaw(FreqModel):
+class PowerLawSED(FreqModel):
     r"""Power Law
 
-    .. math:: f(\nu) = (\nu / \nu_0)^{\beta}
+    .. math:: f(\nu) = (\nu / \nu_0)^{\beta - \beta_0}
     """
 
-    def eval(self, nu=None, beta=None, nu_0=None):
+    def __init__(self, nu_0=150.0, beta_0=0.0, **kwargs):
+        super().__init__(nu_0=nu_0, **kwargs)
+        self.beta_0 = beta_0
+
+    def eval(self, nu=None, beta=None, nu_0=None, beta_0=None):
         """Evaluation of the SED
 
         Parameters
@@ -144,15 +152,24 @@ class PowerLaw(FreqModel):
           and `nu_0` are arrays with shape ``(2)``
 
         """
+        if nu_0 is None:
+            nu_0 = self.nu_0
+        if beta_0 is None:
+            beta_0 = self.beta_0
+
         if isinstance(nu, list):
-            return self.eval_bandpass(nu=nu, beta=beta, nu_0=nu_0)
+            return self.eval_bandpass(nu=nu, beta=beta, nu_0=nu_0, beta_0=beta_0)
 
         beta = np.array(beta)[..., np.newaxis]
         nu_0 = np.array(nu_0)[..., np.newaxis]
-        return (nu / nu_0) ** beta * (_rj2cmb(nu) / _rj2cmb(nu_0))
+        return (nu / nu_0) ** (beta - beta_0) * (_rj2cmb(nu) / _rj2cmb(nu_0))
+
+    @property
+    def n(self):
+        return 1
 
 
-class Synchrotron(PowerLaw):
+class Synchrotron(PowerLawSED):
     """Alias of :class:`PowerLaw`"""
 
     pass
@@ -166,7 +183,11 @@ class ModifiedBlackBody(FreqModel):
     where :math:`x = h \nu / k_B T_d`
     """
 
-    def eval(self, nu=None, nu_0=None, temp=None, beta=None):
+    def __init__(self, nu_0=150.0, beta_0=0.0, **kwargs):
+        super().__init__(nu_0=nu_0, **kwargs)
+        self.beta_0 = beta_0
+
+    def eval(self, nu=None, temp=None, beta=None, nu_0=None, beta_0=None):
         """Evaluation of the SED
 
         Parameters
@@ -187,6 +208,11 @@ class ModifiedBlackBody(FreqModel):
             The leading dimensions are the broadcast between the hypothetic
             dimensions of `beta` and `temp`.
         """
+        if nu_0 is None:
+            nu_0 = self.nu_0
+        if beta_0 is None:
+            beta_0 = self.beta_0
+
         if isinstance(nu, list):
             return self.eval_bandpass(nu=nu, nu_0=nu_0, temp=temp, beta=beta)
 
@@ -194,8 +220,12 @@ class ModifiedBlackBody(FreqModel):
         temp = np.array(temp)[..., np.newaxis]
         x = 1e9 * constants.h * nu / (constants.k * temp)
         x_0 = 1e9 * constants.h * nu_0 / (constants.k * temp)
-        res = (nu / nu_0) ** (beta + 1.0) * np.expm1(x_0) / np.expm1(x)
+        res = (nu / nu_0) ** (beta - beta_0 + 1.0) * np.expm1(x_0) / np.expm1(x)
         return res * (_rj2cmb(nu) / _rj2cmb(nu_0))
+
+    @property
+    def n(self):
+        return 2
 
 
 class CIB(ModifiedBlackBody):
@@ -226,10 +256,17 @@ class ThermalSZ(FreqModel):
             Frequency in GHz.
         T_CMB (optional) : float
         """
+        if nu_0 is None:
+            nu_0 = self.nu_0
+
         if isinstance(nu, list):
             return self.eval_bandpass(nu=nu, nu_0=nu_0)
 
         return ThermalSZ.f(nu) / ThermalSZ.f(nu_0)
+
+    @property
+    def n(self):
+        return 0
 
 
 class FreeFree(FreqModel):
@@ -281,11 +318,15 @@ class FreeFree(FreqModel):
         print("warning: I need to check the units on this")
         return EM * gff
 
+    @property
+    def n(self):
+        return 2
+
 
 class ConstantSED(FreqModel):
     """Frequency-independent component."""
 
-    def eval(self, nu=None, amp=1.0):
+    def eval(self, nu, amp=1.0):
         """Evaluation of the SED
 
         Parameters
@@ -308,11 +349,15 @@ class ConstantSED(FreqModel):
         amp = np.array(amp)[..., np.newaxis]
         return amp * np.ones_like(np.array(nu))
 
+    @property
+    def n(self):
+        return 0
+
 
 class FreeSED(FreqModel):
     """Frequency-dependent component for which every entry of the SED is specified."""
 
-    def eval(self, nu=None, sed=None):
+    def eval(self, nu, sed):
         """Evaluation of the SED
 
         Parameters
@@ -382,3 +427,7 @@ class Join(FreqModel):
         for i in range(len(seds)):
             res[i] = seds[i]
         return res
+
+    @property
+    def n(self):
+        return sum([sed.n for sed in self._seds])
