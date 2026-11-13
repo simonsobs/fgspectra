@@ -108,14 +108,14 @@ class FreqModel(Model):
 class PowerLawSED(FreqModel):
     r"""Power Law
 
-    .. math:: f(\nu) = (\nu / \nu_0)^{\beta}
+    .. math:: f(\nu) = (\nu / \nu_0)^{\beta - \beta_0}
     """
 
     def __init__(self, nu_0=150.0, beta_0=0.0, **kwargs):
-        super().__init__(nu_0, **kwargs)
+        super().__init__(nu_0=nu_0, **kwargs)
         self.beta_0 = beta_0
 
-    def eval(self, nu, beta, nu_0=None, beta_0=None):
+    def eval(self, nu=None, beta=None, nu_0=None, beta_0=None):
         """Evaluation of the SED
 
         Parameters
@@ -183,7 +183,11 @@ class ModifiedBlackBody(FreqModel):
     where :math:`x = h \nu / k_B T_d`
     """
 
-    def eval(self, nu, temp, beta, nu_0=None):
+    def __init__(self, nu_0=150.0, beta_0=0.0, **kwargs):
+        super().__init__(nu_0=nu_0, **kwargs)
+        self.beta_0 = beta_0
+
+    def eval(self, nu=None, temp=None, beta=None, nu_0=None, beta_0=None):
         """Evaluation of the SED
 
         Parameters
@@ -206,6 +210,8 @@ class ModifiedBlackBody(FreqModel):
         """
         if nu_0 is None:
             nu_0 = self.nu_0
+        if beta_0 is None:
+            beta_0 = self.beta_0
 
         if isinstance(nu, list):
             return self.eval_bandpass(nu=nu, nu_0=nu_0, temp=temp, beta=beta)
@@ -214,7 +220,7 @@ class ModifiedBlackBody(FreqModel):
         temp = np.array(temp)[..., np.newaxis]
         x = 1e9 * constants.h * nu / (constants.k * temp)
         x_0 = 1e9 * constants.h * nu_0 / (constants.k * temp)
-        res = (nu / nu_0) ** (beta + 1.0) * np.expm1(x_0) / np.expm1(x)
+        res = (nu / nu_0) ** (beta - beta_0 + 1.0) * np.expm1(x_0) / np.expm1(x)
         return res * (_rj2cmb(nu) / _rj2cmb(nu_0))
 
     @property
@@ -243,7 +249,7 @@ class ThermalSZ(FreqModel):
         x = constants.h * (nu * 1e9) / (constants.k * T_CMB)
         return x / np.tanh(x / 2.0) - 4.0
 
-    def eval(self, nu, nu_0=None):
+    def eval(self, nu=None, nu_0=None):
         """Compute the SED with the given frequency and parameters.
 
         nu : float
@@ -320,7 +326,7 @@ class FreeFree(FreqModel):
 class ConstantSED(FreqModel):
     """Frequency-independent component."""
 
-    def eval(self, nu=None, amp=1.0):
+    def eval(self, nu, amp=1.0):
         """Evaluation of the SED
 
         Parameters
@@ -351,7 +357,7 @@ class ConstantSED(FreqModel):
 class FreeSED(FreqModel):
     """Frequency-dependent component for which every entry of the SED is specified."""
 
-    def eval(self, nu=None, sed=None):
+    def eval(self, nu, sed):
         """Evaluation of the SED
 
         Parameters

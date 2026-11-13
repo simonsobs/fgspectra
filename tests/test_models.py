@@ -15,8 +15,8 @@ def test_ACT_models():
     # define the models from fgspectra
     ksz = fgc.FactorizedCrossSpectrum(fgf.ConstantSED(), fgp.kSZ_bat())
     cibp = fgc.FactorizedCrossSpectrum(fgf.ModifiedBlackBody(), fgp.PowerLaw())
-    radio = fgc.FactorizedCrossSpectrum(fgf.PowerLaw(), fgp.PowerLaw())
-    cirrus = fgc.FactorizedCrossSpectrum(fgf.PowerLaw(), fgp.PowerLaw())
+    radio = fgc.FactorizedCrossSpectrum(fgf.PowerLawSED(), fgp.PowerLaw())
+    cirrus = fgc.FactorizedCrossSpectrum(fgf.PowerLawSED(), fgp.PowerLaw())
 
     # if there are correlations between components,
     # have to define them in a joined spectrum
@@ -62,28 +62,25 @@ def test_ACT_models():
     fdust = np.array([par["f0_dust"]])
 
     result = (
-        par["a_tSZ"]
-        * tsz({"nu": fsz, "nu_0": par["nu_0"]}, {"ell": ells, "ell_0": par["ell_0"]}),
-        par["a_kSZ"] * ksz({"nu": fsz}, {"ell": ells, "ell_0": par["ell_0"]}),
-        par["a_p"]
-        * cibp(
+        tsz({"nu": fsz, "nu_0": par["nu_0"]}, {"amp": par["a_tSZ"], "ell": ells, "ell_0": par["ell_0"]}),
+        ksz({"nu": fsz}, {"amp": par["a_kSZ"], "ell": ells, "ell_0": par["ell_0"]}),
+        cibp(
             {
                 "nu": fdust,
                 "nu_0": par["nu_0"],
                 "temp": par["T_d"],
                 "beta": par["beta_p"],
             },
-            {"ell": ells, "ell_0": par["ell_0"], "alpha": 2},
+            {"amp": par["a_p"], "ell": ells, "ell_0": par["ell_0"], "alpha": 2},
         ),
-        par["a_c"]
-        * cibc(
+        cibc(
             {
                 "nu": fdust,
                 "nu_0": par["nu_0"],
                 "temp": par["T_d"],
                 "beta": par["beta_c"],
             },
-            {"ell": ells, "ell_0": par["ell_0"], "alpha": 2 - par["n_CIBC"]},
+            {"amp": par["a_c"], "ell": ells, "ell_0": par["ell_0"], "alpha": 2 - par["n_CIBC"]},
         ),
         tSZ_and_CIB(
             {
@@ -114,15 +111,13 @@ def test_ACT_models():
                 )
             },
         ),
-        par["a_s"]
-        * radio(
+        radio(
             {"nu": fsynch, "nu_0": par["nu_0"], "beta": -0.5 - 2},
-            {"ell": ells, "ell_0": par["ell_0"], "alpha": 2},
+            {"amp": par["a_s"], "ell": ells, "ell_0": par["ell_0"], "alpha": 2},
         ),
-        par["a_g"]
-        * cirrus(
+        cirrus(
             {"nu": fdust, "nu_0": par["nu_0"], "beta": 3.8 - 2},
-            {"ell": ells, "ell_0": par["ell_0"], "alpha": -0.7},
+            {"amp": par["a_g"], "ell": ells, "ell_0": par["ell_0"], "alpha": -0.7},
         ),
     )
 

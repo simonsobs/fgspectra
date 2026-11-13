@@ -104,7 +104,7 @@ class PowerLawExtendedTemplate(PowerSpectrumFromFile):
         super().__init__(filenames, ell_0=ell_0, **kwargs)
         self.alpha_0 = alpha_0
 
-    def eval(self, ell, amp, alpha, ell_0=None, alpha_0=None):
+    def eval(self, ell=None, amp=None, alpha=None, ell_0=None, alpha_0=None):
         """Compute the power spectrum with the given ell and parameters."""
         if alpha_0 is None:
             alpha_0 = self.alpha_0
@@ -130,7 +130,7 @@ class PowerLawRescaledTemplate(PowerSpectrumFromFile):
         super().__init__(filenames, ell_0=ell_0, **kwargs)
         self.alpha_0 = alpha_0
 
-    def eval(self, ell, amp, alpha, ell_0=None, alpha_0=None):
+    def eval(self, ell=None, amp=None, alpha=None, ell_0=None, alpha_0=None):
         """Compute the power spectrum with the given ell and parameters."""
         if alpha_0 is None:
             alpha_0 = self.alpha_0
